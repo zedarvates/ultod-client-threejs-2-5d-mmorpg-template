@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="assets/banner-threejs-2-5d.png" alt="UltOd Client Three.js 2.5D MMORPG Template" width="100%" />
+<img src="assets/banner-threejs-2-5d.jpg" alt="UltOd Client Three.js 2.5D MMORPG Template" width="100%" />
 
 ### UltOd Client Three.js 2.5D MMORPG Template
 
