@@ -1,0 +1,49 @@
+name: Validate Documentation
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Validate Markdown and internal links
+        shell: bash
+        run: |
+          python - <<'PY'
+          import re
+          from pathlib import Path
+
+          md_files = list(Path(".").rglob("*.md"))
+          if not md_files:
+              raise SystemExit("No Markdown files found")
+
+          errors = []
+          for md_path in md_files:
+              text = md_path.read_text(encoding="utf-8")
+              # Extract inline markdown links: [label](target)
+              for target in re.findall(r'\[[^\]]*\]\(([^\)]+)\)', text):
+                  if target.startswith(("http://", "https://", "#", "mailto:")):
+                      continue
+                  clean_target = target.split("#")[0].strip("<>")
+                  resolved = (md_path.parent / clean_target).resolve()
+                  if not resolved.exists():
+                      errors.append(f"{md_path}: broken link target '{target}'")
+
+          if errors:
+              for err in errors:
+                  print(f"Error: {err}")
+              raise SystemExit(1)
+
+          print(f"Successfully validated {len(md_files)} markdown files and all internal links.")
+          PY
