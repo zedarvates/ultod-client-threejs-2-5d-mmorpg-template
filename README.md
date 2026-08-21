@@ -37,6 +37,7 @@ There is no game project, gameplay implementation, network client, asset, server
 ## Links
 
 - [Ultimate Odycer website](https://ultimateodycer.com)
+- [Discord](https://discord.gg/Mdcdjb6bU)
 - [JSON template registry](https://github.com/zedarvates/ultod-json-template-registry)
 
 See [SCOPE.md](SCOPE.md), [ROADMAP.md](ROADMAP.md), [server compatibility](docs/SERVER-COMPATIBILITY.md), the [publication checklist](docs/PUBLICATION-CHECKLIST.md), the [JSON registry contract](docs/JSON-TEMPLATE-REGISTRY.md), the [architecture decisions](docs/ARCHITECTURE-DECISIONS.md), the [versioning policy](docs/VERSIONING.md), and [support boundaries](SUPPORT.md).
