@@ -20,3 +20,8 @@ Documentation review only. No browser engine, WebGL/WebGPU runtime or Zig server
 - Third-party assets and unreviewed modifications
 
 Security reports containing sensitive details must use GitHub private vulnerability reporting. Compatibility requests must name the exact versions and environment; unsupported combinations must not be presented as defects in released behavior.
+
+## Community
+
+- [Discord](https://discord.gg/Mdcdjb6bU)
+- [Ultimate Odycer website](https://ultimateodycer.com)
