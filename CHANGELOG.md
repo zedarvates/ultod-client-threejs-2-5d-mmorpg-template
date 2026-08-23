@@ -4,6 +4,14 @@ All notable public changes will be documented here once versioned releases begin
 
 ## Unreleased
 
+### Minimal Three.js 2.5D presentation shell
+
+- Added original `package.json`, `tsconfig.json`, `index.html`, and TypeScript presentation sources (`src/main.ts`, `src/player_presentation.ts`, `src/npc_presentation.ts`, `src/controls/isometric_controls.ts`).
+- Added dimetric orthographic camera setup, lighting, grid, and point-and-click ground raycasting.
+- Documented intent contract mapping to `network-intent-v1` and pinned templates rules.
+- Added synthetic presentation test fixture.
+- Documented public extraction design and file-level allowlist.
+
 ### Documentation foundation
 
 - Defined public and excluded scope.
