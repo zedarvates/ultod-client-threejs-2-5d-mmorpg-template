@@ -5,7 +5,8 @@
 | ADR-001 | accepted | Keep this repository documentation-only until its publication gates are approved. |
 | ADR-002 | accepted | The server remains authoritative for identity, movement, combat, inventory, progression and economy. |
 | ADR-003 | accepted | Consume JSON registry snapshots only by pinned version and verified SHA-256. |
-| ADR-004 | accepted | Keep web client architecture undecided until the minimal public feature boundary is approved. |
+| ADR-004 | accepted | Three.js 2.5D web client uses dimetric orthographic camera and pointer/keyboard controls for local presentation. |
+| ADR-006 | accepted | Future starter files must be original and created from the public extraction allowlist; proprietary client paths remain denied. |
 | ADR-005 | accepted | 2.5D / isometric rendering must use modern WebGL/WebGPU canvas via Three.js with mobile-responsive viewport boundaries. |
 
 ## Change policy

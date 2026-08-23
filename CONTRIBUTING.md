@@ -4,7 +4,8 @@ This repository currently accepts documentation improvements only.
 
 ## Current gate
 
-The web client architecture gate must be approved before any code contribution.
+The server compatibility gate must be approved before any network code contribution.
+Original web client files, if proposed later, must match [docs/PUBLIC-EXTRACTION-DESIGN.md](docs/PUBLIC-EXTRACTION-DESIGN.md) and still pass the publication checklist. Proprietary client paths remain denied.
 
 ## Never include
 

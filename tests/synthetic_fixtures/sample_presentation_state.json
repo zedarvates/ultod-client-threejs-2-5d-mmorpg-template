@@ -1,0 +1,22 @@
+{
+  "schema_version": "network-intent-v1",
+  "status": "estimated",
+  "direction": "client_to_server",
+  "family": "talk",
+  "intent": "talk",
+  "actor_id": "player_demo_01",
+  "target_id": "npc_demo_gatekeeper_01",
+  "client_seq": 1,
+  "idempotency_key": "player_demo_01:1",
+  "transport": {
+    "kind": "documentation_fixture",
+    "tls": "required_outside_loopback"
+  },
+  "payload": {
+    "choice_id": "greet"
+  },
+  "limitations": [
+    "Synthetic presentation fixture for isolated Three.js 2.5D client shell testing.",
+    "Does not connect to any live server."
+  ]
+}

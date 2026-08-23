@@ -17,15 +17,16 @@
 
 Documentation-only foundation for a future open Three.js 2.5D / isometric web MMORPG client starter.
 
-> **Status:** No client code is published. Architecture and canonical server compatibility are still under review. Existing Ultimate Odycer client or server code must not be imported without a file-level public extraction audit.
+> **Status:** Minimal original Three.js 2.5D presentation shell published. Architecture and canonical server compatibility remain under review. Network layer is blocked and no proprietary client or server code is imported.
 
 ## Current repository contents
 
 - Public scope and exclusion rules
 - Compatibility gates and roadmap
+- Public extraction allowlist and planned original shell layout
 - MIT license for future original starter material
 
-There is no game project, gameplay implementation, network client, asset, server binary, protocol dump, production endpoint, or player data in this repository.
+The repository provides an isolated presentation shell and documentation. There is no live network client, proprietary asset, server binary, protocol dump, production endpoint, or player data.
 
 ## Intended outcome
 
@@ -41,7 +42,7 @@ There is no game project, gameplay implementation, network client, asset, server
 - [YouTube](https://www.youtube.com/@ProUltimateServeur)
 - [JSON template registry](https://github.com/zedarvates/ultod-json-template-registry)
 
-See [SCOPE.md](SCOPE.md), [ROADMAP.md](ROADMAP.md), [server compatibility](docs/SERVER-COMPATIBILITY.md), the [publication checklist](docs/PUBLICATION-CHECKLIST.md), the [JSON registry contract](docs/JSON-TEMPLATE-REGISTRY.md), the [architecture decisions](docs/ARCHITECTURE-DECISIONS.md), the [versioning policy](docs/VERSIONING.md), and [support boundaries](SUPPORT.md).
+See [SCOPE.md](SCOPE.md), [ROADMAP.md](ROADMAP.md), [server compatibility](docs/SERVER-COMPATIBILITY.md), the [publication checklist](docs/PUBLICATION-CHECKLIST.md), the [public extraction design](docs/PUBLIC-EXTRACTION-DESIGN.md), the [original shell layout](docs/ORIGINAL-SHELL-LAYOUT.md), the [JSON registry contract](docs/JSON-TEMPLATE-REGISTRY.md), the [architecture decisions](docs/ARCHITECTURE-DECISIONS.md), the [versioning policy](docs/VERSIONING.md), and [support boundaries](SUPPORT.md).
 
 ## Non-claims
 
