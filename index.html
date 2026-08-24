@@ -5,11 +5,39 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
     <title>UltOd Client Three.js 2.5D Template</title>
     <style>
-      html, body { margin: 0; padding: 0; overflow: hidden; background: #181824; touch-action: none; }
+      html, body { margin: 0; padding: 0; overflow: hidden; background: #181824; touch-action: none;
+        font-family: Georgia, "Times New Roman", serif; }
       #app-canvas { display: block; width: 100%; height: 100%; }
-      #hud { position: fixed; top: 12px; left: 12px; color: #eee; font-family: monospace; font-size: 13px;
-        background: rgba(0,0,0,.55); padding: 8px 12px; border-radius: 8px; pointer-events: none; white-space: pre-line; }
-      #joystick-zone { position: fixed; bottom: 24px; right: 24px; width: 120px; height: 120px; border-radius: 50%;
+
+      /* HUD top-left: position + network */
+      #hud { position: fixed; top: 12px; left: 12px; color: #cfcfcf; font-family: monospace; font-size: 12px;
+        background: rgba(10,10,18,.6); padding: 6px 10px; border-radius: 6px; pointer-events: none; white-space: pre-line; }
+
+      /* Quest tracker (top-right) */
+      #quest-panel { position: fixed; top: 12px; right: 12px; width: 240px; background: rgba(24,20,12,.92);
+        border: 1px solid #8a6a43; border-radius: 8px; padding: 10px 14px; color: #e8d9b5; font-size: 14px; }
+      #quest-title { font-weight: bold; color: #ffd700; margin-bottom: 4px; font-size: 15px; }
+      #quest-gold { margin-top: 6px; color: #ffd700; font-size: 13px; }
+
+      /* Dialog box (bottom center) */
+      #dialog-box { position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%); width: min(520px, 90vw);
+        background: rgba(24,20,12,.95); border: 2px solid #8a6a43; border-radius: 10px; padding: 14px 18px;
+        color: #e8d9b5; font-size: 15px; display: none; }
+      #dialog-name { color: #ffd700; font-weight: bold; margin-bottom: 6px; }
+      #dialog-text { line-height: 1.45; }
+      #dialog-actions { margin-top: 10px; display: flex; gap: 10px; justify-content: flex-end; }
+      .dialog-btn { background: #3a3020; color: #ffd700; border: 1px solid #8a6a43; border-radius: 6px;
+        padding: 6px 16px; cursor: pointer; font-family: inherit; font-size: 14px; }
+      .dialog-btn:hover { background: #55462e; }
+
+      /* Inventory strip (bottom-left) */
+      #inventory { position: fixed; bottom: 12px; left: 12px; display: flex; gap: 6px; }
+      .inv-slot { width: 44px; height: 44px; background: rgba(24,20,12,.9); border: 1px solid #555;
+        border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 22px; }
+      .inv-slot.filled { border-color: #ffd700; }
+
+      /* Joystick (mobile) */
+      #joystick-zone { position: fixed; bottom: 80px; right: 24px; width: 120px; height: 120px; border-radius: 50%;
         border: 2px solid rgba(255,255,255,.35); background: rgba(255,255,255,.08); display: none; align-items: center; justify-content: center; }
       #joystick-knob { width: 48px; height: 48px; border-radius: 50%; background: rgba(255,122,0,.75); transform: translate(0,0); }
     </style>
@@ -17,7 +45,26 @@
   <body>
     <canvas id="app-canvas"></canvas>
     <div id="hud"></div>
+
+    <div id="quest-panel">
+      <div id="quest-title">Rescue the Princess</div>
+      <div id="quest-objective">Talk to the King to start.</div>
+      <div id="quest-gold">Gold: 25</div>
+    </div>
+
+    <div id="dialog-box">
+      <div id="dialog-name"></div>
+      <div id="dialog-text"></div>
+      <div id="dialog-actions"></div>
+    </div>
+
+    <div id="inventory">
+      <div class="inv-slot" id="inv-sword" title="Sword"></div>
+      <div class="inv-slot" id="inv-key" title="Cell Key"></div>
+    </div>
+
     <div id="joystick-zone"><div id="joystick-knob"></div></div>
+
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>
