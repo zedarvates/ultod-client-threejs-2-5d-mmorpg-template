@@ -1,0 +1,5 @@
+mock-loopback listening on 127.0.0.1:52123
+[mock] recv type=1 len=2
+[mock] recv type=13 len=15
+[mock] recv type=31 len=10
+[mock] move nx=1.5 nz=2.5 dist=2.915 dt=0.003 rate=971.8
