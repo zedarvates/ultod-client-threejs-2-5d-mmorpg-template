@@ -5,6 +5,10 @@ import * as THREE from "three";
 import { IsometricControls } from "./controls/isometric_controls";
 import { PlayerPresentation } from "./player_presentation";
 import { NPCPresentation } from "./npc_presentation";
+import { loadTemplateProps } from "./render/prop-loader";
+import { buildFromBlueprint } from "./render/blueprint-bridge";
+import type { HouseBlueprint } from "./render/blueprint-bridge";
+import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { HudOverlay } from "./ui/hud-overlay";
 import { NetworkClient } from "./net/network-client";
 
@@ -69,6 +73,23 @@ class IsometricApp {
 
     const npc = new NPCPresentation("Guide", new THREE.Vector3(4, 0, 4));
     this.scene.add(npc.mesh);
+
+    // Generated Asset Factory props (see public/assets/props/PROVENANCE.md)
+    loadTemplateProps(this.scene);
+
+    // Architecture Editor blueprint demo (see public/blueprints/)
+    const gltfLoader = new GLTFLoader();
+    fetch("/blueprints/maisonnette_standard.json")
+      .then((r) => r.json() as Promise<HouseBlueprint>)
+      .then((bp) => {
+        const result = buildFromBlueprint(bp, gltfLoader, () => null); // null resolver -> colored placeholders (no GLB dependency for the template)
+        this.scene.add(result.group);
+        console.log(
+          "[blueprint] " + bp.blueprint_id +
+          " colliders=" + result.colliders.length,
+        );
+      })
+      .catch((e) => console.warn("[blueprint] failed to load", e));
 
     window.addEventListener("keydown", (e) => this.keys.add(e.code));
     window.addEventListener("keyup", (e) => this.keys.delete(e.code));

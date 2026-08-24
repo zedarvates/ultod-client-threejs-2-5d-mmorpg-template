@@ -1,0 +1,325 @@
+{
+ "blueprint_id": "maisonnette_standard",
+ "name": "Maisonnette Standard",
+ "lot": {
+  "width": 8,
+  "depth": 8,
+  "cell_size": 1.0,
+  "floor_height": 3.0
+ },
+ "floors": [
+  {
+   "level": 0,
+   "tiles": [
+    {
+     "x": 2,
+     "z": 2,
+     "part_id": "sol_planches"
+    },
+    {
+     "x": 3,
+     "z": 2,
+     "part_id": "sol_planches"
+    },
+    {
+     "x": 4,
+     "z": 2,
+     "part_id": "sol_planches"
+    },
+    {
+     "x": 5,
+     "z": 2,
+     "part_id": "sol_planches"
+    },
+    {
+     "x": 2,
+     "z": 3,
+     "part_id": "sol_planches"
+    },
+    {
+     "x": 3,
+     "z": 3,
+     "part_id": "sol_planches"
+    },
+    {
+     "x": 4,
+     "z": 3,
+     "part_id": "sol_planches"
+    },
+    {
+     "x": 5,
+     "z": 3,
+     "part_id": "sol_planches"
+    },
+    {
+     "x": 2,
+     "z": 4,
+     "part_id": "sol_planches"
+    },
+    {
+     "x": 3,
+     "z": 4,
+     "part_id": "sol_planches"
+    },
+    {
+     "x": 4,
+     "z": 4,
+     "part_id": "sol_planches"
+    },
+    {
+     "x": 5,
+     "z": 4,
+     "part_id": "sol_planches"
+    },
+    {
+     "x": 2,
+     "z": 5,
+     "part_id": "sol_planches"
+    },
+    {
+     "x": 3,
+     "z": 5,
+     "part_id": "sol_planches"
+    },
+    {
+     "x": 4,
+     "z": 5,
+     "part_id": "sol_planches"
+    },
+    {
+     "x": 5,
+     "z": 5,
+     "part_id": "sol_planches"
+    }
+   ],
+   "walls": [
+    {
+     "x": 2,
+     "z": 2,
+     "edge": "N",
+     "part_id": "mur_pierre"
+    },
+    {
+     "x": 3,
+     "z": 2,
+     "edge": "N",
+     "part_id": "mur_pierre"
+    },
+    {
+     "x": 4,
+     "z": 2,
+     "edge": "N",
+     "part_id": "mur_pierre"
+    },
+    {
+     "x": 5,
+     "z": 2,
+     "edge": "N",
+     "part_id": "mur_pierre"
+    },
+    {
+     "x": 2,
+     "z": 2,
+     "edge": "W",
+     "part_id": "mur_pierre"
+    },
+    {
+     "x": 2,
+     "z": 3,
+     "edge": "W",
+     "part_id": "fenetre_simple"
+    },
+    {
+     "x": 2,
+     "z": 4,
+     "edge": "W",
+     "part_id": "mur_pierre"
+    },
+    {
+     "x": 2,
+     "z": 5,
+     "edge": "W",
+     "part_id": "mur_pierre"
+    },
+    {
+     "x": 6,
+     "z": 2,
+     "edge": "W",
+     "part_id": "mur_pierre"
+    },
+    {
+     "x": 6,
+     "z": 3,
+     "edge": "W",
+     "part_id": "fenetre_simple"
+    },
+    {
+     "x": 6,
+     "z": 4,
+     "edge": "W",
+     "part_id": "mur_pierre"
+    },
+    {
+     "x": 6,
+     "z": 5,
+     "edge": "W",
+     "part_id": "mur_pierre"
+    },
+    {
+     "x": 2,
+     "z": 6,
+     "edge": "N",
+     "part_id": "mur_pierre"
+    },
+    {
+     "x": 3,
+     "z": 6,
+     "edge": "N",
+     "part_id": "porte_bois"
+    },
+    {
+     "x": 4,
+     "z": 6,
+     "part_id": "mur_pierre",
+     "edge": "N"
+    },
+    {
+     "x": 5,
+     "z": 6,
+     "edge": "N",
+     "part_id": "mur_pierre"
+    }
+   ],
+   "props": [
+    {
+     "prop_id": "cheminee",
+     "x": 5,
+     "z": 2,
+     "floor": 0
+    },
+    {
+     "prop_id": "lit",
+     "x": 2,
+     "z": 2,
+     "floor": 0
+    },
+    {
+     "prop_id": "table_longue",
+     "x": 4,
+     "z": 4,
+     "floor": 0
+    }
+   ]
+  }
+ ],
+ "roof": [
+  {
+   "x": 2,
+   "z": 2,
+   "part_id": "toit_pignon",
+   "rotation": 0
+  },
+  {
+   "x": 3,
+   "z": 2,
+   "part_id": "toit_pan_tuiles",
+   "rotation": 0
+  },
+  {
+   "x": 4,
+   "z": 2,
+   "part_id": "toit_pan_tuiles",
+   "rotation": 0
+  },
+  {
+   "x": 5,
+   "z": 2,
+   "part_id": "toit_pignon",
+   "rotation": 0
+  },
+  {
+   "x": 2,
+   "z": 3,
+   "part_id": "toit_pignon",
+   "rotation": 0
+  },
+  {
+   "x": 3,
+   "z": 3,
+   "part_id": "toit_faite",
+   "rotation": 0
+  },
+  {
+   "x": 4,
+   "z": 3,
+   "part_id": "toit_faite",
+   "rotation": 0
+  },
+  {
+   "x": 5,
+   "z": 3,
+   "part_id": "toit_pignon",
+   "rotation": 0
+  },
+  {
+   "x": 2,
+   "z": 4,
+   "part_id": "toit_pignon",
+   "rotation": 0
+  },
+  {
+   "x": 3,
+   "z": 4,
+   "part_id": "toit_faite",
+   "rotation": 0
+  },
+  {
+   "x": 4,
+   "z": 4,
+   "part_id": "toit_faite",
+   "rotation": 0
+  },
+  {
+   "x": 5,
+   "z": 4,
+   "part_id": "toit_pignon",
+   "rotation": 0
+  },
+  {
+   "x": 2,
+   "z": 5,
+   "part_id": "toit_pignon",
+   "rotation": 0
+  },
+  {
+   "x": 3,
+   "z": 5,
+   "part_id": "toit_pan_tuiles",
+   "rotation": 180
+  },
+  {
+   "x": 4,
+   "z": 5,
+   "part_id": "toit_pan_tuiles",
+   "rotation": 180
+  },
+  {
+   "x": 5,
+   "z": 5,
+   "part_id": "toit_pignon",
+   "rotation": 0
+  }
+ ],
+ "garden": [
+  {
+   "part_id": "escalier_ext_bois",
+   "position": [
+    -0.5,
+    0,
+    1.4
+   ],
+   "rotation_y": 0,
+   "scale": 1.0
+  }
+ ]
+}
