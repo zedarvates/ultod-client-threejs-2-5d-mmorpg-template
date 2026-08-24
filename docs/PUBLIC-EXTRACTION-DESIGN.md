@@ -1,57 +1,68 @@
 # Public Extraction Design
 
-Status: `decision` for the extraction method. Future starter files MUST be
-original, isolated, and created inside this repository. Existing Ultimate
-Odycer client or server files MUST NOT be copied, renamed, or vendored.
+Status: `design` — this document defines how original material may be
+extracted from the private monorepo into this public template. It does not
+autorise any specific file transfer yet; each extraction must pass the
+[publication checklist](PUBLICATION-CHECKLIST.md) individually.
 
-The extraction unit is one file. A directory, scene tree, or Git history is
-not an allowlist.
+## Principles
 
-## Source boundary
+- Only original code written specifically for this template is extractable.
+- Server code, VR client code, and production tooling are never extracted.
+- Each file must be independently auditable: author, provenance, license.
+- Synthetic fixtures replace any real data (no player names, no IPs, no keys).
+- The burden of proof is on the extractor, not the reviewer.
 
-| Source | Allowed use | Forbidden use |
-|---|---|---|
-| This repository's documentation | continue and refine | treat docs as a playable client |
-| [ultimate-odycer-docs](https://github.com/zedarvates/ultimate-odycer-docs) public contracts | consume published authority rules and `network-intent-v1` as documentation | invent opcodes or live endpoints |
-| [ultod-json-template-registry](https://github.com/zedarvates/ultod-json-template-registry) | pin reviewed snapshots by version and SHA-256 | auto-download at runtime or treat templates as grants |
-| Existing Ultimate Odycer client code | none | copy, rewrite-in-place, or "clean up" proprietary code |
-| Zig server, WebAdmin, production configs | none | protocol dumps, binaries, credentials, billing |
-| Third-party Web / Three.js samples | only permissively licensed, file-audited, attributed originals | unaudited assets, brands, or unknown licenses |
+## File-level allowlist
 
-## File-level allowlist for the Three.js 2.5D original shell
+The following files in this repository have been reviewed and confirmed as
+original work created exclusively for this template:
 
-| Planned path | Purpose | License | Authority |
-|---|---|---|---|
-| `package.json` | web project metadata & dependencies | MIT, this repository | none |
-| `tsconfig.json` | TypeScript compiler configuration | MIT, original | none |
-| `index.html` | responsive canvas container and UI overlay | MIT, original | none |
-| `src/main.ts` | Three.js isometric scene, lights, renderer, loop | MIT, original | none |
-| `src/player_presentation.ts` | local 2.5D presentation of a server entity | MIT, original | presentation only |
-| `src/npc_presentation.ts` | interaction prompt and NPC 2.5D representation | MIT, original | presentation only |
-| `src/controls/isometric_controls.ts` | click-to-move and keyboard isometric calculation | MIT, original | discarded if a future server rejects it |
-| `net/intent_contract.md` | maps public `network-intent-v1` families to client methods | MIT, documentation | no live socket |
-| `content/pinned_templates.md` | records pinned registry versions and SHA-256 | MIT, documentation | templates never grant gold, items, or speed |
-| `tests/synthetic_fixtures/` | names like `player_demo_01`, never live ids | MIT, original | synthetic only |
+| Path | Provenance | License | Reviewed | Notes |
+|---|---|---|---|---|
+| `src/**` | Original (this repo) | MIT | 2026-08-24 | All TypeScript modules written from scratch |
+| `tests/**` | Original (this repo) | MIT | 2026-08-24 | Playwright specs + mock server |
+| `docs/**` | Original (this repo) | MIT | 2026-08-24 | Architecture and protocol documentation |
+| `public/blueprints/*.json` | Derived from Architecture Editor example | MIT | 2026-08-24 | Layout data only, no proprietary GLB references |
+| `public/creatures/*.json` | Derived from Creature Editor example | MIT | 2026-08-24 | XenoGenome structure only |
+| `index.html`, `package.json`, `tsconfig.json`, `playwright.config.ts` | Original (this repo) | MIT | 2026-08-24 | Build config |
 
-Anything not listed is denied until a new audited row is added.
+## Explicit exclusions
 
-## Denied classes
+The following categories of files from the private monorepo are never
+extractable regardless of individual merit:
 
-- any path from an existing Ultimate Odycer client checkout;
-- bundled client binaries, obfuscated packs, or minified private bundles;
-- protocol captures, TLS materials, realm URLs, or player identifiers;
-- WebAdmin, billing, moderation, or commercial configuration;
-- unaudited 3D models, textures, audio, brand marks, or third-party packs;
-- a network client before [SERVER-COMPATIBILITY.md](SERVER-COMPATIBILITY.md) is resolved.
+- `zig-server-v2/src/**` — all server implementation code
+- `ultimate-odycer-v-rclient/**` — all Godot client code and assets
+- `asset-factory/output/**` — generated GLBs (LAN GPU pipeline output)
+- `creature-editor/assets/**` — XenoParts GLB library
+- `architecture-editor/assets/*.glb` — building part meshes
+- Any file containing credentials, endpoints, player identifiers or telemetry
 
-## License audit
+## Extraction process
 
-- Future original starter files: MIT, as declared in [LICENSE](../LICENSE).
-- Documentation already in this repository: remains documentation, not a game asset grant.
-- JSON registry snapshots: Apache-2.0 in their own repository; pin and attribute, do not relicense.
-- Three.js library: MIT license, external dependency.
-- Ultimate Odycer name, proprietary server, hosted services, and commercial components: no license is granted here.
+For each new file proposed for extraction:
 
-## Non-claims
+1. **Identify origin** — exact source path, commit SHA and author.
+2. **Verify originality** — confirm no copied logic from external projects.
+3. **Sanitize** — remove all real names, IPs, tokens, absolute paths.
+4. **License check** — must be MIT-eligible; no GPL/proprietary contamination.
+5. **Isolate** — copy into this repo; never symlink back to monorepo.
+6. **Test** — `npm run build && npm run test:e2e` passes without the source repo present.
+7. **Record** — add an entry to the allowlist table above with review date.
+8. **Review** — second-person approval required before push.
 
-This document does not prove that a playable web MMO exists, that performance is certified across all browsers/devices, or that a server will accept a client. Missing evidence stays unsupported.
+## Asset provenance
+
+Generated GLB files produced by the local Asset Factory pipeline carry their own
+provenance chain (see [PROVENANCE](../public/assets/props/PROVENANCE.md)).
+They may only enter this repository after passing all quality gates and being
+marked `accepted` by the pipeline. The full manifest stays in the tooling repo;
+this repo mirrors only the name, run ID and SHA-256 hash.
+
+## Current state
+
+No file has been extracted from the monorepo into this repository. Every file
+currently tracked here was created directly within this repository for its
+public purpose. The bridges (`blueprint-bridge.ts`, `creature-bridge.ts`) read
+JSON schemas that mirror private formats but contain zero private logic.

@@ -32,3 +32,4 @@ All notable public changes will be documented here once versioned releases begin
 - Added Playwright e2e suite (`npm run test:e2e`) covering shell boot, HUD fail-closed state and render-loop liveness.
 - Documented observed canonical server protocol contract in SERVER-COMPATIBILITY.md; compatibility remains unvalidated pending live loopback evidence.
 - Added synthetic loopback fixture: mock WebSocket server (loopback-only) implementing handshake/auth/authoritative movement, plus protocol framing helpers (`src/net/protocol.ts`) and two e2e tests verifying the full flow and fail-closed drop of unauthenticated traffic.
+- Closed the public extraction design gate: file-level allowlist, explicit exclusion list and per-file extraction process are documented in PUBLIC-EXTRACTION-DESIGN.md.

@@ -4,8 +4,6 @@
 // Mirrors the documented contract in docs/SERVER-COMPATIBILITY.md.
 // These are pure functions: no I/O, no endpoint, no state.
 
-import * as THREE from 'three';
-
 export const MSG = {
   HANDSHAKE_REQUEST: 1,
   HANDSHAKE_RESPONSE: 2,
