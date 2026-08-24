@@ -1,28 +1,23 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-  <title>UltOd Three.js 2.5D MMORPG Template</title>
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body, html { width: 100%; height: 100%; overflow: hidden; background: #1a1a24; font-family: sans-serif; color: #fff; }
-    #app-canvas { width: 100%; height: 100%; display: block; }
-    #ui-overlay {
-      position: absolute; top: 16px; left: 16px; pointer-events: none;
-      background: rgba(15, 15, 25, 0.75); padding: 12px 18px; border-radius: 8px;
-      border: 1px solid rgba(255, 255, 255, 0.15); backdrop-filter: blur(4px);
-    }
-    #ui-overlay h1 { font-size: 16px; margin-bottom: 4px; color: #ff7a00; }
-    #ui-overlay p { font-size: 12px; color: #aaa; }
-  </style>
-</head>
-<body>
-  <div id="ui-overlay">
-    <h1>UltOd Three.js 2.5D MMORPG Template</h1>
-    <p>Presentation Shell (v0.1.0) - Server Authority Retained</p>
-  </div>
-  <canvas id="app-canvas"></canvas>
-  <script type="module" src="/src/main.ts"></script>
-</body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+    <title>UltOd Client Three.js 2.5D Template</title>
+    <style>
+      html, body { margin: 0; padding: 0; overflow: hidden; background: #181824; touch-action: none; }
+      #app-canvas { display: block; width: 100%; height: 100%; }
+      #hud { position: fixed; top: 12px; left: 12px; color: #eee; font-family: monospace; font-size: 13px;
+        background: rgba(0,0,0,.55); padding: 8px 12px; border-radius: 8px; pointer-events: none; white-space: pre-line; }
+      #joystick-zone { position: fixed; bottom: 24px; right: 24px; width: 120px; height: 120px; border-radius: 50%;
+        border: 2px solid rgba(255,255,255,.35); background: rgba(255,255,255,.08); display: none; align-items: center; justify-content: center; }
+      #joystick-knob { width: 48px; height: 48px; border-radius: 50%; background: rgba(255,122,0,.75); transform: translate(0,0); }
+    </style>
+  </head>
+  <body>
+    <canvas id="app-canvas"></canvas>
+    <div id="hud"></div>
+    <div id="joystick-zone"><div id="joystick-knob"></div></div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
 </html>

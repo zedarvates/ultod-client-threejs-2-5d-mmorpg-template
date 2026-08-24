@@ -19,8 +19,10 @@ All notable public changes will be documented here once versioned releases begin
 - Recorded server-authoritative architecture decisions for 2.5D web client.
 - Added versioned JSON registry consumption rules.
 - Added contribution, support and versioning policies.
+- Accepted web client architecture decision ADR-006 (Vite + TypeScript + Three.js).
+- Accepted fail-closed networking rule ADR-007 and input abstraction rule ADR-008.
 
 ### Runtime
 
-- No Three.js project or runtime code has been published.
-- No server, browser, mobile or production compatibility is claimed.
+- Added original offline Three.js 2.5D starter shell: fixed-angle camera, unified keyboard/pointer/touch input, grid world sandbox and HUD overlay.
+- Network layer ships as an inert fail-closed stub with no endpoint configured; no server compatibility is claimed.

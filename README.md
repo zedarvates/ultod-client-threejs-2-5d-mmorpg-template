@@ -15,34 +15,36 @@
 
 # UltOd Client Three.js 2.5D MMORPG Template
 
-Documentation-only foundation for a future open Three.js 2.5D / isometric web MMORPG client starter.
+Original Three.js 2.5D / isometric web MMORPG client starter shell.
 
-> **Status:** Minimal original Three.js 2.5D presentation shell published. Architecture and canonical server compatibility remain under review. Network layer is blocked and no proprietary client or server code is imported.
+> **Status:** Minimal presentation shell published. Canonical server compatibility is not claimed; the network layer is intentionally inert until the compatibility gate passes.
 
 ## Current repository contents
 
 - Public scope and exclusion rules
 - Compatibility gates and roadmap
-- Public extraction allowlist and planned original shell layout
-- MIT license for future original starter material
+- Original Three.js 2.5D presentation shell (offline sandbox, no server connection)
+- Unified keyboard / pointer / touch input with fail-closed network stub
+- MIT license for all starter material in this repository
 
-The repository provides an isolated presentation shell and documentation. There is no live network client, proprietary asset, server binary, protocol dump, production endpoint, or player data.
+## Quick start (local development)
 
-## Intended outcome
+```bash
+npm install
+npm run dev      # start Vite dev server on localhost
+npm run build    # type-check + production build to dist/
+```
 
-- Original project shell aligned with the repository's rendering and input profile
-- Server-authoritative login, realm handoff, movement, combat, inventory, and progression boundaries
-- Versioned consumption of JSON templates from the central registry
-- Scalable quality settings with documented platform limits
+The starter runs fully offline. The network layer is a fail-closed stub with no endpoint configured.
 
 ## Links
 
 - [Ultimate Odycer website](https://ultimateodycer.com)
+- [YouTube](https://www.youtube.com/@UltimateOdycer)
 - [Discord](https://discord.gg/Mdcdjb6bU)
-- [YouTube](https://www.youtube.com/@ProUltimateServeur)
 - [JSON template registry](https://github.com/zedarvates/ultod-json-template-registry)
 
-See [SCOPE.md](SCOPE.md), [ROADMAP.md](ROADMAP.md), [server compatibility](docs/SERVER-COMPATIBILITY.md), the [publication checklist](docs/PUBLICATION-CHECKLIST.md), the [public extraction design](docs/PUBLIC-EXTRACTION-DESIGN.md), the [original shell layout](docs/ORIGINAL-SHELL-LAYOUT.md), the [JSON registry contract](docs/JSON-TEMPLATE-REGISTRY.md), the [architecture decisions](docs/ARCHITECTURE-DECISIONS.md), the [versioning policy](docs/VERSIONING.md), and [support boundaries](SUPPORT.md).
+See [SCOPE.md](SCOPE.md), [ROADMAP.md](ROADMAP.md), [server compatibility](docs/SERVER-COMPATIBILITY.md), the [publication checklist](docs/PUBLICATION-CHECKLIST.md), the [JSON registry contract](docs/JSON-TEMPLATE-REGISTRY.md), [shell layout](docs/ORIGINAL-SHELL-LAYOUT.md), the [network intent contract](net/intent_contract.md), the [architecture decisions](docs/ARCHITECTURE-DECISIONS.md), the [versioning policy](docs/VERSIONING.md), and [support boundaries](SUPPORT.md).
 
 ## Non-claims
 
@@ -50,4 +52,4 @@ Repository creation does not prove server compatibility, production readiness, g
 
 ## License boundary
 
-Future original starter material is intended to be MIT licensed. The license does not grant rights to Ultimate Odycer game content, proprietary server code, hosted infrastructure, commercial services, or third-party assets.
+Starter material is MIT licensed. The license does not grant rights to Ultimate Odycer game content, proprietary server code, hosted infrastructure, commercial services, or third-party assets.

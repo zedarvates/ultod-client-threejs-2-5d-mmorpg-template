@@ -1,18 +1,17 @@
 # Contributing
 
-This repository currently accepts documentation improvements only.
+This repository accepts documentation improvements plus original starter code that respects the accepted architecture decisions.
 
 ## Current gate
 
-The server compatibility gate must be approved before any network code contribution.
-Original web client files, if proposed later, must match [docs/PUBLIC-EXTRACTION-DESIGN.md](docs/PUBLIC-EXTRACTION-DESIGN.md) and still pass the publication checklist. Proprietary client paths remain denied.
+Code must stay inside the Vite + TypeScript + Three.js boundary (ADR-006) and the fail-closed networking rule (ADR-007). No live WebSocket / WebTransport socket implementation may be published while server compatibility is not validated. Server compatibility remains unclaimed until its dedicated roadmap gate passes.
 
 ## Never include
 
 - Existing proprietary client or server code
 - Credentials, production endpoints or player data
 - Protocol captures containing identities
-- Commercial, administration or billing integrations
+- Commercial, administration and billing integrations
 - Unreviewed third-party assets or branded content
 - Claims of compatibility without named evidence
 

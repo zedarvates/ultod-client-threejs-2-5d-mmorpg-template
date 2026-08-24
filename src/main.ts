@@ -5,6 +5,8 @@ import * as THREE from "three";
 import { IsometricControls } from "./controls/isometric_controls";
 import { PlayerPresentation } from "./player_presentation";
 import { NPCPresentation } from "./npc_presentation";
+import { HudOverlay } from "./ui/hud-overlay";
+import { NetworkClient } from "./net/network-client";
 
 class IsometricApp {
   private scene: THREE.Scene;
@@ -14,13 +16,17 @@ class IsometricApp {
   private player: PlayerPresentation;
   private targetPosition: THREE.Vector3 | null = null;
   private lastTime = 0;
+  private readonly hud = new HudOverlay(
+    document.getElementById("hud") as HTMLElement,
+  );
+  private readonly net = new NetworkClient();
+  private keys = new Set<string>();
 
   constructor() {
     const canvas = document.getElementById("app-canvas") as HTMLCanvasElement;
     this.scene = new THREE.Scene();
     this.scene.background = new THREE.Color(0x181824);
 
-    // 2.5D Dimetric / Isometric Orthographic Camera setup
     const aspect = window.innerWidth / window.innerHeight;
     const frustumSize = 14;
     this.camera = new THREE.OrthographicCamera(
@@ -29,20 +35,18 @@ class IsometricApp {
       frustumSize / 2,
       -frustumSize / 2,
       0.1,
-      100
+      100,
     );
-
-    // Standard dimetric isometric angle: 45 deg Y rotation, ~35.264 deg X tilt (atan(1/sqrt(2)))
+    // Dimetric angle: 45 deg Y rotation, ~35.264 deg X tilt.
     this.camera.position.set(20, 20, 20);
     this.camera.lookAt(0, 0, 0);
 
-    // Renderer
+    const canvasHost = canvas.parentElement ?? document.body;
     this.renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
     this.renderer.setSize(window.innerWidth, window.innerHeight);
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     this.renderer.shadowMap.enabled = true;
 
-    // Lighting
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
     this.scene.add(ambientLight);
 
@@ -51,7 +55,6 @@ class IsometricApp {
     dirLight.castShadow = true;
     this.scene.add(dirLight);
 
-    // Ground Grid
     const gridHelper = new THREE.GridHelper(40, 40, 0x444466, 0x2a2a3a);
     this.scene.add(gridHelper);
 
@@ -62,51 +65,69 @@ class IsometricApp {
     ground.receiveShadow = true;
     this.scene.add(ground);
 
-    // Entities
-    this.player = new PlayerPresentation();
-    this.scene.add(this.player.mesh);
+    this.controls = new IsometricControls();
+    this.player = new PlayerPresentation(this.scene);
 
-    const npc = new NPCPresentation("npc_demo_01", "[Talk - Synthetic NPC]", new THREE.Vector3(3, 0, -2));
+    const npc = new NPCPresentation("npc_demo_1", "Guide", new THREE.Vector3(4, 0, 4));
     this.scene.add(npc.mesh);
 
-    // Controls
-    this.controls = new IsometricControls();
-
-    // Event listeners
-    window.addEventListener("resize", () => this.onWindowResize());
-    canvas.addEventListener("pointerdown", (e) => {
-      const target = this.controls.handlePointerClick(e, this.camera, canvas);
-      if (target) {
-        this.targetPosition = target;
-      }
+    window.addEventListener("keydown", (e) => this.keys.add(e.code));
+    window.addEventListener("keyup", (e) => this.keys.delete(e.code));
+    window.addEventListener("blur", () => this.keys.clear());
+    canvas.addEventListener("click", (e) => {
+      this.targetPosition = this.controls.handlePointerClick(e, this.camera, canvas);
     });
+    window.addEventListener("resize", () => this.handleResize());
 
-    console.log("UltOd Three.js 2.5D Presentation Shell Initialized.");
-    requestAnimationFrame((t) => this.renderLoop(t));
+    requestAnimationFrame((t) => this.tick(t));
   }
 
-  private onWindowResize(): void {
+  private handleResize(): void {
     const aspect = window.innerWidth / window.innerHeight;
-    const frustumSize = 14;
-    this.camera.left = (-frustumSize * aspect) / 2;
-    this.camera.right = (frustumSize * aspect) / 2;
-    this.camera.top = frustumSize / 2;
-    this.camera.bottom = -frustumSize / 2;
+    const half = 7;
+    this.camera.left = -half * aspect;
+    this.camera.right = half * aspect;
+    this.camera.top = half;
+    this.camera.bottom = -half;
     this.camera.updateProjectionMatrix();
     this.renderer.setSize(window.innerWidth, window.innerHeight);
   }
 
-  private renderLoop(time: number): void {
-    const delta = this.lastTime ? Math.min((time - this.lastTime) / 1000, 0.1) : 0.016;
-    this.lastTime = time;
+  private keyboardIntent(): { x: number; y: number; run: boolean; interact: boolean } {
+    let x = 0;
+    let y = 0;
+    if (this.keys.has("KeyW") || this.keys.has("ArrowUp")) y += 1;
+    if (this.keys.has("KeyS") || this.keys.has("ArrowDown")) y -= 1;
+    if (this.keys.has("KeyA") || this.keys.has("ArrowLeft")) x -= 1;
+    if (this.keys.has("KeyD") || this.keys.has("ArrowRight")) x += 1;
+    return {
+      x,
+      y,
+      run: this.keys.has("ShiftLeft") || this.keys.has("ShiftRight"),
+      interact: this.keys.has("KeyE"),
+    };
+  }
 
-    if (this.targetPosition) {
-      const newPos = this.controls.computeStep(this.player.getPosition(), this.targetPosition, delta);
-      this.player.setPosition(newPos);
+  private tick(now: number): void {
+    requestAnimationFrame((t) => this.tick(t));
+    const delta = Math.min((now - this.lastTime) / 1000, 0.1);
+    this.lastTime = now;
+
+    const kb = this.keyboardIntent();
+    if (kb.x !== 0 || kb.y !== 0) {
+      const speed = kb.run ? 7 : 4;
+      const dir = new THREE.Vector3(kb.x, 0, -kb.y).normalize().multiplyScalar(speed * delta);
+      this.targetPosition = this.player.mesh.position.clone().add(dir);
     }
+    const next = this.controls.computeStep(this.player.mesh.position, this.targetPosition, delta);
+    this.player.mesh.position.copy(next);
+
+    this.hud.update(
+      `pos (${this.player.mesh.position.x.toFixed(2)}, ${this.player.mesh.position.z.toFixed(2)})`,
+      this.net.describeState(),
+    );
 
     this.renderer.render(this.scene, this.camera);
-    requestAnimationFrame((t) => this.renderLoop(t));
   }
 }
 

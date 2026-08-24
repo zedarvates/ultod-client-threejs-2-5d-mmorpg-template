@@ -1,11 +1,21 @@
+# Dependencies
 node_modules/
+
+# Build output
 dist/
 build/
 .cache/
 *.log
-.DS_Store
-Thumbs.db
+
+# Local env / secrets
 .env
 .env.local
 .env.*.local
+
+# Editor noise
+.DS_Store
+Thumbs.db
 *.local
+
+# Logs
+npm-debug.log*
