@@ -1,0 +1,16 @@
+import { defineConfig } from "@playwright/test";
+
+export default defineConfig({
+  testDir: "./tests",
+  timeout: 30000,
+  use: {
+    headless: true,
+    baseURL: "http://localhost:5199",
+  },
+  webServer: {
+    command: "npm run dev -- --port 5199 --strictPort",
+    url: "http://localhost:5199",
+    reuseExistingServer: false,
+    timeout: 30000,
+  },
+});
