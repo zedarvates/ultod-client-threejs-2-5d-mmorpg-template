@@ -26,3 +26,5 @@ All notable public changes will be documented here once versioned releases begin
 
 - Added original offline Three.js 2.5D starter shell: fixed-angle camera, unified keyboard/pointer/touch input, grid world sandbox and HUD overlay.
 - Network layer ships as an inert fail-closed stub with no endpoint configured; no server compatibility is claimed.
+- Added Architecture Editor bridge: loads a HouseBlueprint JSON and renders it as an instanced Three.js scene with simplified AABB colliders.
+- Added demo blueprint (`maisonnette_standard`) and generated prop provenance table for Asset Factory outputs.
