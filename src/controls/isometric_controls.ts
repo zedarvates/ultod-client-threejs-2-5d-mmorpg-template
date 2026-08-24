@@ -12,8 +12,9 @@ export class IsometricControls {
 
   public handlePointerClick(event: MouseEvent | TouchEvent, camera: THREE.Camera, canvas: HTMLCanvasElement): THREE.Vector3 | null {
     const rect = canvas.getBoundingClientRect();
-    const clientX = "touches" in event ? event.touches[0].clientX : event.clientX;
-    const clientY = "touches" in event ? event.touches[0].clientY : event.clientY;
+    const touch = "touches" in event ? event.touches[0] : undefined;
+    const clientX = touch ? touch.clientX : (event as MouseEvent).clientX;
+    const clientY = touch ? touch.clientY : (event as MouseEvent).clientY;
 
     const mouse = new THREE.Vector2(
       ((clientX - rect.left) / rect.width) * 2 - 1,

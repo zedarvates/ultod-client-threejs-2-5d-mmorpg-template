@@ -6,7 +6,7 @@ import * as THREE from "three";
 export class NPCPresentation {
   public mesh: THREE.Group;
 
-  constructor(id: string, name: string, position: THREE.Vector3) {
+  constructor(name: string, position: THREE.Vector3) {
     this.mesh = new THREE.Group();
     this.mesh.position.copy(position);
 

@@ -41,7 +41,6 @@ class IsometricApp {
     this.camera.position.set(20, 20, 20);
     this.camera.lookAt(0, 0, 0);
 
-    const canvasHost = canvas.parentElement ?? document.body;
     this.renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
     this.renderer.setSize(window.innerWidth, window.innerHeight);
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -66,9 +65,9 @@ class IsometricApp {
     this.scene.add(ground);
 
     this.controls = new IsometricControls();
-    this.player = new PlayerPresentation(this.scene);
+    this.player = new PlayerPresentation();
 
-    const npc = new NPCPresentation("npc_demo_1", "Guide", new THREE.Vector3(4, 0, 4));
+    const npc = new NPCPresentation("Guide", new THREE.Vector3(4, 0, 4));
     this.scene.add(npc.mesh);
 
     window.addEventListener("keydown", (e) => this.keys.add(e.code));
