@@ -1,0 +1,25 @@
+{
+  "species_id": "exemple_rodeur_aile",
+  "species_name": "Rôdeur Ailé (exemple éditeur)",
+  "chemistry": "water_carbon",
+  "base_traits": {
+    "scale": 1.2,
+    "diet": "carnivore",
+    "locomotion_preference": "flying",
+    "aggressiveness": 0.7
+  },
+  "parts": [
+    { "part_id": "head_beak_01", "attach_point": "Head",
+      "position": [0, 0, 0.1], "rotation": [0, 0, 0], "scale": [1, 1, 1] },
+    { "part_id": "wing_bat_01", "attach_point": "Chest",
+      "position": [-0.25, 0.05, -0.05], "rotation": [0, 0, 25], "scale": [1.2, 1.2, 1.2] },
+    { "part_id": "wing_bat_01", "attach_point": "Chest",
+      "position": [0.25, 0.05, -0.05], "rotation": [0, 0, -25], "scale": [1.2, 1.2, 1.2] },
+    { "part_id": "tail_whip_01", "attach_point": "TailBase",
+      "position": [0, 0, -0.2], "rotation": [-30, 0, 0], "scale": [1, 1, 1] },
+    { "part_id": "leg_insect_01", "attach_point": "LeftUpperLeg",
+      "position": [0, -0.2, 0], "rotation": [0, 0, 0], "scale": [1, 1, 1] },
+    { "part_id": "leg_insect_01", "attach_point": "RightUpperLeg",
+      "position": [0, -0.2, 0], "rotation": [0, 0, 0], "scale": [1, 1, 1] }
+  ]
+}

@@ -8,6 +8,8 @@ import { NPCPresentation } from "./npc_presentation";
 import { loadTemplateProps } from "./render/prop-loader";
 import { buildFromBlueprint } from "./render/blueprint-bridge";
 import type { HouseBlueprint } from "./render/blueprint-bridge";
+import { buildCreature } from "./render/creature-bridge";
+import type { CreatureGenome } from "./render/creature-bridge";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { HudOverlay } from "./ui/hud-overlay";
 import { NetworkClient } from "./net/network-client";
@@ -90,6 +92,21 @@ class IsometricApp {
         );
       })
       .catch((e) => console.warn("[blueprint] failed to load", e));
+
+    // Creature Editor demo (see public/creatures/)
+    // Parts GLB must be served under /creatures/parts/<part_id>.glb.
+    fetch("/creatures/exemple_rodeur_aile.json")
+      .then((r) => r.json() as Promise<CreatureGenome>)
+      .then((genome) => {
+        const creatureGroup = buildCreature(
+          genome,
+          gltfLoader,
+          (partId) => `/creatures/parts/${partId}.glb`,
+        );
+        creatureGroup.position.set(-4, 0, 3);
+        this.scene.add(creatureGroup);
+      })
+      .catch((e) => console.warn("[creature] failed to load", e));
 
     window.addEventListener("keydown", (e) => this.keys.add(e.code));
     window.addEventListener("keyup", (e) => this.keys.delete(e.code));
