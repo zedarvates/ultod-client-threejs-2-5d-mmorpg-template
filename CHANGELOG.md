@@ -28,3 +28,6 @@ All notable public changes will be documented here once versioned releases begin
 - Network layer ships as an inert fail-closed stub with no endpoint configured; no server compatibility is claimed.
 - Added Architecture Editor bridge: loads a HouseBlueprint JSON and renders it as an instanced Three.js scene with simplified AABB colliders.
 - Added demo blueprint (`maisonnette_standard`) and generated prop provenance table for Asset Factory outputs.
+- Added Creature Editor bridge: assembles XenoParts GLB previews from a XenoGenome JSON.
+- Added Playwright e2e suite (`npm run test:e2e`) covering shell boot, HUD fail-closed state and render-loop liveness.
+- Documented observed canonical server protocol contract in SERVER-COMPATIBILITY.md; compatibility remains unvalidated pending live loopback evidence.
