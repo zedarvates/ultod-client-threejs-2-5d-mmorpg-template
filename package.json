@@ -1,6 +1,6 @@
 {
   "name": "ultod-client-threejs-2-5d-mmorpg-template",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Minimal isolated presentation shell for Three.js 2.5D isometric MMORPG client.",
   "type": "module",
   "scripts": {

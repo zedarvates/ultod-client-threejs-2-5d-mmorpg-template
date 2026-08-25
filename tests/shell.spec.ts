@@ -30,3 +30,29 @@ test("canvas renders non-empty frame", async ({ page }) => {
   // produces significantly more data. Threshold is generous for CI.
   expect(shot.length).toBeGreaterThan(2000);
 });
+
+test("non-critical GLB scenery waits until after critical startup", async ({ page }) => {
+  const glbRequests: string[] = [];
+  await page.route("**/*.glb", async (route) => {
+    glbRequests.push(route.request().url());
+    await route.abort();
+  });
+
+  await page.goto("/", { waitUntil: "domcontentloaded" });
+  await expect(page.locator("#quest-panel")).toBeVisible();
+  await page.waitForTimeout(300);
+
+  expect(glbRequests).toEqual([]);
+});
+
+test("deferred GLB scenery eventually starts loading", async ({ page }) => {
+  const glbRequests: string[] = [];
+  await page.route("**/*.glb", async (route) => {
+    glbRequests.push(route.request().url());
+    await route.abort();
+  });
+
+  await page.goto("/", { waitUntil: "domcontentloaded" });
+
+  await expect.poll(() => glbRequests.length, { timeout: 2500 }).toBeGreaterThan(0);
+});

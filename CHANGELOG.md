@@ -2,6 +2,16 @@
 
 All notable public changes are documented here.
 
+## [0.1.2] - 2026-08-25
+
+Tablet startup performance patch.
+
+- Deferred Architecture/Creature bridges, GLTFLoader and GLB scenery until after critical startup.
+- Initial JavaScript dropped from 595.7 kB (154.2 kB gzip) to 549.8 kB (141.2 kB gzip).
+- GLB requests are absent during the first 300 ms and begin no later than the bounded idle timeout.
+- Added a complete browser-driven journey test covering King, Merchant, sword purchase, Beast victory and Princess rescue.
+- The complete Playwright suite now passes 13 tests.
+
 ## [0.1.1] - 2026-08-25
 
 Playable-scenario correctness patch.
@@ -47,7 +57,6 @@ editor bridges, loopback fixture, e2e tests, and live GitHub Pages deployment.
 
 ### Minimal Three.js 2.5D presentation shell
 
-- Added a complete browser-driven quest journey test covering King, Merchant, sword purchase, Beast victory and Princess rescue.
 - Added original `package.json`, `tsconfig.json`, `index.html`, and TypeScript presentation sources (`src/main.ts`, `src/player_presentation.ts`, `src/npc_presentation.ts`, `src/controls/isometric_controls.ts`).
 - Added dimetric orthographic camera setup, lighting, grid, and point-and-click ground raycasting.
 - Documented intent contract mapping to `network-intent-v1` and pinned templates rules.

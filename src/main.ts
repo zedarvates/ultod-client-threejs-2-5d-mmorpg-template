@@ -6,12 +6,8 @@
 import * as THREE from "three";
 import { IsometricControls } from "./controls/isometric_controls";
 import { PlayerPresentation } from "./player_presentation";
-import { loadTemplateProps } from "./render/prop-loader";
-import { buildFromBlueprint } from "./render/blueprint-bridge";
 import type { HouseBlueprint } from "./render/blueprint-bridge";
-import { buildCreature } from "./render/creature-bridge";
 import type { CreatureGenome } from "./render/creature-bridge";
-import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { HudOverlay } from "./ui/hud-overlay";
 import { NetworkClient } from "./net/network-client";
 import { ScenarioWorld } from "./game/scenario-world";
@@ -100,15 +96,46 @@ class IsometricApp {
       }
     }
 
+    window.setTimeout(() => {
+      const startLoading = () => void this.loadShowcaseContent();
+      if ("requestIdleCallback" in window) {
+        window.requestIdleCallback(startLoading, { timeout: 500 });
+      } else {
+        startLoading();
+      }
+    }, 500);
+
+    window.addEventListener("keydown", (e) => this.keys.add(e.code));
+    window.addEventListener("keyup", (e) => this.keys.delete(e.code));
+    window.addEventListener("blur", () => this.keys.clear());
+    canvas.addEventListener("click", (e) => {
+      this.targetPosition = this.controls.handlePointerClick(e, this.camera, canvas);
+    });
+    window.addEventListener("resize", () => this.handleResize());
+    window.addEventListener("keydown", (e) => {
+      if (e.code === "KeyE") this.tryInteract();
+    });
+
+    requestAnimationFrame((t) => this.tick(t));
+  }
+
+  private async loadShowcaseContent(): Promise<void> {
+    const [props, blueprint, creature, loader] = await Promise.all([
+      import("./render/prop-loader"),
+      import("./render/blueprint-bridge"),
+      import("./render/creature-bridge"),
+      import("three/addons/loaders/GLTFLoader.js"),
+    ]);
+    const gltfLoader = new loader.GLTFLoader();
+
     // Generated Asset Factory props (see public/assets/props/PROVENANCE.md)
-    loadTemplateProps(this.scene);
+    props.loadTemplateProps(this.scene);
 
     // Architecture Editor blueprint demo (see public/blueprints/)
-    const gltfLoader = new GLTFLoader();
     fetch(import.meta.env.BASE_URL + "blueprints/maisonnette_standard.json")
       .then((r) => r.json() as Promise<HouseBlueprint>)
       .then((bp) => {
-        const result = buildFromBlueprint(
+        const result = blueprint.buildFromBlueprint(
           bp,
           gltfLoader,
           () => null,
@@ -127,7 +154,7 @@ class IsometricApp {
     fetch(import.meta.env.BASE_URL + "creatures/exemple_rodeur_aile.json")
       .then((r) => r.json() as Promise<CreatureGenome>)
       .then((genome) => {
-        const creatureGroup = buildCreature(
+        const creatureGroup = creature.buildCreature(
           genome,
           gltfLoader,
           (partId) => import.meta.env.BASE_URL + `creatures/parts/${partId}.glb`,
@@ -136,19 +163,6 @@ class IsometricApp {
         this.scene.add(creatureGroup);
       })
       .catch((e) => console.warn("[creature] failed to load", e));
-
-    window.addEventListener("keydown", (e) => this.keys.add(e.code));
-    window.addEventListener("keyup", (e) => this.keys.delete(e.code));
-    window.addEventListener("blur", () => this.keys.clear());
-    canvas.addEventListener("click", (e) => {
-      this.targetPosition = this.controls.handlePointerClick(e, this.camera, canvas);
-    });
-    window.addEventListener("resize", () => this.handleResize());
-    window.addEventListener("keydown", (e) => {
-      if (e.code === "KeyE") this.tryInteract();
-    });
-
-    requestAnimationFrame((t) => this.tick(t));
   }
 
   private handleResize(): void {
