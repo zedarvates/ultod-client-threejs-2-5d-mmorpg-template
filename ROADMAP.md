@@ -8,6 +8,6 @@
 | Public extraction design | complete | File-level allowlist and license audit are accepted |
 | Minimal Three.js 2.5D shell | complete | Original isolated web shell runs without proprietary code |
 | Local WebSocket connectivity fixture | complete | Synthetic loopback flow respects server authority |
-| Template release | ready-for-review | Automated gates pass (fresh clone, secrets scan, e2e suite); final human visual review pending |
+| Template release | complete | All gates passed; v0.1.0 live on GitHub Pages |
 
 No waiting gate implies implementation or compatibility.

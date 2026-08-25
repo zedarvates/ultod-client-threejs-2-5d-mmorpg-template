@@ -1,6 +1,35 @@
 # Changelog
 
-All notable public changes will be documented here once versioned releases begin.
+All notable public changes are documented here.
+
+## [0.1.0] - 2026-08-25
+
+First runnable public starter release: Three.js 2.5D shell with demo scenario,
+editor bridges, loopback fixture, e2e tests, and live GitHub Pages deployment.
+
+### Demo scenario
+
+- "Rescue the Princess" quest line with 5 linear stages (King → Merchant → Beast → Princess).
+- Merchant purchase flow (sword gated by gold), sword-gated combat, victory dialog.
+- HTML UI layer: quest tracker panel, character dialog box with contextual actions, inventory strip.
+
+### Editor bridges
+
+- Architecture Editor bridge: renders HouseBlueprint JSON as instanced scene with AABB colliders.
+- Creature Editor bridge: assembles XenoParts GLB previews from a XenoGenome JSON.
+- Asset Factory provenance table for accepted generated props.
+
+### Networking fixture
+
+- Synthetic loopback mock server (127.0.0.1 only) implementing handshake/auth/authoritative movement.
+- Pure protocol framing helpers in `src/net/protocol.ts`.
+- Fail-closed rule enforced: unauthenticated traffic receives no gameplay response.
+
+### Quality and deployment
+
+- Playwright e2e suite (5 tests) covering boot, HUD, render liveness and full loopback flow.
+- Secrets scan clean; fresh-clone install/build/test validated.
+- Live demo deployed at GitHub Pages with mobile touch controls (joystick + interact button).
 
 ## Unreleased
 
