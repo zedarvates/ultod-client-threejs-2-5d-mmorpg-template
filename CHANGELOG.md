@@ -2,6 +2,18 @@
 
 All notable public changes are documented here.
 
+## [0.1.1] - 2026-08-25
+
+Playable-scenario correctness patch.
+
+- The King now grants 50 gold on quest acceptance, making the 50g sword purchasable.
+- Killing the Beast reveals Princess Elara so the final interaction is reachable.
+- Player presentation is attached to the Three.js scene and visible at spawn.
+- The demo house is offset from the spawn instead of covering the player and NPCs.
+- The isometric camera follows the player throughout the trip to the Beast.
+- Added five scenario regression tests; the complete suite now passes 10 tests.
+- Verified the 1024x768 touch layout: joystick and interaction button visible, no console errors.
+
 ## [0.1.0] - 2026-08-25
 
 First runnable public starter release: Three.js 2.5D shell with demo scenario,

@@ -38,6 +38,7 @@ class IsometricApp {
   private dialog = new DialogBox();
   private interactCooldown = 0;
   private joystick!: TouchJoystick;
+  private readonly cameraOffset = new THREE.Vector3(20, 20, 20);
 
   constructor() {
     const canvas = document.getElementById("app-canvas") as HTMLCanvasElement;
@@ -55,7 +56,7 @@ class IsometricApp {
       100,
     );
     // Dimetric angle: 45 deg Y rotation, ~35.264 deg X tilt.
-    this.camera.position.set(20, 20, 20);
+    this.camera.position.copy(this.cameraOffset);
     this.camera.lookAt(0, 0, 0);
 
     this.renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
@@ -82,7 +83,7 @@ class IsometricApp {
     this.scene.add(ground);
 
     this.controls = new IsometricControls();
-    this.player = new PlayerPresentation();
+    this.player = new PlayerPresentation(this.scene);
 
     this.world = new ScenarioWorld(this.scene);
 
@@ -107,7 +108,12 @@ class IsometricApp {
     fetch(import.meta.env.BASE_URL + "blueprints/maisonnette_standard.json")
       .then((r) => r.json() as Promise<HouseBlueprint>)
       .then((bp) => {
-        const result = buildFromBlueprint(bp, gltfLoader, () => null); // null resolver -> colored placeholders (no GLB dependency for the template)
+        const result = buildFromBlueprint(
+          bp,
+          gltfLoader,
+          () => null,
+          new THREE.Vector3(8, 0, 4),
+        ); // null resolver -> colored placeholders (no GLB dependency for the template)
         this.scene.add(result.group);
         console.log(
           "[blueprint] " + bp.blueprint_id +
@@ -192,6 +198,8 @@ class IsometricApp {
     }
     const next = this.controls.computeStep(this.player.mesh.position, this.targetPosition, delta);
     this.player.mesh.position.copy(next);
+    this.camera.position.copy(this.player.mesh.position).add(this.cameraOffset);
+    this.camera.lookAt(this.player.mesh.position);
 
     if (this.interactCooldown > 0) this.interactCooldown -= delta;
 
@@ -231,7 +239,7 @@ class IsometricApp {
     if (this.quest.stage === "not_started") {
       this.dialog.show(
         "King Aldric",
-        "Brave adventurer! A foul beast has kidnapped my daughter, Princess Elara. She is held north of the village. Slay the beast and bring her home.",
+        "Brave adventurer! A foul beast has kidnapped my daughter, Princess Elara. Take these 50 gold coins, buy a sword, then slay the beast north of the village.",
         [{ label: "I will save her!", callback: () => { this.quest = advanceTo(this.quest, "talked_to_king"); } }],
       );
     } else if (this.quest.stage === "princess_rescued") {

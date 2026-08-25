@@ -45,6 +45,7 @@ export function buildFromBlueprint(
   bp: HouseBlueprint,
   loader: GLTFLoader,
   modelResolver: (partId: string) => string | null,
+  worldOffset = new THREE.Vector3(),
 ): BridgeResult {
   const group = new THREE.Group();
   const colliders: ColliderBox[] = [];
@@ -52,8 +53,8 @@ export function buildFromBlueprint(
   const failedModels = new Set<string>();
   const cellSize = bp.lot.cell_size;
   const floorHeight = bp.lot.floor_height;
-  const originX = -(bp.lot.width * cellSize) / 2;
-  const originZ = -(bp.lot.depth * cellSize) / 2;
+  const originX = -(bp.lot.width * cellSize) / 2 + worldOffset.x;
+  const originZ = -(bp.lot.depth * cellSize) / 2 + worldOffset.z;
 
   // Group tiles/walls/roof by part_id for InstancedMesh reuse.
   const tileBatches = new Map<string, THREE.Matrix4[]>();
@@ -67,7 +68,7 @@ export function buildFromBlueprint(
   };
 
   for (const floor of bp.floors ?? []) {
-    const y = floor.level * floorHeight;
+    const y = floor.level * floorHeight + worldOffset.y;
     for (const tile of floor.tiles ?? []) {
       const px = originX + (tile.x + 0.5) * cellSize;
       const pz = originZ + (tile.z + 0.5) * cellSize;
@@ -101,7 +102,7 @@ export function buildFromBlueprint(
   for (const r of bp.roof ?? []) {
     const px = originX + (r.x + 0.5) * cellSize;
     const pz = originZ + (r.z + 0.5) * cellSize;
-    const top = (bp.floors?.length ?? 1) * floorHeight;
+    const top = (bp.floors?.length ?? 1) * floorHeight + worldOffset.y;
     const rotY = ((r.rotation ?? 0) * Math.PI) / 180;
     const m = new THREE.Matrix4().makeRotationY(rotY).setPosition(px, top, pz);
     pushBatch(roofBatches, r.part_id, m);
@@ -110,7 +111,9 @@ export function buildFromBlueprint(
   for (const g of bp.garden ?? []) {
     const partId = g.part_id ?? "";
     if (!partId) continue;
-    const pos = g.position ? new THREE.Vector3(g.position[0] ?? 0, g.position[1] ?? 0, g.position[2] ?? 0) : new THREE.Vector3();
+    const pos = g.position
+      ? new THREE.Vector3(g.position[0] ?? 0, g.position[1] ?? 0, g.position[2] ?? 0).add(worldOffset)
+      : worldOffset.clone();
     propRequests.push({ partId, pos, rotY: g.rotation_y ?? 0, scale: g.scale ?? 1 });
   }
 

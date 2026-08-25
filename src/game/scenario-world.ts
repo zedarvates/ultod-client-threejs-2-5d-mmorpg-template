@@ -79,6 +79,7 @@ export class ScenarioWorld {
   killBeast(): void {
     this.beastAlive = false;
     this.beast.mesh.visible = false;
+    this.princess.mesh.visible = true;
   }
 
   freePrincess(): void {

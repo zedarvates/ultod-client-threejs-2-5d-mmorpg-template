@@ -44,5 +44,6 @@ export function advanceTo(state: QuestState, next: QuestStage): QuestState {
   const cur = STAGE_ORDER.indexOf(state.stage);
   const nxt = STAGE_ORDER.indexOf(next);
   if (nxt !== cur + 1) return state; // enforce linear progression
-  return { ...state, stage: next };
+  const royalAdvance = next === "talked_to_king" ? 50 : 0;
+  return { ...state, stage: next, gold: state.gold + royalAdvance };
 }
