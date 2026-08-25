@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 // Main entry point for Three.js 2.5D Isometric MMORPG Client Presentation Shell.
 
+/// <reference types="vite/client" />
+
 import * as THREE from "three";
 import { IsometricControls } from "./controls/isometric_controls";
 import { PlayerPresentation } from "./player_presentation";
@@ -16,6 +18,7 @@ import { ScenarioWorld } from "./game/scenario-world";
 import { initialQuestState, questObjective, advanceTo } from "./game/quest";
 import type { QuestState } from "./game/quest";
 import { DialogBox } from "./ui/dialog-box";
+import { TouchJoystick } from "./input/touch-joystick";
 
 class IsometricApp {
   private scene: THREE.Scene;
@@ -34,6 +37,7 @@ class IsometricApp {
   private quest: QuestState = initialQuestState();
   private dialog = new DialogBox();
   private interactCooldown = 0;
+  private joystick!: TouchJoystick;
 
   constructor() {
     const canvas = document.getElementById("app-canvas") as HTMLCanvasElement;
@@ -82,12 +86,25 @@ class IsometricApp {
 
     this.world = new ScenarioWorld(this.scene);
 
+    // Touch joystick for mobile/tablet play
+    this.joystick = new TouchJoystick(
+      document.getElementById("joystick-zone") as HTMLElement,
+      document.getElementById("joystick-knob") as HTMLElement,
+    );
+    if ("ontouchstart" in window) {
+      const btn = document.getElementById("interact-btn");
+      if (btn) {
+        btn.style.display = "block";
+        btn.addEventListener("click", () => this.tryInteract());
+      }
+    }
+
     // Generated Asset Factory props (see public/assets/props/PROVENANCE.md)
     loadTemplateProps(this.scene);
 
     // Architecture Editor blueprint demo (see public/blueprints/)
     const gltfLoader = new GLTFLoader();
-    fetch("/blueprints/maisonnette_standard.json")
+    fetch(import.meta.env.BASE_URL + "blueprints/maisonnette_standard.json")
       .then((r) => r.json() as Promise<HouseBlueprint>)
       .then((bp) => {
         const result = buildFromBlueprint(bp, gltfLoader, () => null); // null resolver -> colored placeholders (no GLB dependency for the template)
@@ -101,13 +118,13 @@ class IsometricApp {
 
     // Creature Editor demo (see public/creatures/)
     // Parts GLB must be served under /creatures/parts/<part_id>.glb.
-    fetch("/creatures/exemple_rodeur_aile.json")
+    fetch(import.meta.env.BASE_URL + "creatures/exemple_rodeur_aile.json")
       .then((r) => r.json() as Promise<CreatureGenome>)
       .then((genome) => {
         const creatureGroup = buildCreature(
           genome,
           gltfLoader,
-          (partId) => `/creatures/parts/${partId}.glb`,
+          (partId) => import.meta.env.BASE_URL + `creatures/parts/${partId}.glb`,
         );
         creatureGroup.position.set(-4, 0, 3);
         this.scene.add(creatureGroup);
@@ -160,10 +177,18 @@ class IsometricApp {
     this.lastTime = now;
 
     const kb = this.keyboardIntent();
+    const joy = this.joystick.sample();
     if (kb.x !== 0 || kb.y !== 0) {
       const speed = kb.run ? 7 : 4;
       const dir = new THREE.Vector3(kb.x, 0, -kb.y).normalize().multiplyScalar(speed * delta);
       this.targetPosition = this.player.mesh.position.clone().add(dir);
+    } else if (joy.x !== 0 || joy.y !== 0) {
+      // Joystick Y is screen-space (up = forward); map to world -Z.
+      const speed = 5;
+      const dir = new THREE.Vector3(joy.x, 0, -joy.y).normalize().multiplyScalar(speed * delta);
+      if (!Number.isNaN(dir.x) && !Number.isNaN(dir.z)) {
+        this.targetPosition = this.player.mesh.position.clone().add(dir);
+      }
     }
     const next = this.controls.computeStep(this.player.mesh.position, this.targetPosition, delta);
     this.player.mesh.position.copy(next);
