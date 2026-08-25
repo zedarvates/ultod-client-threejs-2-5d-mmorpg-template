@@ -47,6 +47,7 @@ editor bridges, loopback fixture, e2e tests, and live GitHub Pages deployment.
 
 ### Minimal Three.js 2.5D presentation shell
 
+- Added a complete browser-driven quest journey test covering King, Merchant, sword purchase, Beast victory and Princess rescue.
 - Added original `package.json`, `tsconfig.json`, `index.html`, and TypeScript presentation sources (`src/main.ts`, `src/player_presentation.ts`, `src/npc_presentation.ts`, `src/controls/isometric_controls.ts`).
 - Added dimetric orthographic camera setup, lighting, grid, and point-and-click ground raycasting.
 - Documented intent contract mapping to `network-intent-v1` and pinned templates rules.

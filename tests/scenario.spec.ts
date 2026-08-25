@@ -114,3 +114,43 @@ test("camera keeps following while the player moves", async ({ page }) => {
   expect(calls).toBeGreaterThan(baseline);
   expect(targetZ).toBeLessThan(-0.5);
 });
+
+test("player can complete the full rescue scenario through the UI", async ({ page }) => {
+  const move = async (key: "w" | "a" | "s" | "d", milliseconds: number) => {
+    await page.keyboard.down(key);
+    await page.waitForTimeout(milliseconds);
+    await page.keyboard.up(key);
+  };
+
+  await page.goto("/");
+  await page.waitForTimeout(300);
+
+  // King at (0, -5): approach, accept the quest, receive the royal advance.
+  await move("w", 850);
+  await page.keyboard.press("e");
+  await expect(page.locator("#dialog-name")).toHaveText("King Aldric");
+  await page.getByRole("button", { name: "I will save her!" }).click();
+  await expect(page.locator("#quest-gold")).toHaveText("Gold: 75");
+
+  // Merchant at (-4, -2): buy the sword.
+  await move("a", 500);
+  await page.keyboard.press("e");
+  await expect(page.locator("#dialog-name")).toHaveText("Merchant Borin");
+  await page.getByRole("button", { name: "Buy sword (50g)" }).click();
+  await expect(page.locator("#quest-gold")).toHaveText("Gold: 25");
+  await expect(page.locator("#inv-sword")).toHaveClass(/filled/);
+
+  // Beast at (0, -14): return to x=0, travel north, and attack.
+  await move("d", 500);
+  await move("w", 2300);
+  await page.keyboard.press("e");
+  await expect(page.locator("#dialog-name")).toHaveText("⚔ Victory!");
+  await page.getByRole("button", { name: "Close" }).click();
+
+  // Princess at (6, -8): approach her and finish the quest.
+  await move("d", 1100);
+  await move("s", 700);
+  await page.keyboard.press("e");
+  await expect(page.locator("#dialog-name")).toHaveText("Princess Elara");
+  await expect(page.locator("#quest-objective")).toHaveText("Quest complete! The kingdom is saved.");
+});
