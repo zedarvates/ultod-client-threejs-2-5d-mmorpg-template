@@ -1,6 +1,6 @@
 # Public Extraction Design
 
-Status: `design` — this document defines how original material may be
+Status: `license-review-required` — this document defines how original material may be
 extracted from the private monorepo into this public template. It does not
 autorise any specific file transfer yet; each extraction must pass the
 [publication checklist](PUBLICATION-CHECKLIST.md) individually.
@@ -29,8 +29,9 @@ original work created exclusively for this template:
 
 ## Explicit exclusions
 
-The following categories of files from the private monorepo are never
-extractable regardless of individual merit:
+The following categories are excluded by default. A binary exception requires
+an explicit public redistribution license, exact SHA-256 provenance and a
+review entry before extraction:
 
 - `zig-server-v2/src/**` — all server implementation code
 - `ultimate-odycer-v-rclient/**` — all Godot client code and assets
@@ -62,7 +63,12 @@ this repo mirrors only the name, run ID and SHA-256 hash.
 
 ## Current state
 
-No file has been extracted from the monorepo into this repository. Every file
-currently tracked here was created directly within this repository for its
-public purpose. The bridges (`blueprint-bridge.ts`, `creature-bridge.ts`) read
-JSON schemas that mirror private formats but contain zero private logic.
+Eight GLB files were copied from private tooling into this repository before
+the binary exception gate was documented: two Asset Factory outputs and six
+Creature Editor XenoParts. Seven match retained manifest hashes; the public
+rock GLB does not match the run previously claimed in its provenance table.
+Redistribution terms are unresolved for all eight files. See
+[ASSET-LICENSE-AUDIT.md](ASSET-LICENSE-AUDIT.md).
+
+The bridges (`blueprint-bridge.ts`, `creature-bridge.ts`) remain original public
+code and contain no private implementation logic.

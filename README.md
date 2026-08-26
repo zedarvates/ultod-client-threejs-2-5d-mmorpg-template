@@ -25,7 +25,7 @@ Original Three.js 2.5D / isometric web MMORPG client starter shell.
 - Compatibility gates and roadmap
 - Original Three.js 2.5D presentation shell (offline sandbox, no server connection)
 - Unified keyboard / pointer / touch input with fail-closed network stub
-- MIT license for all starter material in this repository
+- MIT license for original code and documentation; binary assets have a separate pending license review
 
 ## Quick start (local development)
 
@@ -55,7 +55,7 @@ keeping the tablet startup path responsive.
 - [Discord](https://discord.gg/Mdcdjb6bU)
 - [JSON template registry](https://github.com/zedarvates/ultod-json-template-registry)
 
-See [SCOPE.md](SCOPE.md), [ROADMAP.md](ROADMAP.md), [server compatibility](docs/SERVER-COMPATIBILITY.md), the [publication checklist](docs/PUBLICATION-CHECKLIST.md), the [JSON registry contract](docs/JSON-TEMPLATE-REGISTRY.md), [shell layout](docs/ORIGINAL-SHELL-LAYOUT.md), the [network intent contract](net/intent_contract.md), the [architecture decisions](docs/ARCHITECTURE-DECISIONS.md), the [versioning policy](docs/VERSIONING.md), and [support boundaries](SUPPORT.md).
+See [SCOPE.md](SCOPE.md), [ROADMAP.md](ROADMAP.md), [server compatibility](docs/SERVER-COMPATIBILITY.md), the [binary asset license audit](docs/ASSET-LICENSE-AUDIT.md), the [publication checklist](docs/PUBLICATION-CHECKLIST.md), the [JSON registry contract](docs/JSON-TEMPLATE-REGISTRY.md), [shell layout](docs/ORIGINAL-SHELL-LAYOUT.md), the [network intent contract](net/intent_contract.md), the [architecture decisions](docs/ARCHITECTURE-DECISIONS.md), the [versioning policy](docs/VERSIONING.md), and [support boundaries](SUPPORT.md).
 
 ## Non-claims
 
@@ -63,4 +63,8 @@ Repository creation does not prove server compatibility, production readiness, g
 
 ## License boundary
 
-Starter material is MIT licensed. The license does not grant rights to Ultimate Odycer game content, proprietary server code, hosted infrastructure, commercial services, or third-party assets.
+Original code and documentation are MIT licensed. Tracked GLB files are not
+covered by MIT while their explicit redistribution terms remain unresolved;
+see [ASSET-LICENSE-AUDIT.md](docs/ASSET-LICENSE-AUDIT.md). The MIT license also
+does not grant rights to proprietary server code, hosted infrastructure,
+commercial services, or third-party assets.
