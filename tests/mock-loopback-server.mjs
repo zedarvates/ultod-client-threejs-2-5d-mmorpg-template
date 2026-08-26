@@ -8,7 +8,8 @@
 
 import { WebSocketServer, WebSocket } from 'ws';
 
-const PORT = 52123;
+const configuredPort = Number(process.env.PLAYWRIGHT_LOOPBACK_PORT ?? 49123);
+const PORT = Number.isFinite(configuredPort) ? configuredPort : 49123;
 
 // Game protocol opcodes (subset of core_types.zig MessageType, u16 BE)
 const MSG = {

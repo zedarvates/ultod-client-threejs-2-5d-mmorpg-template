@@ -31,10 +31,10 @@ test("canvas renders non-empty frame", async ({ page }) => {
   expect(shot.length).toBeGreaterThan(2000);
 });
 
-test("non-critical GLB scenery waits until after critical startup", async ({ page }) => {
-  const glbRequests: string[] = [];
-  await page.route("**/*.glb", async (route) => {
-    glbRequests.push(route.request().url());
+test("non-critical prop GLBs wait until after critical startup", async ({ page }) => {
+  const propGlbRequests: string[] = [];
+  await page.route("**/assets/props/*.glb", async (route) => {
+    propGlbRequests.push(route.request().url());
     await route.abort();
   });
 
@@ -42,17 +42,19 @@ test("non-critical GLB scenery waits until after critical startup", async ({ pag
   await expect(page.locator("#quest-panel")).toBeVisible();
   await page.waitForTimeout(300);
 
-  expect(glbRequests).toEqual([]);
+  expect(propGlbRequests).toEqual([]);
 });
 
-test("deferred GLB scenery eventually starts loading", async ({ page }) => {
-  const glbRequests: string[] = [];
-  await page.route("**/*.glb", async (route) => {
-    glbRequests.push(route.request().url());
+test("deferred prop loading never requests public asset GLBs", async ({ page }) => {
+  const propGlbRequests: string[] = [];
+  await page.route("**/assets/props/*.glb", async (route) => {
+    propGlbRequests.push(route.request().url());
     await route.abort();
   });
 
   await page.goto("/", { waitUntil: "domcontentloaded" });
 
-  await expect.poll(() => glbRequests.length, { timeout: 2500 }).toBeGreaterThan(0);
+  await page.waitForTimeout(2500);
+
+  expect(propGlbRequests).toEqual([]);
 });

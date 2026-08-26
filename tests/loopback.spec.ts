@@ -2,9 +2,16 @@ import { test, expect } from "@playwright/test";
 import { spawn, type ChildProcess } from 'node:child_process';
 
 let server: ChildProcess;
+const LOOPBACK_PORT = Number(process.env.PLAYWRIGHT_LOOPBACK_PORT ?? 49123);
 
 test.beforeAll(async () => {
-  server = spawn("node", ["tests/mock-loopback-server.mjs"], { stdio: "pipe" });
+  server = spawn("node", ["tests/mock-loopback-server.mjs"], {
+    stdio: "pipe",
+    env: {
+      ...process.env,
+      PLAYWRIGHT_LOOPBACK_PORT: String(LOOPBACK_PORT),
+    },
+  });
   await new Promise((res) => setTimeout(res, 800));
 });
 
@@ -15,9 +22,9 @@ test.afterAll(() => {
 /** Full loopback: handshake → auth → movement echo respecting server authority. */
 test('loopback handshake, auth and authoritative movement', async ({ page }) => {
   await page.goto("/");
-  const result = await page.evaluate(async () => {
+  const result = await page.evaluate(async (port) => {
     return await new Promise((resolve, reject) => {
-    const ws = new WebSocket("ws://127.0.0.1:52123");
+    const ws = new WebSocket(`ws://127.0.0.1:${port}`);
     let step = 0;
     const messages = [];
     const timeout = setTimeout(() => reject(new Error("timeout waiting for server")), 5000);
@@ -64,7 +71,7 @@ test('loopback handshake, auth and authoritative movement', async ({ page }) => 
     };
     ws.onerror = () => { clearTimeout(timeout); reject(new Error("ws error")); };
     });
-  });
+  }, LOOPBACK_PORT);
 
   expect(result.authType).toBe(14); // AUTH_RESPONSE
   expect(result.authOk).toBe(true);
@@ -76,8 +83,8 @@ test('loopback handshake, auth and authoritative movement', async ({ page }) => 
 /** Unauthenticated clients get no gameplay response (fail-closed). */
 test('unauthenticated traffic is silently dropped', async ({ page }) => {
   await page.goto("/");
-  const result = await page.evaluate(async () => {
-    const ws = new WebSocket("ws://127.0.0.1:52123");
+  const result = await page.evaluate(async (port) => {
+    const ws = new WebSocket(`ws://127.0.0.1:${port}`);
     await new Promise((res, rej) => { ws.onopen = res; ws.onerror = rej; });
     const enc = (t: number) => { const h = new DataView(new ArrayBuffer(2)); h.setUint16(0, t, false); return new Uint8Array(h.buffer); };
     // Skip handshake/auth, send movement directly.
@@ -94,6 +101,6 @@ test('unauthenticated traffic is silently dropped', async ({ page }) => {
     await new Promise((r) => setTimeout(r, 500));
     ws.close();
     return received;
-  });
+  }, LOOPBACK_PORT);
   expect(result).toBe(false);
 });
