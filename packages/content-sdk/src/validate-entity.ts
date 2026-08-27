@@ -2,6 +2,8 @@ import { CONTENT_KINDS, type ValidationDiagnostic, type ValidationResult } from 
 
 export const CONTENT_ID_PATTERN = /^[a-z0-9][a-z0-9._-]{2,127}$/;
 export const SEMVER_PATTERN = /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-[0-9A-Za-z.-]+)?$/;
+/** Bounds untrusted refs iteration to keep entity validation terminating. */
+export const MAX_REFERENCES_PER_ENTITY = 4096;
 
 const AUTHORITIES = ["server", "client-presentation", "authoring-draft"] as const;
 
@@ -61,6 +63,13 @@ function validateReferences(value: unknown, diagnostics: ValidationDiagnostic[])
   const referencesValue = value as unknown[];
   const lengthAccess = accessUntrusted(() => referencesValue.length);
   if (!lengthAccess.accessible) {
+    return false;
+  }
+  if (
+    !Number.isSafeInteger(lengthAccess.value) ||
+    lengthAccess.value < 0 ||
+    lengthAccess.value > MAX_REFERENCES_PER_ENTITY
+  ) {
     return false;
   }
   const references = new Set<string>();

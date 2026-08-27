@@ -96,6 +96,30 @@ test("returns a literal diagnostic when an entity getter throws", () => {
   });
 });
 
+test("returns a literal diagnostic when refs reports an infinite length", { timeout: 500 }, () => {
+  const refsWithInfiniteLength = new Proxy([], {
+    get(target, property, receiver) {
+      if (property === "length") {
+        return Infinity;
+      }
+      return Reflect.get(target, property, receiver);
+    },
+  });
+
+  const entity = { ...validRealm, refs: refsWithInfiniteLength };
+  expect(() => validateEntity(entity)).not.toThrow();
+  expect(validateEntity(entity)).toEqual({
+    valid: false,
+    diagnostics: [
+      {
+        code: "invalid_record_access",
+        path: "$",
+        message: "Entity properties could not be read",
+      },
+    ],
+  });
+});
+
 test("returns diagnostics instead of throwing for malformed input", () => {
   expect(() => validateEntity(null)).not.toThrow();
   expect(validateEntity(null)).toEqual({

@@ -61,3 +61,26 @@ Addressed both P1 review findings.
 - `npm run build` passed, with the existing Vite chunk-size warning.
 - `npx playwright test` passed: 28 tests, with the existing
   `NO_COLOR`/`FORCE_COLOR` environment warnings.
+
+## Fix Round 2: Bounded Hostile Reference Arrays
+
+Added `MAX_REFERENCES_PER_ENTITY = 4096` and validate the untrusted `refs`
+length before indexed iteration. A length must be a finite, non-negative safe
+integer no greater than the bound; invalid or oversized lengths return the
+existing literal `invalid_record_access` diagnostic.
+
+### TDD evidence
+
+- Red: a focused Playwright regression using an Array Proxy that reported
+  `Infinity` for `length` reached the old unbounded indexed loop and did not
+  progress. The run was interrupted after the preceding three tests completed,
+  establishing the hang without leaving the worker running.
+- Green: the same focused command passed all 5 tests after the length guard.
+
+### Fix verification
+
+- `npm run check:content-sdk` passed.
+- `npm --workspace @ultod/content-sdk run build` passed.
+- `npm run build` passed, with the existing Vite chunk-size warning.
+- `npx playwright test` passed: 29 tests, with the existing
+  `NO_COLOR`/`FORCE_COLOR` environment warnings.
