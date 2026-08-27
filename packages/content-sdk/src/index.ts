@@ -47,6 +47,7 @@ export {
   summarizeContentPackEvidence,
 } from "./normalize-pack.js";
 export { sha256CanonicalContentPack } from "./pack-hash.js";
+export { verifyContentPackIntegrity } from "./verify-pack.js";
 
 export type {
   CanonicalizationErrorCode,
