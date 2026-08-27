@@ -6,6 +6,7 @@ import { validateCityConfigLite, cellToWorld } from '../src/game/city-config';
 import { buildCityMapPreview } from '../src/render/city-map-bridge';
 import * as THREE from 'three';
 import { VILLAGE_ANCHORS, worldFromAnchor, parcelCenter } from '../src/game/village-layout';
+import * as villageLayout from '../src/game/village-layout';
 import { ScenarioWorld } from '../src/game/scenario-world';
 import {
   buildFlatMapColliders,
@@ -61,6 +62,7 @@ test('parcel centers sit inside authored lots', () => {
   }
 });
 
+
 test('flat map collision blocks walls and houses but leaves gates open', () => {
   const raw = JSON.parse(
     readFileSync(join(here, '../public/maps/village_square.city.json'), 'utf8'),
@@ -92,4 +94,175 @@ test('flat map collision blocks walls and houses but leaves gates open', () => {
     colliders,
   );
   expect(houseResult.x).toBe(house.x - 5);
+});
+
+test('district house styles are stable and visually distinct', () => {
+  const districtBuildingStyle = (
+    villageLayout as unknown as Record<string, unknown>
+  ).districtBuildingStyle;
+  expect(typeof districtBuildingStyle).toBe('function');
+  if (typeof districtBuildingStyle !== 'function') return;
+
+  const styleFor = districtBuildingStyle as (district: string) => {
+    floorColor: string;
+    wallColor: string;
+    roofColor: string;
+    heightScale: number;
+  };
+  const styles = {
+    noble: styleFor('noble'),
+    market: styleFor('market'),
+    artisanat: styleFor('artisanat'),
+    slums: styleFor('slums'),
+  };
+
+  expect(styles.noble).toEqual({
+    floorColor: '#9b7847',
+    wallColor: '#d7c7a3',
+    roofColor: '#43516d',
+    heightScale: 1.12,
+  });
+  expect(styles.market).toEqual({
+    floorColor: '#8c6638',
+    wallColor: '#bd884f',
+    roofColor: '#7b3028',
+    heightScale: 1,
+  });
+  expect(styles.artisanat).toEqual({
+    floorColor: '#71533a',
+    wallColor: '#8b745a',
+    roofColor: '#384f47',
+    heightScale: 1.04,
+  });
+  expect(styles.slums).toEqual({
+    floorColor: '#574b3d',
+    wallColor: '#6a6257',
+    roofColor: '#443831',
+    heightScale: 0.92,
+  });
+  expect(new Set(Object.values(styles).map((style) => style.wallColor)).size).toBe(4);
+});
+
+test('village scene applies a distinct style to every parcel house', async ({ page }) => {
+  let releaseBlueprint!: () => void;
+  const blueprintGate = new Promise<void>((resolve) => {
+    releaseBlueprint = resolve;
+  });
+  await page.route('**/blueprints/maisonnette_standard.json', async (route) => {
+    await blueprintGate;
+    await route.continue();
+  });
+  await page.goto('/', { waitUntil: 'domcontentloaded' });
+  const instrumented = await page.evaluate(async () => {
+    const resource = performance.getEntriesByType('resource')
+      .map((entry) => entry.name)
+      .find((url) => url.includes('/three.js'));
+    if (!resource) return false;
+    const three = await import(resource);
+    const original = three.Object3D.prototype.add;
+    const state = window as typeof window & {
+      __parcelHouseStyles?: Array<{
+        name: string;
+        colors: string[];
+        footprintScale: number;
+        heightScale: number;
+      }>;
+    };
+    state.__parcelHouseStyles = [];
+    three.Object3D.prototype.add = function (...objects: THREE.Object3D[]) {
+      for (const object of objects) {
+        if (!object.name.startsWith('parcel-house-')) continue;
+        const colors: string[] = [];
+        object.traverse((child) => {
+          const material = (child as THREE.Mesh).material as THREE.MeshLambertMaterial | undefined;
+          if (material?.color) colors.push(`#${material.color.getHexString()}`);
+        });
+        state.__parcelHouseStyles!.push({
+          name: object.name,
+          colors,
+          footprintScale: object.scale.x,
+          heightScale: object.scale.y,
+        });
+      }
+      return original.apply(this, objects);
+    };
+    return true;
+  });
+  expect(instrumented).toBe(true);
+  releaseBlueprint();
+
+  await expect.poll(async () => page.evaluate(() => (
+    window as typeof window & { __parcelHouseStyles?: unknown[] }
+  ).__parcelHouseStyles?.length ?? 0)).toBe(4);
+  const houses = await page.evaluate(() => (
+    window as typeof window & {
+      __parcelHouseStyles?: Array<{
+        name: string;
+        colors: string[];
+        footprintScale: number;
+        heightScale: number;
+      }>;
+    }
+  ).__parcelHouseStyles ?? []);
+
+  expect(houses.map((house) => house.name)).toEqual([
+    'parcel-house-1',
+    'parcel-house-2',
+    'parcel-house-3',
+    'parcel-house-4',
+  ]);
+  const expectedColors = [
+    ['#9b7847', '#d7c7a3', '#43516d'],
+    ['#8c6638', '#bd884f', '#7b3028'],
+    ['#71533a', '#8b745a', '#384f47'],
+    ['#574b3d', '#6a6257', '#443831'],
+  ];
+  houses.forEach((house, index) => {
+    expect(house.colors).toEqual(expect.arrayContaining(expectedColors[index]));
+  });
+  expect(houses.map((house) => house.footprintScale)).toEqual([
+    0.61875,
+    0.61875,
+    0.61875,
+    0.61875,
+  ]);
+  expect(houses.map((house) => house.heightScale)).toEqual([1.12, 1, 1.04, 0.92]);
+});
+
+test('parcel house scale shrinks an oversized blueprint into its collision footprint', () => {
+  const parcelHouseScale = (
+    villageLayout as unknown as Record<string, unknown>
+  ).parcelHouseScale;
+  expect(typeof parcelHouseScale).toBe('function');
+  if (typeof parcelHouseScale !== 'function') return;
+
+  const scaleFor = parcelHouseScale as (
+    config: { cell_size: number },
+    parcel: { width: number; depth: number },
+    lot: { width: number; depth: number; cell_size: number },
+  ) => number;
+  expect(scaleFor(
+    { cell_size: 1.5 },
+    { width: 4, depth: 4 },
+    { width: 8, depth: 8, cell_size: 1 },
+  )).toBeCloseTo(0.61875, 6);
+});
+
+test('parcel house scale never enlarges a blueprint that already fits', () => {
+  const parcelHouseScale = (
+    villageLayout as unknown as Record<string, unknown>
+  ).parcelHouseScale;
+  expect(typeof parcelHouseScale).toBe('function');
+  if (typeof parcelHouseScale !== 'function') return;
+
+  const scaleFor = parcelHouseScale as (
+    config: { cell_size: number },
+    parcel: { width: number; depth: number },
+    lot: { width: number; depth: number; cell_size: number },
+  ) => number;
+  expect(scaleFor(
+    { cell_size: 1.5 },
+    { width: 4, depth: 4 },
+    { width: 3, depth: 3, cell_size: 1 },
+  )).toBe(1);
 });

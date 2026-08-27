@@ -15,6 +15,8 @@ export interface FlatMapPoint {
   z: number;
 }
 
+export const HOUSE_COLLISION_INSET_CELLS = 0.35;
+
 /**
  * Builds presentation-only X/Z collision boxes from authored CityConfig data.
  * Gates remain open. Parcel boxes approximate houses until runtime colliders are authoritative.
@@ -38,7 +40,7 @@ export function buildFlatMapColliders(config: CityConfigLite): FlatMapCollider[]
     });
   }
 
-  const houseInset = config.cell_size * 0.35;
+  const houseInset = config.cell_size * HOUSE_COLLISION_INSET_CELLS;
   for (const parcel of layout.parcels) {
     const first = cellToWorld(config, parcel.x0, parcel.z0);
     const last = cellToWorld(

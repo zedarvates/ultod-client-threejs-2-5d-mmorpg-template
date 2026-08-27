@@ -1,0 +1,133 @@
+{
+  "schema": "uo.static-sprite-prop-pack/v1",
+  "id": "safe-danger-paired-kit",
+  "source_run_id": "b2530ee8e14b4d0ba1bb95c9a036010d",
+  "delivery_status": "review_only",
+  "requires_artist_review": true,
+  "license": {
+    "id": "LicenseRef-UltimateOdycer-Generated-Output",
+    "status": "project_review_required"
+  },
+  "assets": [
+    {
+      "id": "safe_ground_tile",
+      "profile": "safe_warm",
+      "image": "safe_ground_tile.png",
+      "sha256": "756158f8fc445432c413d343757cdfe569c967bf7fce43ca068b097f737b7fcd",
+      "bytes": 125446,
+      "anchor": [
+        0.5,
+        0.2
+      ],
+      "world_size": [
+        3.2,
+        3.2
+      ],
+      "position": [
+        -7,
+        0.02,
+        4
+      ]
+    },
+    {
+      "id": "safe_leafy_tree",
+      "profile": "safe_warm",
+      "image": "safe_leafy_tree.png",
+      "sha256": "c01fca0280b7d32d7756f6fd63341c95cd6c58bdbd786127ab97311fd3f4ed23",
+      "bytes": 110898,
+      "anchor": [
+        0.5,
+        0.12
+      ],
+      "world_size": [
+        2.8,
+        4.6
+      ],
+      "position": [
+        -5.2,
+        0,
+        3
+      ]
+    },
+    {
+      "id": "safe_stone_lantern",
+      "profile": "safe_warm",
+      "image": "safe_stone_lantern.png",
+      "sha256": "f2003ae342d7ec55c9c6c14436db7b03b937e478f7d91d2965317d9bd3dd8849",
+      "bytes": 118497,
+      "anchor": [
+        0.5,
+        0.1
+      ],
+      "world_size": [
+        1.6,
+        2.8
+      ],
+      "position": [
+        -8.5,
+        0,
+        2.2
+      ]
+    },
+    {
+      "id": "danger_cracked_tile",
+      "profile": "danger_chaotic",
+      "image": "danger_cracked_tile.png",
+      "sha256": "f38ec076bc74e33c54bbded7deb977398f03b48c1e74497ddd0b2e580d7c4a78",
+      "bytes": 125281,
+      "anchor": [
+        0.5,
+        0.2
+      ],
+      "world_size": [
+        3.2,
+        3.2
+      ],
+      "position": [
+        6,
+        0.02,
+        -5
+      ]
+    },
+    {
+      "id": "danger_dead_tree",
+      "profile": "danger_chaotic",
+      "image": "danger_dead_tree.png",
+      "sha256": "4333f83ef5caa48884ab270ae89ec0e3ad148fc81be1e80adbdfd0e95d72a55f",
+      "bytes": 98423,
+      "anchor": [
+        0.5,
+        0.12
+      ],
+      "world_size": [
+        2.8,
+        4.6
+      ],
+      "position": [
+        8,
+        0,
+        -6
+      ]
+    },
+    {
+      "id": "danger_corrupt_crystal",
+      "profile": "danger_chaotic",
+      "image": "danger_corrupt_crystal.png",
+      "sha256": "5ed6360c494048f1b91e06a380a8436c1d8014bbe6fa41b9c113f53c0db10800",
+      "bytes": 108780,
+      "anchor": [
+        0.5,
+        0.12
+      ],
+      "world_size": [
+        2.6,
+        3.6
+      ],
+      "position": [
+        5,
+        0,
+        -7
+      ]
+    }
+  ]
+}

@@ -14,7 +14,13 @@ import { ScenarioWorld } from "./game/scenario-world";
 import villageMap from "./content/maps/village_square.city.json" with { type: "json" };
 import { validateCityConfigLite, type CityConfigLite } from "./game/city-config";
 import { buildCityMapPreview } from "./render/city-map-bridge";
-import { mapBounds, worldFromAnchor, parcelCenter } from "./game/village-layout";
+import {
+  districtBuildingStyle,
+  mapBounds,
+  parcelCenter,
+  parcelHouseScale,
+  worldFromAnchor,
+} from "./game/village-layout";
 import {
   buildFlatMapColliders,
   resolveFlatMapMovement,
@@ -163,7 +169,15 @@ class IsometricApp {
         }
         for (const parcel of parcels) {
           const center = parcelCenter(city, parcel);
-          const result = blueprint.buildFromBlueprint(bp, gltfLoader, () => null, new THREE.Vector3(center.x, 0, center.z));
+          const footprintScale = parcelHouseScale(city, parcel, bp.lot);
+          const result = blueprint.buildFromBlueprint(
+            bp,
+            gltfLoader,
+            () => null,
+            new THREE.Vector3(center.x, 0, center.z),
+            districtBuildingStyle(parcel.district),
+            footprintScale,
+          );
           result.group.name = "parcel-house-" + parcel.parcel_id;
           this.scene.add(result.group);
         }

@@ -36,6 +36,20 @@ export interface BridgeResult {
   failedModels: Set<string>;
 }
 
+export interface BuildingVisualStyle {
+  floorColor: string;
+  wallColor: string;
+  roofColor: string;
+  heightScale: number;
+}
+
+const DEFAULT_BUILDING_STYLE: BuildingVisualStyle = {
+  floorColor: "#8a6a43",
+  wallColor: "#7d8089",
+  roofColor: "#6e3a2a",
+  heightScale: 1,
+};
+
 const WALL_THICKNESS = 0.15;
 
 /** Convert a HouseBlueprint into an instanced Three.js group + colliders.
@@ -46,8 +60,25 @@ export function buildFromBlueprint(
   loader: GLTFLoader,
   modelResolver: (partId: string) => string | null,
   worldOffset = new THREE.Vector3(),
+  buildingStyle: BuildingVisualStyle = DEFAULT_BUILDING_STYLE,
+  footprintScale = 1,
 ): BridgeResult {
   const group = new THREE.Group();
+  group.scale.x = footprintScale;
+  group.scale.y = buildingStyle.heightScale;
+  group.scale.z = footprintScale;
+  group.position.x = worldOffset.x * (1 - footprintScale);
+  group.position.y = worldOffset.y * (1 - buildingStyle.heightScale);
+  group.position.z = worldOffset.z * (1 - footprintScale);
+  const scaleWorldX = (value: number): number => (
+    worldOffset.x + (value - worldOffset.x) * footprintScale
+  );
+  const scaleWorldY = (value: number): number => (
+    worldOffset.y + (value - worldOffset.y) * buildingStyle.heightScale
+  );
+  const scaleWorldZ = (value: number): number => (
+    worldOffset.z + (value - worldOffset.z) * footprintScale
+  );
   const colliders: ColliderBox[] = [];
   const loadedModels = new Set<string>();
   const failedModels = new Set<string>();
@@ -75,7 +106,11 @@ export function buildFromBlueprint(
       const py = y;
       const m = new THREE.Matrix4().makeTranslation(px, py, pz);
       pushBatch(tileBatches, tile.part_id, m);
-      colliders.push({ min: [px - cellSize / 2, py, pz - cellSize / 2], max: [px + cellSize / 2, py + 0.05, pz + cellSize / 2], kind: "floor" });
+      colliders.push({
+        min: [scaleWorldX(px - cellSize / 2), scaleWorldY(py), scaleWorldZ(pz - cellSize / 2)],
+        max: [scaleWorldX(px + cellSize / 2), scaleWorldY(py + 0.05), scaleWorldZ(pz + cellSize / 2)],
+        kind: "floor",
+      });
     }
     for (const wall of floor.walls ?? []) {
       const isN = wall.edge === "N";
@@ -87,8 +122,8 @@ export function buildFromBlueprint(
       const halfW = cellSize / 2;
       const t = WALL_THICKNESS / 2;
       colliders.push(isN
-        ? { min: [wx - t, y, wz - halfW], max: [wx + t, y + floorHeight, wz + halfW], kind: "wall" }
-        : { min: [wx - halfW, y, wz - t], max: [wx + halfW, y + floorHeight, wz + t], kind: "wall" });
+        ? { min: [scaleWorldX(wx - t), scaleWorldY(y), scaleWorldZ(wz - halfW)], max: [scaleWorldX(wx + t), scaleWorldY(y + floorHeight), scaleWorldZ(wz + halfW)], kind: "wall" }
+        : { min: [scaleWorldX(wx - halfW), scaleWorldY(y), scaleWorldZ(wz - t)], max: [scaleWorldX(wx + halfW), scaleWorldY(y + floorHeight), scaleWorldZ(wz + t)], kind: "wall" });
     }
     for (const p of floor.props ?? []) {
       const partId = p.prop_id ?? p.part_id ?? "";
@@ -159,9 +194,9 @@ export function buildFromBlueprint(
     }
   };
 
-  instantiateBatch(tileBatches, "#8a6a43", [cellSize, 0.1, cellSize]);
-  instantiateBatch(wallBatches, "#7d8089", [cellSize, floorHeight, WALL_THICKNESS]);
-  instantiateBatch(roofBatches, "#6e3a2a", [cellSize, 0.35, cellSize]);
+  instantiateBatch(tileBatches, buildingStyle.floorColor, [cellSize, 0.1, cellSize]);
+  instantiateBatch(wallBatches, buildingStyle.wallColor, [cellSize, floorHeight, WALL_THICKNESS]);
+  instantiateBatch(roofBatches, buildingStyle.roofColor, [cellSize, 0.35, cellSize]);
 
   // Props are unique placements; load individually (no batching needed at this scale).
   for (const req of propRequests) {
