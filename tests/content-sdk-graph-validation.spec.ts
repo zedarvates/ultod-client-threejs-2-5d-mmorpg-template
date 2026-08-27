@@ -72,6 +72,34 @@ test("rejects a root that is absent from the entity map", () => {
   });
 });
 
+test("rejects later duplicate roots in deterministic path order", () => {
+  expect(
+    validateContentGraph({
+      ...validGraph,
+      roots: [realm.id, realm.id, location.id, realm.id, location.id],
+    }),
+  ).toEqual({
+    valid: false,
+    diagnostics: [
+      {
+        code: "duplicate_root",
+        path: "$.roots[1]",
+        message: "Duplicate root: realm.tutorial.start",
+      },
+      {
+        code: "duplicate_root",
+        path: "$.roots[3]",
+        message: "Duplicate root: realm.tutorial.start",
+      },
+      {
+        code: "duplicate_root",
+        path: "$.roots[4]",
+        message: "Duplicate root: location.tutorial.square",
+      },
+    ],
+  });
+});
+
 test("rejects a dangling reference target", () => {
   const danglingRealm = {
     ...realm,
@@ -147,6 +175,91 @@ test("reports canonical deterministic signatures for each quest requires cycle",
   expect(
     validateContentGraph({ ...validGraph, roots: [alpha.id], entities: [gamma, beta, alpha] }),
   ).toEqual(expected);
+});
+
+test("enumerates every overlapping simple quest cycle independent of entity order", () => {
+  const alpha = quest("quest.alpha", ["quest.beta", "quest.gamma"]);
+  const beta = quest("quest.beta", ["quest.alpha", "quest.gamma"]);
+  const gamma = quest("quest.gamma", ["quest.alpha", "quest.beta"]);
+  const expected = {
+    valid: false,
+    diagnostics: [
+      {
+        code: "quest-prerequisite-cycle",
+        path: "entities",
+        message: "quest prerequisite cycle: quest.alpha, quest.beta",
+      },
+      {
+        code: "quest-prerequisite-cycle",
+        path: "entities",
+        message: "quest prerequisite cycle: quest.alpha, quest.beta, quest.gamma",
+      },
+      {
+        code: "quest-prerequisite-cycle",
+        path: "entities",
+        message: "quest prerequisite cycle: quest.alpha, quest.gamma",
+      },
+      {
+        code: "quest-prerequisite-cycle",
+        path: "entities",
+        message: "quest prerequisite cycle: quest.beta, quest.gamma",
+      },
+    ],
+  };
+
+  expect(
+    validateContentGraph({ ...validGraph, roots: [alpha.id], entities: [alpha, beta, gamma] }),
+  ).toEqual(expected);
+  expect(
+    validateContentGraph({ ...validGraph, roots: [alpha.id], entities: [gamma, beta, alpha] }),
+  ).toEqual(expected);
+});
+
+test("fails closed when simple-cycle search exceeds its deterministic step bound", () => {
+  const quests = Array.from({ length: 20 }, (_, index) => {
+    const id = `quest.search.${index.toString().padStart(2, "0")}`;
+    const targets = Array.from({ length: 19 - index }, (_, offset) => {
+      const targetIndex = index + offset + 1;
+      return `quest.search.${targetIndex.toString().padStart(2, "0")}`;
+    });
+    return quest(id, targets);
+  });
+
+  expect(
+    validateContentGraph({ ...validGraph, roots: [quests[0]?.id], entities: quests }),
+  ).toEqual({
+    valid: false,
+    diagnostics: [
+      {
+        code: "quest_cycle_search_limit_exceeded",
+        path: "entities",
+        message: "quest cycle search exceeded 100000 steps",
+      },
+    ],
+  });
+});
+
+test("fails closed before emitting more than 1024 quest cycle diagnostics", () => {
+  const quests: Array<ContentEntity<{ title: string }>> = [];
+  for (let pairIndex = 0; pairIndex < 1025; pairIndex += 1) {
+    const suffix = pairIndex.toString().padStart(4, "0");
+    const alphaId = `quest.pair.${suffix}.alpha`;
+    const betaId = `quest.pair.${suffix}.beta`;
+    quests.push(quest(alphaId, [betaId]), quest(betaId, [alphaId]));
+  }
+
+  expect(
+    validateContentGraph({ ...validGraph, roots: [quests[0]?.id], entities: quests }),
+  ).toEqual({
+    valid: false,
+    diagnostics: [
+      {
+        code: "quest_cycle_diagnostic_limit_exceeded",
+        path: "entities",
+        message: "quest cycle diagnostics exceeded 1024 signatures",
+      },
+    ],
+  });
 });
 
 test("rejects a malformed graph ID", () => {

@@ -230,7 +230,7 @@ depth-first search over quest-to-quest `requires` edges. Emit one
 - [ ] **Step 4: Run green, full SDK tests and typecheck**
 
 ```powershell
-npx playwright test tests/content-sdk-*.spec.ts
+npx playwright test tests/content-sdk-types.spec.ts tests/content-sdk-entity-validation.spec.ts tests/content-sdk-graph-validation.spec.ts
 npm run check:content-sdk
 ```
 
@@ -286,7 +286,7 @@ Use Web Crypto `crypto.subtle.digest("SHA-256", bytes)` for hashing.
 - [ ] **Step 4: Run green and complete public gates**
 
 ```powershell
-npx playwright test tests/content-sdk-*.spec.ts
+npx playwright test tests/content-sdk-types.spec.ts tests/content-sdk-entity-validation.spec.ts tests/content-sdk-graph-validation.spec.ts tests/content-sdk-normalization.spec.ts
 npm run check:content-sdk
 npm run check:public-boundary
 npm run build
@@ -328,7 +328,7 @@ Before site build:
 - name: Typecheck content SDK
   run: npm run check:content-sdk
 - name: Test content SDK
-  run: npx playwright test tests/content-sdk-*.spec.ts
+  run: npx playwright test tests/content-sdk-types.spec.ts tests/content-sdk-entity-validation.spec.ts tests/content-sdk-graph-validation.spec.ts tests/content-sdk-normalization.spec.ts
 ```
 
 - [ ] **Step 3: Run fresh verification**

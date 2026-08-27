@@ -6,6 +6,8 @@ export {
   validateEntity,
 } from "./validate-entity.js";
 export {
+  MAX_CYCLE_DIAGNOSTICS,
+  MAX_CYCLE_SEARCH_STEPS,
   MAX_GRAPH_ENTITIES,
   MAX_GRAPH_REFERENCES,
   MAX_GRAPH_ROOTS,

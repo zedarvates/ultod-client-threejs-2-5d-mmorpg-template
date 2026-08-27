@@ -10,6 +10,8 @@ import type { ValidationDiagnostic, ValidationResult } from "./types.js";
 export const MAX_GRAPH_ENTITIES = 16384;
 export const MAX_GRAPH_ROOTS = 16384;
 export const MAX_GRAPH_REFERENCES = 65536;
+export const MAX_CYCLE_SEARCH_STEPS = 100000;
+export const MAX_CYCLE_DIAGNOSTICS = 1024;
 
 type UnknownRecord = Record<string, unknown>;
 type UntrustedAccess<T> = { accessible: true; value: T } | { accessible: false };
@@ -203,22 +205,15 @@ function addQuestCycleDiagnostics(
     adjacency.set(questId, [...targets].sort(compareOrdinal));
   }
 
-  const color = new Map<string, "gray" | "black">();
-  const path: string[] = [];
-  const pathIndex = new Map<string, number>();
   const signatures = new Set<string>();
+  let searchSteps = 0;
 
   for (const startId of questIds) {
-    if (color.has(startId)) {
-      continue;
-    }
-
+    const path = [startId];
+    const pathIds = new Set(path);
     const frames: Array<{ id: string; nextTargetIndex: number }> = [
       { id: startId, nextTargetIndex: 0 },
     ];
-    color.set(startId, "gray");
-    pathIndex.set(startId, path.length);
-    path.push(startId);
 
     while (frames.length > 0) {
       const frame = frames[frames.length - 1];
@@ -229,27 +224,50 @@ function addQuestCycleDiagnostics(
       const target = targets[frame.nextTargetIndex];
       if (target === undefined) {
         frames.pop();
-        color.set(frame.id, "black");
-        pathIndex.delete(frame.id);
+        pathIds.delete(frame.id);
         path.pop();
         continue;
       }
       frame.nextTargetIndex += 1;
 
-      const targetColor = color.get(target);
-      if (targetColor === undefined) {
-        color.set(target, "gray");
-        pathIndex.set(target, path.length);
-        path.push(target);
-        frames.push({ id: target, nextTargetIndex: 0 });
+      searchSteps += 1;
+      if (searchSteps > MAX_CYCLE_SEARCH_STEPS) {
+        addDiagnostic(
+          diagnostics,
+          "quest_cycle_search_limit_exceeded",
+          "entities",
+          `quest cycle search exceeded ${MAX_CYCLE_SEARCH_STEPS} steps`,
+        );
+        return;
+      }
+
+      if (compareOrdinal(target, startId) < 0) {
         continue;
       }
-      if (targetColor === "gray") {
-        const cycleStart = pathIndex.get(target);
-        if (cycleStart !== undefined) {
-          signatures.add(path.slice(cycleStart).sort(compareOrdinal).join("\u0000"));
+
+      if (target === startId) {
+        const signature = [...path].sort(compareOrdinal).join("\u0000");
+        if (!signatures.has(signature)) {
+          if (signatures.size >= MAX_CYCLE_DIAGNOSTICS) {
+            addDiagnostic(
+              diagnostics,
+              "quest_cycle_diagnostic_limit_exceeded",
+              "entities",
+              `quest cycle diagnostics exceeded ${MAX_CYCLE_DIAGNOSTICS} signatures`,
+            );
+            return;
+          }
+          signatures.add(signature);
         }
+        continue;
       }
+
+      if (pathIds.has(target)) {
+        continue;
+      }
+      pathIds.add(target);
+      path.push(target);
+      frames.push({ id: target, nextTargetIndex: 0 });
     }
   }
 
@@ -342,6 +360,7 @@ export function validateContentGraph(value: unknown): ValidationResult {
   }
 
   const roots: Array<string | undefined> = [];
+  const rootIds = new Set<string>();
   if (rootsLengthAccess.value !== undefined) {
     const untrustedRoots = rootsAccess.value as unknown[];
     for (let rootIndex = 0; rootIndex < rootsLengthAccess.value; rootIndex += 1) {
@@ -359,6 +378,16 @@ export function validateContentGraph(value: unknown): ValidationResult {
         roots.push(undefined);
       } else {
         roots.push(rootAccess.value);
+        if (rootIds.has(rootAccess.value)) {
+          addDiagnostic(
+            diagnostics,
+            "duplicate_root",
+            `$.roots[${rootIndex}]`,
+            `Duplicate root: ${rootAccess.value}`,
+          );
+        } else {
+          rootIds.add(rootAccess.value);
+        }
       }
     }
   }
