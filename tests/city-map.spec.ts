@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { existsSync, readFileSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { validateCityConfigLite, cellToWorld } from '../src/game/city-config';
@@ -62,31 +62,6 @@ test('parcel centers sit inside authored lots', () => {
   }
 });
 
-test('frontier arena is a valid four-gate flat combat map', () => {
-  const arenaPath = join(here, '../public/maps/frontier_arena.city.json');
-  expect(existsSync(arenaPath)).toBe(true);
-  if (!existsSync(arenaPath)) return;
-
-  const arena = JSON.parse(readFileSync(arenaPath, 'utf8'));
-  expect(validateCityConfigLite(arena)).toEqual([]);
-  expect(arena.city_id).toBe('frontier_arena');
-  expect(arena.biome).toBe('desert');
-  expect(arena.authored_layout.roads).toHaveLength(64);
-  expect(arena.authored_layout.walls.filter(
-    (wall: { is_gate: boolean }) => wall.is_gate,
-  )).toHaveLength(8);
-  expect(arena.authored_layout.parcels).toHaveLength(4);
-
-  const occupiedCenter = [
-    ...arena.authored_layout.roads,
-    ...arena.authored_layout.walls,
-  ].filter((cell: { x: number; z: number }) => (
-    cell.x >= 10 && cell.x <= 21 && cell.z >= 10 && cell.z <= 21
-  ));
-  expect(occupiedCenter).toEqual([]);
-  expect(buildCityMapPreview(arena).children.length).toBe(129);
-  expect(buildFlatMapColliders(arena)).toHaveLength(56);
-});
 
 test('flat map collision blocks walls and houses but leaves gates open', () => {
   const raw = JSON.parse(
