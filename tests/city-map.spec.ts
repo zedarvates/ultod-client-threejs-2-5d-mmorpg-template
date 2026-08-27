@@ -7,6 +7,10 @@ import { buildCityMapPreview } from '../src/render/city-map-bridge';
 import * as THREE from 'three';
 import { VILLAGE_ANCHORS, worldFromAnchor, parcelCenter } from '../src/game/village-layout';
 import { ScenarioWorld } from '../src/game/scenario-world';
+import {
+  buildFlatMapColliders,
+  resolveFlatMapMovement,
+} from '../src/game/flat-map-collision';
 
 const here = dirname(fileURLToPath(import.meta.url));
 
@@ -55,4 +59,37 @@ test('parcel centers sit inside authored lots', () => {
     expect(center.z).toBeGreaterThanOrEqual(min.z);
     expect(center.z).toBeLessThanOrEqual(max.z);
   }
+});
+
+test('flat map collision blocks walls and houses but leaves gates open', () => {
+  const raw = JSON.parse(
+    readFileSync(join(here, '../public/maps/village_square.city.json'), 'utf8'),
+  );
+  const colliders = buildFlatMapColliders(raw);
+  expect(colliders.filter((collider) => collider.kind === 'wall')).toHaveLength(36);
+  expect(colliders.filter((collider) => collider.kind === 'house')).toHaveLength(4);
+
+  const solidWall = cellToWorld(raw, 10, 10);
+  const wallResult = resolveFlatMapMovement(
+    { x: solidWall.x - 1, z: solidWall.z },
+    solidWall,
+    colliders,
+  );
+  expect(wallResult.x).toBe(solidWall.x - 1);
+
+  const gate = cellToWorld(raw, 15, 10);
+  const gateResult = resolveFlatMapMovement(
+    { x: gate.x, z: gate.z - 1 },
+    gate,
+    colliders,
+  );
+  expect(gateResult).toEqual(gate);
+
+  const house = parcelCenter(raw, raw.authored_layout.parcels[0]);
+  const houseResult = resolveFlatMapMovement(
+    { x: house.x - 5, z: house.z },
+    house,
+    colliders,
+  );
+  expect(houseResult.x).toBe(house.x - 5);
 });

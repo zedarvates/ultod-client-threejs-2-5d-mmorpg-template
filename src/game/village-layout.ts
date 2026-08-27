@@ -10,9 +10,9 @@ export interface VillageAnchor {
 /** Presentation-only village placement on a flat CityConfig map. */
 export const VILLAGE_ANCHORS: Record<string, VillageAnchor> = {
   player: { id: 'player', cellX: 16, cellZ: 16 },
-  king: { id: 'king', cellX: 12, cellZ: 12 },
-  merchant: { id: 'merchant', cellX: 19, cellZ: 12 },
-  princess: { id: 'princess', cellX: 12, cellZ: 19 },
+  king: { id: 'king', cellX: 15, cellZ: 12 },
+  merchant: { id: 'merchant', cellX: 16, cellZ: 14 },
+  princess: { id: 'princess', cellX: 15, cellZ: 18 },
   beast: { id: 'beast', cellX: 16, cellZ: 4 },
 };
 

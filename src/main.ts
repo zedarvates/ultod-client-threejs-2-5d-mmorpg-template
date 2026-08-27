@@ -15,6 +15,11 @@ import villageMap from "./content/maps/village_square.city.json" with { type: "j
 import { validateCityConfigLite, type CityConfigLite } from "./game/city-config";
 import { buildCityMapPreview } from "./render/city-map-bridge";
 import { mapBounds, worldFromAnchor, parcelCenter } from "./game/village-layout";
+import {
+  buildFlatMapColliders,
+  resolveFlatMapMovement,
+  type FlatMapCollider,
+} from "./game/flat-map-collision";
 import { initialQuestState, questObjective, advanceTo } from "./game/quest";
 import type { QuestState } from "./game/quest";
 import { DialogBox } from "./ui/dialog-box";
@@ -41,6 +46,7 @@ class IsometricApp {
   private interactCooldown = 0;
   private joystick!: TouchJoystick;
   private mapLimits?: { minX: number; maxX: number; minZ: number; maxZ: number };
+  private mapColliders: FlatMapCollider[] = [];
   private readonly cameraOffset = new THREE.Vector3(20, 20, 20);
 
   constructor() {
@@ -91,6 +97,7 @@ class IsometricApp {
     }
     this.world = new ScenarioWorld(this.scene, city);
     this.mapLimits = city ? mapBounds(city) : undefined;
+    this.mapColliders = city ? buildFlatMapColliders(city) : [];
 
     // Touch joystick for mobile/tablet play
     this.joystick = new TouchJoystick(
@@ -240,6 +247,12 @@ class IsometricApp {
       next.x = Math.min(this.mapLimits.maxX, Math.max(this.mapLimits.minX, next.x));
       next.z = Math.min(this.mapLimits.maxZ, Math.max(this.mapLimits.minZ, next.z));
     }
+    const resolved = resolveFlatMapMovement(
+      this.player.mesh.position,
+      next,
+      this.mapColliders,
+    );
+    next.set(resolved.x, next.y, resolved.z);
     this.player.mesh.position.copy(next);
     this.camera.position.copy(this.player.mesh.position).add(this.cameraOffset);
     this.camera.lookAt(this.player.mesh.position);
