@@ -40,6 +40,11 @@ test("reports literal diagnostics for each invalid envelope field deterministica
     valid: false,
     diagnostics: [
       {
+        code: "duplicate_reference",
+        path: "refs[1]",
+        message: "duplicate reference predicate and target",
+      },
+      {
         code: "invalid_authority",
         path: "authority",
         message: "authority must be server, client-presentation, or authoring-draft",
@@ -55,19 +60,37 @@ test("reports literal diagnostics for each invalid envelope field deterministica
         message: "kind must be a supported content kind",
       },
       {
+        code: "invalid_version",
+        path: "version",
+        message: "version must be a semantic version",
+      },
+      {
         code: "missing_license_id",
         path: "license.id",
         message: "license.id must be a non-empty string",
       },
-      {
-        code: "duplicate_reference",
-        path: "refs[1]",
-        message: "duplicate reference predicate and target",
+    ],
+  });
+});
+
+test("returns a literal diagnostic when an entity getter throws", () => {
+  const entityWithThrowingGetter = new Proxy(
+    {},
+    {
+      get() {
+        throw new Error("untrusted getter");
       },
+    },
+  );
+
+  expect(() => validateEntity(entityWithThrowingGetter)).not.toThrow();
+  expect(validateEntity(entityWithThrowingGetter)).toEqual({
+    valid: false,
+    diagnostics: [
       {
-        code: "invalid_version",
-        path: "version",
-        message: "version must be a semantic version",
+        code: "invalid_record_access",
+        path: "$",
+        message: "Entity properties could not be read",
       },
     ],
   });
