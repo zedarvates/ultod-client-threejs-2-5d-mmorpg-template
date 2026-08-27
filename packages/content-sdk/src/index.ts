@@ -5,6 +5,12 @@ export {
   SEMVER_PATTERN,
   validateEntity,
 } from "./validate-entity.js";
+export {
+  MAX_GRAPH_ENTITIES,
+  MAX_GRAPH_REFERENCES,
+  MAX_GRAPH_ROOTS,
+  validateContentGraph,
+} from "./validate-graph.js";
 
 export type {
   ContentAuthority,
