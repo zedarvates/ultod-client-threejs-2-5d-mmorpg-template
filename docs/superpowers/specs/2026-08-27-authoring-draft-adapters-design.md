@@ -1,6 +1,6 @@
 # Authoring Draft Adapters Design
 
-Status: `approved design pending written-spec review`
+Status: `implemented`
 
 Date: `2026-08-27`
 

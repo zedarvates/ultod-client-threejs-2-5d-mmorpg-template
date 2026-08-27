@@ -81,6 +81,31 @@ test("omits a StoryCore entity whose source record exceeds the key budget", { ti
   });
 });
 
+test("omits a reference record that exceeds the key budget", { timeout: 1_000 }, () => {
+  const oversizedReference = {
+    predicate: "located_in",
+    target: "location.example.square",
+  } as Record<string, unknown>;
+  for (let index = 0; index < 70_000; index += 1) {
+    oversizedReference[`unknown_${index.toString().padStart(5, "0")}`] = index;
+  }
+  const result = adaptLegacyRegistryTemplate({
+    id: "npc.example.oversized_ref",
+    version: "1.0.0",
+    template_type: "npc",
+    license: { id: "MIT" },
+    data: { name: "Guide" },
+    refs: [oversizedReference],
+  });
+
+  expect(result.entities[0]?.refs).toEqual([]);
+  expect(result.diagnostics).toContainEqual({
+    code: "adapter_key_limit_exceeded",
+    path: "refs[0]",
+    message: "adapter record must contain at most 64 own keys",
+  });
+});
+
 test("fails closed on an infinite StoryCore collection length", { timeout: 500 }, () => {
   const characters = new Proxy([], {
     get(target, property, receiver) {

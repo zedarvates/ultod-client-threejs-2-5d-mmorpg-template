@@ -363,6 +363,9 @@ export function sanitizeReferences(
       addDiagnostic(context, "adapter_access_error", itemPath, "adapter reference could not be accessed");
       continue;
     }
+    if (!inspectAdapterOwnKeys(record, itemPath, context, "adapter reference could not be accessed")) {
+      continue;
+    }
     const predicateAccess = accessUntrusted(() => Reflect.get(record, "predicate"));
     const targetAccess = accessUntrusted(() => Reflect.get(record, "target"));
     const versionAccess = accessUntrusted(() => Reflect.get(record, "version"));
