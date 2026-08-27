@@ -70,3 +70,46 @@ Its SHA-256 is exactly:
   minified application chunk.
 - Playwright child processes retain the environment warning that `NO_COLOR`
   is ignored while `FORCE_COLOR` is set.
+
+## Fix Round 1: Reject Unsupported Values and Preserve `__proto__`
+
+Addressed the canonical-collision and prototype-key review blockers. This
+section supersedes the original unsupported-value null-substitution policy.
+
+- Added and exported `CanonicalizationError`, a `TypeError` subclass with the
+  stable `unsupported_canonical_value` code and exact JSON-style `path`.
+- Canonicalization now rejects `undefined`, functions, symbols, bigints,
+  non-finite numbers, unsupported object prototypes/types, sparse values,
+  inaccessible records, and cycle back-edges. None are collapsed to `null`.
+- Valid JSON `null` remains canonical data, so unsupported values can no longer
+  collide with it.
+- Ordinary arrays retain authored order, while roots, entities, references,
+  diagnostics, and recursive object keys retain their Task 4 normalization.
+- Canonical records use null prototypes and `Object.defineProperty`, preserving
+  an enumerable own `__proto__` key without invoking the legacy prototype
+  setter. The regression asserts the complete serialized graph literally.
+- The empty canonical fixture and SHA-256 remain unchanged.
+
+### TDD evidence
+
+- Rejection red: the focused suite passed 2 tests and failed 3 because the
+  error export was absent, undefined still normalized as null, and cycles did
+  not throw the required class. Rejection green passed 5/5.
+- Element-path red: the focused suite passed 5 tests and failed 1 because an
+  unsupported array element reported its parent array path. Preserving nested
+  `CanonicalizationError` instances made the suite pass 6/6.
+- `__proto__` red: the focused suite passed 6 tests and failed 1 because the
+  normalized content record inherited from `Object.prototype`. Null-prototype
+  output plus own-property definition made the suite pass 7/7.
+
+### Fix verification
+
+- Focused normalization suite passed: 7/7.
+- The regenerated brief's exact Windows-safe SDK command passed 28/28:
+  `npx playwright test tests/content-sdk-types.spec.ts tests/content-sdk-entity-validation.spec.ts tests/content-sdk-graph-validation.spec.ts tests/content-sdk-normalization.spec.ts`.
+- `npm run check:content-sdk` passed.
+- `npm --workspace @ultod/content-sdk run build` passed.
+- `npm run build` passed, with the existing Vite chunk-size warning.
+- `npm run test:e2e` passed: 50/50, with the existing Playwright color warning.
+- `npm run check:public-boundary` passed with `[]`.
+- `git diff --check` passed.

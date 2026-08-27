@@ -110,34 +110,98 @@ test("normalizes graph collections, diagnostics, and object keys without mutatio
   );
 });
 
-test("canonicalizes unsupported nested values without throwing", () => {
-  const cyclic: Record<string, unknown> = { label: "cycle" };
-  cyclic.self = cyclic;
-  const graph: GameContentGraph = {
+function graphWithContent(content: unknown): GameContentGraph {
+  return {
     ...emptyPublicGraph,
     id: "graph.tutorial.unsupported",
     entities: [
       {
         ...alpha,
         refs: [],
-        content: {
-          bigint: 1n,
-          cyclic,
-          function: () => "unsupported",
-          infinity: Number.POSITIVE_INFINITY,
-          missing: undefined,
-        },
+        content,
       },
     ],
   };
+}
 
-  expect(() => sdk.normalizeContentGraph(graph)).not.toThrow();
-  expect(() => sdk.serializeCanonicalGraph(graph)).not.toThrow();
-  expect((sdk.normalizeContentGraph(graph).entities[0]?.content as Record<string, unknown>)).toEqual({
-    bigint: null,
-    cyclic: { label: "cycle", self: null },
-    function: null,
-    infinity: null,
-    missing: null,
+function captureCanonicalizationError(content: unknown): unknown {
+  try {
+    sdk.serializeCanonicalGraph(graphWithContent(content));
+    return undefined;
+  } catch (error) {
+    return error;
+  }
+}
+
+test("rejects unsupported canonical values with a stable typed path error", () => {
+  const CanonicalizationError = Reflect.get(sdk, "CanonicalizationError");
+  expect(typeof CanonicalizationError).toBe("function");
+
+  const unsupportedValues: Array<{ label: string; value: unknown }> = [
+    { label: "undefined", value: undefined },
+    { label: "function", value: () => "unsupported" },
+    { label: "symbol", value: Symbol("unsupported") },
+    { label: "bigint", value: 1n },
+    { label: "NaN", value: Number.NaN },
+    { label: "positive infinity", value: Number.POSITIVE_INFINITY },
+    { label: "negative infinity", value: Number.NEGATIVE_INFINITY },
+    { label: "date", value: new Date(0) },
+    { label: "custom prototype", value: Object.create({ inherited: true }) },
+  ];
+
+  for (const { label, value } of unsupportedValues) {
+    const error = captureCanonicalizationError({ value });
+    expect(error, label).toBeInstanceOf(CanonicalizationError);
+    expect(error, label).toMatchObject({
+      name: "CanonicalizationError",
+      code: "unsupported_canonical_value",
+      path: "$.entities[0].content.value",
+    });
+  }
+});
+
+test("does not canonicalize undefined content as valid null content", () => {
+  expect(sdk.serializeCanonicalGraph(graphWithContent({ value: null }))).toContain(
+    '"content":{"value":null}',
+  );
+  expect(() => sdk.serializeCanonicalGraph(graphWithContent({ value: undefined }))).toThrow();
+});
+
+test("rejects a cycle at its exact back-edge path", () => {
+  const CanonicalizationError = Reflect.get(sdk, "CanonicalizationError");
+  const cyclic: Record<string, unknown> = { label: "cycle" };
+  cyclic.self = cyclic;
+
+  const error = captureCanonicalizationError(cyclic);
+
+  expect(error).toBeInstanceOf(CanonicalizationError);
+  expect(error).toMatchObject({
+    name: "CanonicalizationError",
+    code: "unsupported_canonical_value",
+    path: "$.entities[0].content.self",
   });
+});
+
+test("preserves the exact path for an unsupported ordinary array element", () => {
+  expect(captureCanonicalizationError({ values: [null, undefined] })).toMatchObject({
+    code: "unsupported_canonical_value",
+    path: "$.entities[0].content.values[1]",
+  });
+});
+
+test("preserves an own __proto__ JSON key without prototype mutation", () => {
+  const content: Record<string, unknown> = { label: "owned" };
+  Object.defineProperty(content, "__proto__", {
+    enumerable: true,
+    value: { safe: true },
+  });
+
+  const normalizedContent = sdk.normalizeContentGraph(graphWithContent(content)).entities[0]
+    ?.content as Record<string, unknown>;
+
+  expect(Object.getPrototypeOf(normalizedContent)).toBeNull();
+  expect(Object.prototype.hasOwnProperty.call(normalizedContent, "__proto__")).toBe(true);
+  expect(sdk.serializeCanonicalGraph(graphWithContent(content))).toBe(
+    '{"entities":[{"authority":"server","compatibility":{"client_core":">=0.2.0 <1.0.0","content_graph":"1.x","server_protocol":["2","1"]},"content":{"__proto__":{"safe":true},"label":"owned"},"id":"location.tutorial.alpha","kind":"location","license":{"id":"MIT"},"refs":[],"schema":"uo.game-content-entity/v1","status":"published","version":"1.0.0"}],"id":"graph.tutorial.unsupported","roots":[],"schema":"uo.game-content-graph/v1","version":"1.0.0","visibility":"public"}',
+  );
 });

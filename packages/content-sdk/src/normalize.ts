@@ -1,11 +1,32 @@
 import type { ContentEntity, ContentReference, GameContentGraph } from "./types.js";
 
+export class CanonicalizationError extends TypeError {
+  readonly code = "unsupported_canonical_value" as const;
+  readonly path: string;
+
+  constructor(path: string) {
+    super(`Unsupported canonical value at ${path}`);
+    this.name = "CanonicalizationError";
+    this.path = path;
+  }
+}
+
 function compareOrdinal(left: string, right: string): number {
   return left < right ? -1 : left > right ? 1 : 0;
 }
 
 function compareCanonical(left: unknown, right: unknown): number {
   return compareOrdinal(JSON.stringify(left), JSON.stringify(right));
+}
+
+function objectPath(path: string, key: string): string {
+  return /^[A-Za-z_$][A-Za-z0-9_$]*$/.test(key)
+    ? `${path}.${key}`
+    : `${path}[${JSON.stringify(key)}]`;
+}
+
+function unsupported(path: string): never {
+  throw new CanonicalizationError(path);
 }
 
 function diagnosticField(value: unknown, field: string): string {
@@ -32,76 +53,100 @@ function compareDiagnostics(left: unknown, right: unknown): number {
 
 /**
  * Produces JSON-safe canonical data without invoking user serialization hooks.
- * Unsupported leaves, non-plain objects, inaccessible properties, symbol-keyed
- * records, and cycle back-edges are represented as null instead of throwing.
+ * Unsupported leaves, object types, inaccessible properties, symbol-keyed
+ * records, sparse arrays, and cycle back-edges fail with a stable path error.
  */
 function normalizeUnknown(
   value: unknown,
   ancestors: Set<object>,
+  path: string,
   collectionName?: string,
 ): unknown {
   if (value === null || typeof value === "string" || typeof value === "boolean") {
     return value;
   }
   if (typeof value === "number") {
-    return Number.isFinite(value) ? value : null;
+    return Number.isFinite(value) ? value : unsupported(path);
   }
   if (typeof value !== "object") {
-    return null;
+    return unsupported(path);
   }
 
   let prototype: object | null;
   try {
     prototype = Object.getPrototypeOf(value);
   } catch {
-    return null;
+    return unsupported(path);
   }
 
   if (Array.isArray(value)) {
     if (ancestors.has(value)) {
-      return null;
+      return unsupported(path);
     }
     ancestors.add(value);
-    let normalized: unknown[];
     try {
-      normalized = Array.from(value, (item) => normalizeUnknown(item, ancestors));
-    } catch {
-      normalized = [];
+      const normalized: unknown[] = [];
+      for (let index = 0; index < value.length; index += 1) {
+        const itemPath = `${path}[${index}]`;
+        if (!Object.prototype.hasOwnProperty.call(value, index)) {
+          unsupported(itemPath);
+        }
+        let item: unknown;
+        try {
+          item = Reflect.get(value, index);
+        } catch {
+          item = unsupported(itemPath);
+        }
+        normalized.push(normalizeUnknown(item, ancestors, itemPath));
+      }
+      return collectionName === "diagnostics"
+        ? normalized.sort(compareDiagnostics)
+        : normalized;
+    } catch (error) {
+      if (error instanceof CanonicalizationError) {
+        throw error;
+      }
+      throw new CanonicalizationError(path);
     } finally {
       ancestors.delete(value);
     }
-    return collectionName === "diagnostics"
-      ? normalized.sort(compareDiagnostics)
-      : normalized;
   }
 
   if (prototype !== Object.prototype && prototype !== null) {
-    return null;
+    return unsupported(path);
   }
   if (ancestors.has(value)) {
-    return null;
+    return unsupported(path);
   }
 
   ancestors.add(value);
   try {
-    const keys = Reflect.ownKeys(value);
-    if (keys.some((key) => typeof key === "symbol")) {
-      return null;
+    if (Object.getOwnPropertySymbols(value).length > 0) {
+      return unsupported(path);
     }
 
-    const normalized: Record<string, unknown> = {};
-    for (const key of (keys as string[]).sort(compareOrdinal)) {
+    const normalized = Object.create(null) as Record<string, unknown>;
+    for (const key of Object.keys(value).sort(compareOrdinal)) {
+      const nestedPath = objectPath(path, key);
       let nestedValue: unknown;
       try {
         nestedValue = Reflect.get(value, key);
       } catch {
-        nestedValue = null;
+        nestedValue = unsupported(nestedPath);
       }
-      normalized[key] = normalizeUnknown(nestedValue, ancestors, key);
+      Object.defineProperty(normalized, key, {
+        configurable: true,
+        enumerable: true,
+        value: normalizeUnknown(nestedValue, ancestors, nestedPath, key),
+        writable: true,
+      });
     }
     return normalized;
-  } catch {
-    return null;
+  } catch (error) {
+    if (error instanceof CanonicalizationError) {
+      throw error;
+    }
+    return unsupported(path);
   } finally {
     ancestors.delete(value);
   }
@@ -120,8 +165,8 @@ function compareReferences(left: ContentReference, right: ContentReference): num
   );
 }
 
-function normalizeEntity(entity: ContentEntity<unknown>): ContentEntity<unknown> {
-  const normalized = normalizeUnknown(entity, new Set()) as ContentEntity<unknown>;
+function normalizeEntity(entity: ContentEntity<unknown>, path: string): ContentEntity<unknown> {
+  const normalized = normalizeUnknown(entity, new Set(), path) as ContentEntity<unknown>;
   normalized.refs = [...normalized.refs].sort(compareReferences);
   return normalized;
 }
@@ -134,11 +179,12 @@ export function normalizeContentGraph(graph: GameContentGraph): GameContentGraph
       version: graph.version,
       visibility: graph.visibility,
       roots: [...graph.roots].sort(compareOrdinal),
-      entities: graph.entities.map(normalizeEntity).sort((left, right) =>
-        compareOrdinal(left.id, right.id),
-      ),
+      entities: graph.entities
+        .map((entity, index) => normalizeEntity(entity, `$.entities[${index}]`))
+        .sort((left, right) => compareOrdinal(left.id, right.id)),
     },
     new Set(),
+    "$",
   );
 
   return normalized as GameContentGraph;

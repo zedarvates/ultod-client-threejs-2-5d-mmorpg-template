@@ -13,7 +13,11 @@ export {
   MAX_GRAPH_ROOTS,
   validateContentGraph,
 } from "./validate-graph.js";
-export { normalizeContentGraph, serializeCanonicalGraph } from "./normalize.js";
+export {
+  CanonicalizationError,
+  normalizeContentGraph,
+  serializeCanonicalGraph,
+} from "./normalize.js";
 export { sha256CanonicalGraph } from "./hash.js";
 
 export type {
