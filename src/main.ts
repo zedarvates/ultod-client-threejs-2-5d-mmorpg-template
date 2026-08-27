@@ -68,15 +68,8 @@ class IsometricApp {
     dirLight.castShadow = true;
     this.scene.add(dirLight);
 
-    const gridHelper = new THREE.GridHelper(40, 40, 0x444466, 0x2a2a3a);
+    const gridHelper = new THREE.GridHelper(48, 32, 0x444466, 0x2a2a3a);
     this.scene.add(gridHelper);
-
-    const groundGeo = new THREE.PlaneGeometry(50, 50);
-    const groundMat = new THREE.MeshStandardMaterial({ color: 0x222230, roughness: 0.8 });
-    const ground = new THREE.Mesh(groundGeo, groundMat);
-    ground.rotation.x = -Math.PI / 2;
-    ground.receiveShadow = true;
-    this.scene.add(ground);
 
     this.controls = new IsometricControls();
     this.player = new PlayerPresentation(this.scene);
@@ -148,6 +141,21 @@ class IsometricApp {
         );
       })
       .catch((e) => console.warn("[blueprint] failed to load", e));
+
+    fetch(import.meta.env.BASE_URL + "maps/village_square.city.json")
+      .then((r) => r.json())
+      .then(async (raw) => {
+        const city = await import("./game/city-config");
+        const preview = await import("./render/city-map-bridge");
+        const errors = city.validateCityConfigLite(raw);
+        if (errors.length) {
+          console.warn("[city-map] invalid CityConfig", errors);
+          return;
+        }
+        this.scene.add(preview.buildCityMapPreview(raw));
+        console.log("[city-map] loaded", raw.city_id);
+      })
+      .catch((e) => console.warn("[city-map] failed to load", e));
 
     // Creature Editor demo (see public/creatures/).
     fetch(import.meta.env.BASE_URL + "creatures/exemple_rodeur_aile.json")

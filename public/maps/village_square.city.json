@@ -1,0 +1,521 @@
+{
+  "schema": "uo.city-config-lite/v1",
+  "city_id": "village_square",
+  "seed": 20260827,
+  "width": 32,
+  "depth": 32,
+  "road_spacing": 16,
+  "biome": "medieval",
+  "cell_size": 1.5,
+  "slope_adaptation": false,
+  "n_spokes": 4,
+  "plaza_radius_cells": 3,
+  "authored_layout": {
+    "roads": [
+      {
+        "x": 15,
+        "z": 8
+      },
+      {
+        "x": 16,
+        "z": 8
+      },
+      {
+        "x": 15,
+        "z": 9
+      },
+      {
+        "x": 16,
+        "z": 9
+      },
+      {
+        "x": 15,
+        "z": 10
+      },
+      {
+        "x": 16,
+        "z": 10
+      },
+      {
+        "x": 15,
+        "z": 11
+      },
+      {
+        "x": 16,
+        "z": 11
+      },
+      {
+        "x": 15,
+        "z": 12
+      },
+      {
+        "x": 16,
+        "z": 12
+      },
+      {
+        "x": 15,
+        "z": 13
+      },
+      {
+        "x": 16,
+        "z": 13
+      },
+      {
+        "x": 15,
+        "z": 14
+      },
+      {
+        "x": 16,
+        "z": 14
+      },
+      {
+        "x": 15,
+        "z": 15
+      },
+      {
+        "x": 16,
+        "z": 15
+      },
+      {
+        "x": 15,
+        "z": 16
+      },
+      {
+        "x": 16,
+        "z": 16
+      },
+      {
+        "x": 15,
+        "z": 17
+      },
+      {
+        "x": 16,
+        "z": 17
+      },
+      {
+        "x": 15,
+        "z": 18
+      },
+      {
+        "x": 16,
+        "z": 18
+      },
+      {
+        "x": 15,
+        "z": 19
+      },
+      {
+        "x": 16,
+        "z": 19
+      },
+      {
+        "x": 15,
+        "z": 20
+      },
+      {
+        "x": 16,
+        "z": 20
+      },
+      {
+        "x": 15,
+        "z": 21
+      },
+      {
+        "x": 16,
+        "z": 21
+      },
+      {
+        "x": 15,
+        "z": 22
+      },
+      {
+        "x": 16,
+        "z": 22
+      },
+      {
+        "x": 15,
+        "z": 23
+      },
+      {
+        "x": 16,
+        "z": 23
+      },
+      {
+        "x": 8,
+        "z": 15
+      },
+      {
+        "x": 8,
+        "z": 16
+      },
+      {
+        "x": 9,
+        "z": 15
+      },
+      {
+        "x": 9,
+        "z": 16
+      },
+      {
+        "x": 10,
+        "z": 15
+      },
+      {
+        "x": 10,
+        "z": 16
+      },
+      {
+        "x": 11,
+        "z": 15
+      },
+      {
+        "x": 11,
+        "z": 16
+      },
+      {
+        "x": 12,
+        "z": 15
+      },
+      {
+        "x": 12,
+        "z": 16
+      },
+      {
+        "x": 13,
+        "z": 15
+      },
+      {
+        "x": 13,
+        "z": 16
+      },
+      {
+        "x": 14,
+        "z": 15
+      },
+      {
+        "x": 14,
+        "z": 16
+      },
+      {
+        "x": 17,
+        "z": 15
+      },
+      {
+        "x": 17,
+        "z": 16
+      },
+      {
+        "x": 18,
+        "z": 15
+      },
+      {
+        "x": 18,
+        "z": 16
+      },
+      {
+        "x": 19,
+        "z": 15
+      },
+      {
+        "x": 19,
+        "z": 16
+      },
+      {
+        "x": 20,
+        "z": 15
+      },
+      {
+        "x": 20,
+        "z": 16
+      },
+      {
+        "x": 21,
+        "z": 15
+      },
+      {
+        "x": 21,
+        "z": 16
+      },
+      {
+        "x": 22,
+        "z": 15
+      },
+      {
+        "x": 22,
+        "z": 16
+      },
+      {
+        "x": 23,
+        "z": 15
+      },
+      {
+        "x": 23,
+        "z": 16
+      }
+    ],
+    "walls": [
+      {
+        "x": 10,
+        "z": 10,
+        "is_gate": false
+      },
+      {
+        "x": 10,
+        "z": 21,
+        "is_gate": false
+      },
+      {
+        "x": 11,
+        "z": 10,
+        "is_gate": false
+      },
+      {
+        "x": 11,
+        "z": 21,
+        "is_gate": false
+      },
+      {
+        "x": 12,
+        "z": 10,
+        "is_gate": false
+      },
+      {
+        "x": 12,
+        "z": 21,
+        "is_gate": false
+      },
+      {
+        "x": 13,
+        "z": 10,
+        "is_gate": false
+      },
+      {
+        "x": 13,
+        "z": 21,
+        "is_gate": false
+      },
+      {
+        "x": 14,
+        "z": 10,
+        "is_gate": false
+      },
+      {
+        "x": 14,
+        "z": 21,
+        "is_gate": false
+      },
+      {
+        "x": 15,
+        "z": 10,
+        "is_gate": true
+      },
+      {
+        "x": 15,
+        "z": 21,
+        "is_gate": true
+      },
+      {
+        "x": 16,
+        "z": 10,
+        "is_gate": true
+      },
+      {
+        "x": 16,
+        "z": 21,
+        "is_gate": true
+      },
+      {
+        "x": 17,
+        "z": 10,
+        "is_gate": false
+      },
+      {
+        "x": 17,
+        "z": 21,
+        "is_gate": false
+      },
+      {
+        "x": 18,
+        "z": 10,
+        "is_gate": false
+      },
+      {
+        "x": 18,
+        "z": 21,
+        "is_gate": false
+      },
+      {
+        "x": 19,
+        "z": 10,
+        "is_gate": false
+      },
+      {
+        "x": 19,
+        "z": 21,
+        "is_gate": false
+      },
+      {
+        "x": 20,
+        "z": 10,
+        "is_gate": false
+      },
+      {
+        "x": 20,
+        "z": 21,
+        "is_gate": false
+      },
+      {
+        "x": 21,
+        "z": 10,
+        "is_gate": false
+      },
+      {
+        "x": 21,
+        "z": 21,
+        "is_gate": false
+      },
+      {
+        "x": 10,
+        "z": 11,
+        "is_gate": false
+      },
+      {
+        "x": 21,
+        "z": 11,
+        "is_gate": false
+      },
+      {
+        "x": 10,
+        "z": 12,
+        "is_gate": false
+      },
+      {
+        "x": 21,
+        "z": 12,
+        "is_gate": false
+      },
+      {
+        "x": 10,
+        "z": 13,
+        "is_gate": false
+      },
+      {
+        "x": 21,
+        "z": 13,
+        "is_gate": false
+      },
+      {
+        "x": 10,
+        "z": 14,
+        "is_gate": false
+      },
+      {
+        "x": 21,
+        "z": 14,
+        "is_gate": false
+      },
+      {
+        "x": 10,
+        "z": 15,
+        "is_gate": true
+      },
+      {
+        "x": 21,
+        "z": 15,
+        "is_gate": true
+      },
+      {
+        "x": 10,
+        "z": 16,
+        "is_gate": true
+      },
+      {
+        "x": 21,
+        "z": 16,
+        "is_gate": true
+      },
+      {
+        "x": 10,
+        "z": 17,
+        "is_gate": false
+      },
+      {
+        "x": 21,
+        "z": 17,
+        "is_gate": false
+      },
+      {
+        "x": 10,
+        "z": 18,
+        "is_gate": false
+      },
+      {
+        "x": 21,
+        "z": 18,
+        "is_gate": false
+      },
+      {
+        "x": 10,
+        "z": 19,
+        "is_gate": false
+      },
+      {
+        "x": 21,
+        "z": 19,
+        "is_gate": false
+      },
+      {
+        "x": 10,
+        "z": 20,
+        "is_gate": false
+      },
+      {
+        "x": 21,
+        "z": 20,
+        "is_gate": false
+      }
+    ],
+    "parcels": [
+      {
+        "parcel_id": 1,
+        "x0": 11,
+        "z0": 11,
+        "width": 4,
+        "depth": 4,
+        "district": "noble",
+        "reserved_for_player": false,
+        "requires_stilts": false
+      },
+      {
+        "parcel_id": 2,
+        "x0": 17,
+        "z0": 11,
+        "width": 4,
+        "depth": 4,
+        "district": "market",
+        "reserved_for_player": false,
+        "requires_stilts": false
+      },
+      {
+        "parcel_id": 3,
+        "x0": 11,
+        "z0": 17,
+        "width": 4,
+        "depth": 4,
+        "district": "artisanat",
+        "reserved_for_player": false,
+        "requires_stilts": false
+      },
+      {
+        "parcel_id": 4,
+        "x0": 17,
+        "z0": 17,
+        "width": 4,
+        "depth": 4,
+        "district": "slums",
+        "reserved_for_player": false,
+        "requires_stilts": false
+      }
+    ]
+  }
+}
