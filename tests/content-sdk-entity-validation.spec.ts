@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { validateEntity } from "../packages/content-sdk/src";
+import { CONTENT_KINDS, validateEntity } from "../packages/content-sdk/src";
 
 const validRealm = {
   schema: "uo.game-content-entity/v1",
@@ -129,6 +129,23 @@ test("returns diagnostics instead of throwing for malformed input", () => {
         code: "invalid_entity",
         path: "",
         message: "entity must be a non-null object",
+      },
+    ],
+  });
+});
+
+test("freezes runtime kinds so mutation cannot expand accepted entity kinds", () => {
+  expect(Object.isFrozen(CONTENT_KINDS)).toBe(true);
+
+  const mutableKinds = CONTENT_KINDS as unknown as string[];
+  expect(() => mutableKinds.push("unsupported-kind")).toThrow(TypeError);
+  expect(validateEntity({ ...validRealm, kind: "unsupported-kind" })).toMatchObject({
+    valid: false,
+    diagnostics: [
+      {
+        code: "invalid_kind",
+        path: "kind",
+        message: "kind must be a supported content kind",
       },
     ],
   });

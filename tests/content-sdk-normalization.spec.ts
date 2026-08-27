@@ -133,6 +133,33 @@ function captureCanonicalizationError(content: unknown): unknown {
   }
 }
 
+function captureGraphCanonicalizationError(graph: GameContentGraph): unknown {
+  try {
+    sdk.normalizeContentGraph(graph);
+    return undefined;
+  } catch (error) {
+    return error;
+  }
+}
+
+test("converts a throwing top-level graph getter to a canonicalization error", () => {
+  const CanonicalizationError = Reflect.get(sdk, "CanonicalizationError");
+  const graphWithThrowingGetter = new Proxy(emptyPublicGraph, {
+    get() {
+      throw new Error("untrusted graph getter");
+    },
+  });
+
+  const error = captureGraphCanonicalizationError(graphWithThrowingGetter);
+
+  expect(error).toBeInstanceOf(CanonicalizationError);
+  expect(error).toMatchObject({
+    name: "CanonicalizationError",
+    code: "unsupported_canonical_value",
+    path: "$",
+  });
+});
+
 test("rejects unsupported canonical values with a stable typed path error", () => {
   const CanonicalizationError = Reflect.get(sdk, "CanonicalizationError");
   expect(typeof CanonicalizationError).toBe("function");

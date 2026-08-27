@@ -34,11 +34,17 @@ jobs:
         run: |
           python - <<'PY'
           import re
+          import subprocess
           from pathlib import Path
 
-          md_files = list(Path(".").rglob("*.md"))
+          tracked_paths = subprocess.run(
+              ["git", "ls-files", "-z", "--", "*.md"],
+              check=True,
+              stdout=subprocess.PIPE,
+          ).stdout.split(b"\0")
+          md_files = [Path(path.decode("utf-8")) for path in tracked_paths if path]
           if not md_files:
-              raise SystemExit("No Markdown files found")
+              raise SystemExit("No tracked Markdown files found")
 
           errors = []
           for md_path in md_files:

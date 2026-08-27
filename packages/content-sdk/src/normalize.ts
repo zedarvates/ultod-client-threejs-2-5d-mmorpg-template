@@ -171,15 +171,30 @@ function normalizeEntity(entity: ContentEntity<unknown>, path: string): ContentE
   return normalized;
 }
 
+function readTopLevelGraphField<T>(read: () => T): T {
+  try {
+    return read();
+  } catch {
+    return unsupported("$");
+  }
+}
+
 export function normalizeContentGraph(graph: GameContentGraph): GameContentGraph {
+  const schema = readTopLevelGraphField(() => graph.schema);
+  const id = readTopLevelGraphField(() => graph.id);
+  const version = readTopLevelGraphField(() => graph.version);
+  const visibility = readTopLevelGraphField(() => graph.visibility);
+  const roots = readTopLevelGraphField(() => graph.roots);
+  const entities = readTopLevelGraphField(() => graph.entities);
+
   const normalized = normalizeUnknown(
     {
-      schema: graph.schema,
-      id: graph.id,
-      version: graph.version,
-      visibility: graph.visibility,
-      roots: [...graph.roots].sort(compareOrdinal),
-      entities: graph.entities
+      schema,
+      id,
+      version,
+      visibility,
+      roots: [...roots].sort(compareOrdinal),
+      entities: entities
         .map((entity, index) => normalizeEntity(entity, `$.entities[${index}]`))
         .sort((left, right) => compareOrdinal(left.id, right.id)),
     },

@@ -1,4 +1,4 @@
-export const CONTENT_KINDS = [
+export const CONTENT_KINDS = Object.freeze([
   "realm",
   "region",
   "biome",
@@ -23,7 +23,7 @@ export const CONTENT_KINDS = [
   "loot_table",
   "vendor",
   "recipe",
-] as const;
+] as const);
 
 export type ContentKind = (typeof CONTENT_KINDS)[number];
 

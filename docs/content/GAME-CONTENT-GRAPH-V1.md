@@ -137,9 +137,10 @@ interface ValidationResult {
 Diagnostics are sorted by ordinal `code`, then `path`, then `message`.
 Graph validation prefixes nested entity paths with `entities[index]`. It checks
 entity envelopes, duplicate entity IDs and roots, missing roots, dangling
-references, and every bounded simple `quest` `requires` cycle. Untrusted data
-that cannot be safely accessed returns `invalid_record_access` for entities or
-`invalid_graph_access` for graphs instead of escaping as a thrown error.
+references, and deterministic unique cyclic quest-ID set signatures from
+bounded `quest` `requires` cycle search. Untrusted data that cannot be safely
+accessed returns `invalid_record_access` for entities or `invalid_graph_access`
+for graphs instead of escaping as a thrown error.
 
 Canonicalization is intentionally different: `normalizeContentGraph`,
 `serializeCanonicalGraph`, and `sha256CanonicalGraph` reject values that do

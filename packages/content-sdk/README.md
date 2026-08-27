@@ -70,9 +70,10 @@ errors: both functions return `{ valid, diagnostics }`. Diagnostics are sorted
 ordinally by `code`, `path`, then `message`; graph diagnostics from nested
 entities have an `entities[index]` path prefix. Validation checks supported
 kinds, IDs, semantic versions, authority membership, license IDs, duplicate
-references, graph closure, duplicate roots and entity IDs, and `quest`
-`requires` cycles. It bounds work on untrusted collections and returns an
-access diagnostic when properties cannot safely be read.
+references, graph closure, duplicate roots and entity IDs, and deterministic
+unique cyclic quest-ID set signatures from bounded `quest` `requires` cycle
+search. It bounds work on untrusted collections and returns an access diagnostic
+when properties cannot safely be read.
 
 `normalizeContentGraph(graph)` returns a new canonical graph: it sorts roots,
 entities, references, diagnostics, and object keys while preserving authored
