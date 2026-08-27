@@ -1,14 +1,23 @@
 {
   "schema": "uo.asset-license/v1",
-  "id": "uo.generated-internal-audio-v1",
-  "status": "project_review_required",
+  "id": "MIT",
+  "status": "approved_for_public_template",
   "provenance": "generated_in_repository",
   "terms": {
     "allowed_usage": [
       "development",
-      "testing"
+      "testing",
+      "public_distribution",
+      "commercial_use",
+      "modification"
     ],
-    "production_release": "requires_project_review"
+    "production_release": "approved"
+  },
+  "review": {
+    "approved_by": "repository_owner",
+    "approved_via": "explicit_conversation_authorization",
+    "approved_on": "2026-08-27",
+    "scope": "public_template_distribution"
   },
   "references": [
     {

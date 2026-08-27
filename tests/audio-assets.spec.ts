@@ -8,6 +8,32 @@ import { fileURLToPath } from "node:url";
 const here = dirname(fileURLToPath(import.meta.url));
 const packRoot = join(here, "../public/audio/basic-audio");
 
+test("generated audio pack is approved for public MIT distribution without imported artifacts", () => {
+  const license = JSON.parse(readFileSync(join(packRoot, "license.json"), "utf8"));
+  const catalog = JSON.parse(readFileSync(join(packRoot, "audio-catalog.json"), "utf8"));
+
+  expect(license).toMatchObject({
+    id: "MIT",
+    status: "approved_for_public_template",
+    provenance: "generated_in_repository",
+    terms: { production_release: "approved" },
+  });
+  expect(license.terms.allowed_usage).toEqual([
+    "development",
+    "testing",
+    "public_distribution",
+    "commercial_use",
+    "modification",
+  ]);
+  expect(license.references.every((reference: { imported_artifacts?: number }) =>
+    reference.imported_artifacts === 0,
+  )).toBe(true);
+  expect(catalog.license.id).toBe("MIT");
+  expect(catalog.items.every((item: { provenance?: { mode?: string } }) =>
+    item.provenance?.mode === "generated_in_repository",
+  )).toBe(true);
+});
+
 test("generated audio catalog contains the scenario SFX with audited PCM metadata", () => {
   const catalog = JSON.parse(readFileSync(join(packRoot, "audio-catalog.json"), "utf8"));
   const items = new Map(catalog.items.map((item: { id: string }) => [item.id, item]));

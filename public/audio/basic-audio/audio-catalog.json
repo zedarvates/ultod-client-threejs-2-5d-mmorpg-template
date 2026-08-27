@@ -5,7 +5,7 @@
   "version": "1.0.0",
   "status": "ready",
   "license": {
-    "id": "uo.generated-internal-audio-v1",
+    "id": "MIT",
     "document": "license.json"
   },
   "compatibility": {
