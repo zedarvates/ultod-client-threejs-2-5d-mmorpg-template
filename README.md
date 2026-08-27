@@ -25,6 +25,7 @@ Original Three.js 2.5D / isometric web MMORPG client starter shell.
 - Compatibility gates and roadmap
 - Original Three.js 2.5D presentation shell (offline sandbox, no server connection)
 - Unified keyboard / pointer / touch input with fail-closed network stub
+- `@ultod/content-sdk` v0.1.0 for public, validated content graph contracts
 - MIT license for original code and documentation
 
 ## Quick start (local development)
@@ -56,6 +57,17 @@ first render, keeping the tablet startup path responsive.
 - [JSON template registry](https://github.com/zedarvates/ultod-json-template-registry)
 
 See [SCOPE.md](SCOPE.md), [ROADMAP.md](ROADMAP.md), [server compatibility](docs/SERVER-COMPATIBILITY.md), the [binary asset license audit](docs/ASSET-LICENSE-AUDIT.md), the [publication checklist](docs/PUBLICATION-CHECKLIST.md), the [JSON registry contract](docs/JSON-TEMPLATE-REGISTRY.md), [shell layout](docs/ORIGINAL-SHELL-LAYOUT.md), the [network intent contract](net/intent_contract.md), the [architecture decisions](docs/ARCHITECTURE-DECISIONS.md), the [versioning policy](docs/VERSIONING.md), and [support boundaries](SUPPORT.md).
+
+## Content SDK
+
+[`@ultod/content-sdk`](packages/content-sdk/README.md) provides the public
+`uo.game-content-entity/v1` and `uo.game-content-graph/v1` TypeScript
+contracts, deterministic validators, canonical serialization, and SHA-256
+manifest hashes. It has zero runtime dependencies and does not claim server or
+client compatibility. See the [Game Content Graph V1 contract](docs/content/GAME-CONTENT-GRAPH-V1.md).
+
+StoryCore and legacy registry content are draft-only inputs handled through
+separate adapters; neither directly publishes authoritative runtime content.
 
 ## Non-claims
 
