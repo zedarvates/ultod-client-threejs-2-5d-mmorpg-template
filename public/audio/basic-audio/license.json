@@ -1,0 +1,24 @@
+{
+  "schema": "uo.asset-license/v1",
+  "id": "uo.generated-internal-audio-v1",
+  "status": "project_review_required",
+  "provenance": "generated_in_repository",
+  "terms": {
+    "allowed_usage": [
+      "development",
+      "testing"
+    ],
+    "production_release": "requires_project_review"
+  },
+  "references": [
+    {
+      "id": "musicforge-legacy-mirror",
+      "label": "Legacy musicForge HTTrack snapshot",
+      "location_hint": "D:/remesher/musicForge",
+      "usage": "inspiration_only",
+      "license_status": "unverified",
+      "observed_audio_files": 0,
+      "imported_artifacts": 0
+    }
+  ]
+}

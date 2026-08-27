@@ -1,0 +1,356 @@
+{
+  "schema": "uo.audio-asset-catalog/v1",
+  "id": "uo.basic-audio.catalog",
+  "pack_id": "uo.basic-audio",
+  "version": "1.0.0",
+  "status": "ready",
+  "license": {
+    "id": "uo.generated-internal-audio-v1",
+    "document": "license.json"
+  },
+  "compatibility": {
+    "container": "wav",
+    "codec": "pcm_s16le",
+    "sample_rate_hz": 48000,
+    "sample_width_bits": 16
+  },
+  "budgets": {
+    "max_item_bytes": 2000000,
+    "total_bytes": 3000000,
+    "max_sfx_duration_ms": 1000,
+    "max_music_loop_duration_ms": 10000,
+    "max_peak_dbfs": -3.0,
+    "max_loop_seam_delta": 0.02
+  },
+  "items": [
+    {
+      "id": "sfx.ui_confirm",
+      "label": "Confirmation UI",
+      "kind": "sfx",
+      "status": "ready",
+      "relative_path": "SFX/ui_confirm.wav",
+      "sha256": "436ac8b36a09ef91d95d79437f965096bb1ea3aece31c42217a7098b189fc115",
+      "bytes": 17324,
+      "duration_ms": 180.0,
+      "frame_count": 8640,
+      "channels": 1,
+      "sample_rate_hz": 48000,
+      "sample_width_bits": 16,
+      "peak_dbfs": -9.767452,
+      "rms_dbfs": -18.960713,
+      "preview_gain_db": 0.0,
+      "tags": [
+        "ui",
+        "confirm",
+        "positive"
+      ],
+      "loop": {
+        "enabled": false,
+        "start_frame": 0,
+        "end_frame": 0,
+        "seam_delta": 0.0
+      },
+      "provenance": {
+        "mode": "generated_in_repository",
+        "generator": "asset_factory.audio_assets",
+        "recipe": "ui_confirm_v1"
+      }
+    },
+    {
+      "id": "sfx.ui_cancel",
+      "label": "Annulation UI",
+      "kind": "sfx",
+      "status": "ready",
+      "relative_path": "SFX/ui_cancel.wav",
+      "sha256": "7c05404716ffa7efc326504e5c9bf7464d78da8f667839a3f5ba1e0e7ca54eb5",
+      "bytes": 15404,
+      "duration_ms": 160.0,
+      "frame_count": 7680,
+      "channels": 1,
+      "sample_rate_hz": 48000,
+      "sample_width_bits": 16,
+      "peak_dbfs": -11.182483,
+      "rms_dbfs": -19.920227,
+      "preview_gain_db": 0.0,
+      "tags": [
+        "ui",
+        "cancel",
+        "negative"
+      ],
+      "loop": {
+        "enabled": false,
+        "start_frame": 0,
+        "end_frame": 0,
+        "seam_delta": 0.0
+      },
+      "provenance": {
+        "mode": "generated_in_repository",
+        "generator": "asset_factory.audio_assets",
+        "recipe": "ui_cancel_v1"
+      }
+    },
+    {
+      "id": "sfx.ui_click",
+      "label": "Clic UI",
+      "kind": "sfx",
+      "status": "ready",
+      "relative_path": "SFX/ui_click.wav",
+      "sha256": "a6ec4d96960ea78ef23033be6e8d9d316f78fee7703544b5f2b2a892d10a95c8",
+      "bytes": 3404,
+      "duration_ms": 35.0,
+      "frame_count": 1680,
+      "channels": 1,
+      "sample_rate_hz": 48000,
+      "sample_width_bits": 16,
+      "peak_dbfs": -14.139112,
+      "rms_dbfs": -25.443357,
+      "preview_gain_db": 0.0,
+      "tags": [
+        "ui",
+        "click"
+      ],
+      "loop": {
+        "enabled": false,
+        "start_frame": 0,
+        "end_frame": 0,
+        "seam_delta": 0.0
+      },
+      "provenance": {
+        "mode": "generated_in_repository",
+        "generator": "asset_factory.audio_assets",
+        "recipe": "ui_click_v1"
+      }
+    },
+    {
+      "id": "sfx.ui_dialog_open",
+      "label": "Ouverture Dialogue",
+      "kind": "sfx",
+      "status": "ready",
+      "relative_path": "SFX/ui_dialog_open.wav",
+      "sha256": "6325efc1e8982f983d23fbfbedcce3282e2f4a7ef86e725b3c0e711a4d26e2f1",
+      "bytes": 11564,
+      "duration_ms": 120.0,
+      "frame_count": 5760,
+      "channels": 1,
+      "sample_rate_hz": 48000,
+      "sample_width_bits": 16,
+      "peak_dbfs": -13.783349,
+      "rms_dbfs": -21.230445,
+      "preview_gain_db": 0.0,
+      "tags": [
+        "ui",
+        "dialog",
+        "open"
+      ],
+      "loop": {
+        "enabled": false,
+        "start_frame": 0,
+        "end_frame": 0,
+        "seam_delta": 0.0
+      },
+      "provenance": {
+        "mode": "generated_in_repository",
+        "generator": "asset_factory.audio_assets",
+        "recipe": "ui_dialog_open_v1"
+      }
+    },
+    {
+      "id": "sfx.sword_swing",
+      "label": "Attaque Epee",
+      "kind": "sfx",
+      "status": "ready",
+      "relative_path": "SFX/sword_swing.wav",
+      "sha256": "b90de69ea61f8658b255b56a0c1d447d2cb32aa52def0c9ea50a83b6916d9674",
+      "bytes": 21164,
+      "duration_ms": 220.0,
+      "frame_count": 10560,
+      "channels": 1,
+      "sample_rate_hz": 48000,
+      "sample_width_bits": 16,
+      "peak_dbfs": -13.368392,
+      "rms_dbfs": -22.393051,
+      "preview_gain_db": 0.0,
+      "tags": [
+        "combat",
+        "sword",
+        "swing"
+      ],
+      "loop": {
+        "enabled": false,
+        "start_frame": 0,
+        "end_frame": 0,
+        "seam_delta": 0.0
+      },
+      "provenance": {
+        "mode": "generated_in_repository",
+        "generator": "asset_factory.audio_assets",
+        "recipe": "sword_swing_v1"
+      }
+    },
+    {
+      "id": "sfx.impact_hit",
+      "label": "Impact Coup",
+      "kind": "sfx",
+      "status": "ready",
+      "relative_path": "SFX/impact_hit.wav",
+      "sha256": "58c472895d8fa0a243e176b264b17a927bb199004a701d94a39edfe965f322b3",
+      "bytes": 17324,
+      "duration_ms": 180.0,
+      "frame_count": 8640,
+      "channels": 1,
+      "sample_rate_hz": 48000,
+      "sample_width_bits": 16,
+      "peak_dbfs": -8.521937,
+      "rms_dbfs": -20.877717,
+      "preview_gain_db": 0.0,
+      "tags": [
+        "combat",
+        "hit",
+        "impact"
+      ],
+      "loop": {
+        "enabled": false,
+        "start_frame": 0,
+        "end_frame": 0,
+        "seam_delta": 0.0
+      },
+      "provenance": {
+        "mode": "generated_in_repository",
+        "generator": "asset_factory.audio_assets",
+        "recipe": "impact_hit_v1"
+      }
+    },
+    {
+      "id": "sfx.coins",
+      "label": "Pieces Or",
+      "kind": "sfx",
+      "status": "ready",
+      "relative_path": "SFX/coins.wav",
+      "sha256": "bfa09d0b7bff1ae7e957863184b4e4668061ebf6fc2560d675e1ba66ae9ca8cf",
+      "bytes": 19244,
+      "duration_ms": 200.0,
+      "frame_count": 9600,
+      "channels": 1,
+      "sample_rate_hz": 48000,
+      "sample_width_bits": 16,
+      "peak_dbfs": -9.793607,
+      "rms_dbfs": -23.742977,
+      "preview_gain_db": 0.0,
+      "tags": [
+        "economy",
+        "gold",
+        "coins"
+      ],
+      "loop": {
+        "enabled": false,
+        "start_frame": 0,
+        "end_frame": 0,
+        "seam_delta": 0.0
+      },
+      "provenance": {
+        "mode": "generated_in_repository",
+        "generator": "asset_factory.audio_assets",
+        "recipe": "coins_v1"
+      }
+    },
+    {
+      "id": "sfx.beast_roar",
+      "label": "Grognement Bete",
+      "kind": "sfx",
+      "status": "ready",
+      "relative_path": "SFX/beast_roar.wav",
+      "sha256": "e48a4babb40107ca657802fd518ae2bbad2428b06f4cfc233240dcff22dc8c22",
+      "bytes": 43244,
+      "duration_ms": 450.0,
+      "frame_count": 21600,
+      "channels": 1,
+      "sample_rate_hz": 48000,
+      "sample_width_bits": 16,
+      "peak_dbfs": -11.700961,
+      "rms_dbfs": -18.79724,
+      "preview_gain_db": 0.0,
+      "tags": [
+        "creature",
+        "beast",
+        "roar"
+      ],
+      "loop": {
+        "enabled": false,
+        "start_frame": 0,
+        "end_frame": 0,
+        "seam_delta": 0.0
+      },
+      "provenance": {
+        "mode": "generated_in_repository",
+        "generator": "asset_factory.audio_assets",
+        "recipe": "beast_roar_v1"
+      }
+    },
+    {
+      "id": "sfx.victory_fanfare",
+      "label": "Fanfare Victoire",
+      "kind": "sfx",
+      "status": "ready",
+      "relative_path": "SFX/victory_fanfare.wav",
+      "sha256": "aca4cb20f2025641a3ed956dcc5116200a726a5a978d0afc47fd22794f7eae09",
+      "bytes": 48044,
+      "duration_ms": 500.0,
+      "frame_count": 24000,
+      "channels": 1,
+      "sample_rate_hz": 48000,
+      "sample_width_bits": 16,
+      "peak_dbfs": -12.582304,
+      "rms_dbfs": -19.813238,
+      "preview_gain_db": 0.0,
+      "tags": [
+        "victory",
+        "quest",
+        "fanfare"
+      ],
+      "loop": {
+        "enabled": false,
+        "start_frame": 0,
+        "end_frame": 0,
+        "seam_delta": 0.0
+      },
+      "provenance": {
+        "mode": "generated_in_repository",
+        "generator": "asset_factory.audio_assets",
+        "recipe": "victory_fanfare_v1"
+      }
+    },
+    {
+      "id": "music.ambient_nexus",
+      "label": "Nexus Ambient Loop",
+      "kind": "music_loop",
+      "status": "ready",
+      "relative_path": "Music/ambient_nexus_loop.wav",
+      "sha256": "3acf554a23a058a3489005802c4de23b8a4fc0ea0aea3651bafa5f708d132727",
+      "bytes": 768044,
+      "duration_ms": 4000.0,
+      "frame_count": 192000,
+      "channels": 2,
+      "sample_rate_hz": 48000,
+      "sample_width_bits": 16,
+      "peak_dbfs": -14.643529,
+      "rms_dbfs": -22.21033,
+      "preview_gain_db": 0.0,
+      "tags": [
+        "ambient",
+        "nexus",
+        "loop"
+      ],
+      "loop": {
+        "enabled": true,
+        "start_frame": 0,
+        "end_frame": 192000,
+        "seam_delta": 0.00302133
+      },
+      "provenance": {
+        "mode": "generated_in_repository",
+        "generator": "asset_factory.audio_assets",
+        "recipe": "ambient_nexus_v1"
+      }
+    }
+  ]
+}

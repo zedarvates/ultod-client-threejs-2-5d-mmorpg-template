@@ -11,10 +11,15 @@ import type { CreatureGenome } from "./render/creature-bridge";
 import { HudOverlay } from "./ui/hud-overlay";
 import { NetworkClient } from "./net/network-client";
 import { ScenarioWorld } from "./game/scenario-world";
+import villageMap from "./content/maps/village_square.city.json" with { type: "json" };
+import { validateCityConfigLite, type CityConfigLite } from "./game/city-config";
+import { buildCityMapPreview } from "./render/city-map-bridge";
+import { mapBounds, worldFromAnchor, parcelCenter } from "./game/village-layout";
 import { initialQuestState, questObjective, advanceTo } from "./game/quest";
 import type { QuestState } from "./game/quest";
 import { DialogBox } from "./ui/dialog-box";
 import { TouchJoystick } from "./input/touch-joystick";
+import { AudioManager } from "./audio/audio-manager";
 
 class IsometricApp {
   private scene: THREE.Scene;
@@ -32,8 +37,10 @@ class IsometricApp {
   private world!: ScenarioWorld;
   private quest: QuestState = initialQuestState();
   private dialog = new DialogBox();
+  private readonly audio = new AudioManager(import.meta.env.BASE_URL);
   private interactCooldown = 0;
   private joystick!: TouchJoystick;
+  private mapLimits?: { minX: number; maxX: number; minZ: number; maxZ: number };
   private readonly cameraOffset = new THREE.Vector3(20, 20, 20);
 
   constructor() {
@@ -72,9 +79,18 @@ class IsometricApp {
     this.scene.add(gridHelper);
 
     this.controls = new IsometricControls();
-    this.player = new PlayerPresentation(this.scene);
+    const cityErrors = validateCityConfigLite(villageMap as CityConfigLite);
+    const city = cityErrors.length ? undefined : (villageMap as CityConfigLite);
+    if (city) this.scene.add(buildCityMapPreview(city));
+    else console.warn("[city-map] invalid CityConfig", cityErrors);
 
-    this.world = new ScenarioWorld(this.scene);
+    this.player = new PlayerPresentation(this.scene);
+    if (city) {
+      const spawn = worldFromAnchor(city, "player");
+      this.player.mesh.position.set(spawn.x, spawn.y, spawn.z);
+    }
+    this.world = new ScenarioWorld(this.scene, city);
+    this.mapLimits = city ? mapBounds(city) : undefined;
 
     // Touch joystick for mobile/tablet play
     this.joystick = new TouchJoystick(
@@ -101,6 +117,9 @@ class IsometricApp {
     window.addEventListener("keydown", (e) => this.keys.add(e.code));
     window.addEventListener("keyup", (e) => this.keys.delete(e.code));
     window.addEventListener("blur", () => this.keys.clear());
+    window.addEventListener("click", () => this.audio.unlock(), { once: true });
+    window.addEventListener("keydown", () => this.audio.unlock(), { once: true });
+    window.addEventListener("touchstart", () => this.audio.unlock(), { once: true });
     canvas.addEventListener("click", (e) => {
       this.targetPosition = this.controls.handlePointerClick(e, this.camera, canvas);
     });
@@ -124,38 +143,26 @@ class IsometricApp {
     // Original procedural tutorial props.
     props.loadTemplateProps(this.scene);
 
-    // Architecture Editor blueprint demo (see public/blueprints/)
+    // Architecture Editor houses sit on CityConfig parcels, preview only.
     fetch(import.meta.env.BASE_URL + "blueprints/maisonnette_standard.json")
       .then((r) => r.json() as Promise<HouseBlueprint>)
       .then((bp) => {
-        const result = blueprint.buildFromBlueprint(
-          bp,
-          gltfLoader,
-          () => null,
-          new THREE.Vector3(8, 0, 4),
-        ); // null resolver -> colored placeholders (no GLB dependency for the template)
-        this.scene.add(result.group);
-        console.log(
-          "[blueprint] " + bp.blueprint_id +
-          " colliders=" + result.colliders.length,
-        );
-      })
-      .catch((e) => console.warn("[blueprint] failed to load", e));
-
-    fetch(import.meta.env.BASE_URL + "maps/village_square.city.json")
-      .then((r) => r.json())
-      .then(async (raw) => {
-        const city = await import("./game/city-config");
-        const preview = await import("./render/city-map-bridge");
-        const errors = city.validateCityConfigLite(raw);
-        if (errors.length) {
-          console.warn("[city-map] invalid CityConfig", errors);
+        const city = validateCityConfigLite(villageMap as CityConfigLite).length ? undefined : (villageMap as CityConfigLite);
+        const parcels = city?.authored_layout?.parcels ?? [];
+        if (!city || parcels.length === 0) {
+          const result = blueprint.buildFromBlueprint(bp, gltfLoader, () => null, new THREE.Vector3(18, 0, 18));
+          this.scene.add(result.group);
           return;
         }
-        this.scene.add(preview.buildCityMapPreview(raw));
-        console.log("[city-map] loaded", raw.city_id);
+        for (const parcel of parcels) {
+          const center = parcelCenter(city, parcel);
+          const result = blueprint.buildFromBlueprint(bp, gltfLoader, () => null, new THREE.Vector3(center.x, 0, center.z));
+          result.group.name = "parcel-house-" + parcel.parcel_id;
+          this.scene.add(result.group);
+        }
+        console.log("[blueprint] placed houses on parcels", parcels.length);
       })
-      .catch((e) => console.warn("[city-map] failed to load", e));
+      .catch((e) => console.warn("[blueprint] failed to load", e));
 
     // Creature Editor demo (see public/creatures/).
     fetch(import.meta.env.BASE_URL + "creatures/exemple_rodeur_aile.json")
@@ -229,6 +236,10 @@ class IsometricApp {
     const moveDelta = next.clone().sub(this.player.mesh.position);
     const isMoving = moveDelta.lengthSq() > 1e-6;
     this.player.updateMovement(moveDelta, isMoving, delta);
+    if (this.mapLimits) {
+      next.x = Math.min(this.mapLimits.maxX, Math.max(this.mapLimits.minX, next.x));
+      next.z = Math.min(this.mapLimits.maxZ, Math.max(this.mapLimits.minZ, next.z));
+    }
     this.player.mesh.position.copy(next);
     this.camera.position.copy(this.player.mesh.position).add(this.cameraOffset);
     this.camera.lookAt(this.player.mesh.position);
@@ -268,11 +279,12 @@ class IsometricApp {
   }
 
   private talkToKing(): void {
+    this.audio.play("ui_dialog_open");
     if (this.quest.stage === "not_started") {
       this.dialog.show(
         "King Aldric",
         "Brave adventurer! A foul beast has kidnapped my daughter, Princess Elara. Take these 50 gold coins, buy a sword, then slay the beast north of the village.",
-        [{ label: "I will save her!", callback: () => { this.quest = advanceTo(this.quest, "talked_to_king"); } }],
+        [{ label: "I will save her!", callback: () => { this.audio.play("coins"); this.quest = advanceTo(this.quest, "talked_to_king"); } }],
       );
     } else if (this.quest.stage === "princess_rescued") {
       this.dialog.show("King Aldric", "You are a true hero! The kingdom owes you everything.");
@@ -282,6 +294,7 @@ class IsometricApp {
   }
 
   private talkToMerchant(): void {
+    this.audio.play("ui_dialog_open");
     if (this.quest.stage === "talked_to_king" && !this.quest.hasSword) {
       this.dialog.show(
         "Merchant Borin",
@@ -290,6 +303,7 @@ class IsometricApp {
           ...(this.quest.gold >= 50 ? [{
             label: "Buy sword (50g)",
             callback: () => {
+              this.audio.play("coins");
               this.quest = { ...this.quest, gold: this.quest.gold - 50, hasSword: true };
               this.quest = advanceTo(this.quest, "bought_sword");
             },
@@ -306,18 +320,23 @@ class IsometricApp {
 
   private fightBeast(): void {
     if (!this.quest.hasSword) {
+      this.audio.play("beast_roar");
       this.dialog.show("Cave Beast", "The beast roars! Your bare hands are useless. You need a weapon.");
       return;
     }
+    this.audio.play("sword_swing");
+    this.audio.play("impact_hit");
     this.world.killBeast();
     this.quest = advanceTo(this.quest, "slain_monster");
     this.dialog.show("\u2694 Victory!", "The beast falls with a final roar! The way to the princess is clear.");
   }
 
   private talkToPrincess(): void {
+    this.audio.play("ui_dialog_open");
     if (!this.world.beastAlive) {
       this.world.freePrincess();
       this.quest = advanceTo(this.quest, "princess_rescued");
+      this.audio.play("victory_fanfare");
       this.dialog.show("Princess Elara", "My hero! You slew the beast and freed me!");
     } else {
       this.dialog.show("Cage", "The princess is locked away behind bars. Slay the beast first!");

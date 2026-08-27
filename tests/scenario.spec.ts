@@ -5,6 +5,11 @@ import { ScenarioWorld } from "../src/game/scenario-world";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { buildFromBlueprint } from "../src/render/blueprint-bridge";
 import { PlayerPresentation } from "../src/player_presentation";
+import { readFileSync } from "node:fs";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
+import { worldFromAnchor } from "../src/game/village-layout";
+import type { CityConfigLite } from "../src/game/city-config";
 
 test("accepting the royal quest funds the required 50g sword", () => {
   const accepted = advanceTo(initialQuestState(), "talked_to_king");
@@ -116,53 +121,61 @@ test("camera keeps following while the player moves", async ({ page }) => {
 });
 
 test("player can complete the full rescue scenario through the UI", async ({ page }) => {
+  test.setTimeout(60_000);
   const readPosition = async (): Promise<{ x: number; z: number }> => {
     const hud = await page.locator("#hud").textContent();
     const match = hud?.match(/pos \((-?\d+\.\d+), (-?\d+\.\d+)\)/);
     if (!match) throw new Error("HUD position unavailable");
     return { x: Number(match[1]), z: Number(match[2]) };
   };
-  const moveUntil = async (
-    key: "w" | "a" | "s" | "d",
-    reached: (position: { x: number; z: number }) => boolean,
-  ) => {
-    for (let step = 0; step < 50; step += 1) {
+  const city = JSON.parse(readFileSync(join(dirname(fileURLToPath(import.meta.url)), "../public/maps/village_square.city.json"), "utf8")) as CityConfigLite;
+  const king = worldFromAnchor(city, "king");
+  const merchant = worldFromAnchor(city, "merchant");
+  const beast = worldFromAnchor(city, "beast");
+  const princess = worldFromAnchor(city, "princess");
+  const moveUntil = async (key: "w" | "a" | "s" | "d", reached: (position: { x: number; z: number }) => boolean) => {
+    for (let step = 0; step < 90; step += 1) {
       if (reached(await readPosition())) return;
       await page.keyboard.down(key);
-      await page.waitForTimeout(100);
+      await page.waitForTimeout(80);
       await page.keyboard.up(key);
     }
-    throw new Error(`Could not reach target while moving ${key}`);
+    throw new Error("Could not reach target while moving " + key);
+  };
+  const walkTo = async (x: number, z: number) => {
+    const start = await readPosition();
+    if (Math.abs(start.x - x) > 0.5) {
+      await moveUntil(start.x < x ? "d" : "a", (p) => Math.abs(p.x - x) <= 0.7);
+    }
+    const mid = await readPosition();
+    if (Math.abs(mid.z - z) > 0.5) {
+      await moveUntil(mid.z < z ? "s" : "w", (p) => Math.abs(p.z - z) <= 0.7);
+    }
   };
 
   await page.goto("/");
   await page.waitForTimeout(300);
 
-  // King at (0, -5): approach, accept the quest, receive the royal advance.
-  await moveUntil("w", ({ z }) => z <= -2.7);
+  await walkTo(king.x, king.z);
   await page.keyboard.press("e");
   await expect(page.locator("#dialog-name")).toHaveText("King Aldric");
   await page.getByRole("button", { name: "I will save her!" }).click();
   await expect(page.locator("#quest-gold")).toHaveText("Gold: 75");
 
-  // Merchant at (-4, -2): buy the sword.
-  await moveUntil("a", ({ x }) => x <= -2.3);
+  await walkTo(merchant.x, merchant.z);
   await page.keyboard.press("e");
   await expect(page.locator("#dialog-name")).toHaveText("Merchant Borin");
   await page.getByRole("button", { name: "Buy sword (50g)" }).click();
   await expect(page.locator("#quest-gold")).toHaveText("Gold: 25");
   await expect(page.locator("#inv-sword")).toHaveClass(/filled/);
+  await expect(page.locator("#quest-objective")).toHaveText("Slay the Beast (red creature) north of the village.");
 
-  // Beast at (0, -14): return to x=0, travel north, and attack.
-  await moveUntil("d", ({ x }) => x >= -0.5);
-  await moveUntil("w", ({ z }) => z <= -12);
+  await walkTo(beast.x, beast.z);
   await page.keyboard.press("e");
   await expect(page.locator("#dialog-name")).toHaveText("⚔ Victory!");
   await page.getByRole("button", { name: "Close" }).click();
 
-  // Princess at (6, -8): approach her and finish the quest.
-  await moveUntil("d", ({ x }) => x >= 4.5);
-  await moveUntil("s", ({ z }) => z >= -9.5);
+  await walkTo(princess.x, princess.z);
   await page.keyboard.press("e");
   await expect(page.locator("#dialog-name")).toHaveText("Princess Elara");
   await expect(page.locator("#quest-objective")).toHaveText("Quest complete! The kingdom is saved.");
