@@ -169,16 +169,15 @@ class IsometricApp {
         }
         for (const parcel of parcels) {
           const center = parcelCenter(city, parcel);
+          const footprintScale = parcelHouseScale(city, parcel, bp.lot);
           const result = blueprint.buildFromBlueprint(
             bp,
             gltfLoader,
             () => null,
             new THREE.Vector3(center.x, 0, center.z),
             districtBuildingStyle(parcel.district),
+            footprintScale,
           );
-          const footprintScale = parcelHouseScale(city, parcel, bp.lot);
-          result.group.scale.x = footprintScale;
-          result.group.scale.z = footprintScale;
           result.group.name = "parcel-house-" + parcel.parcel_id;
           this.scene.add(result.group);
         }

@@ -259,3 +259,45 @@ test("blueprint height styling keeps world offset and colliders aligned", () => 
   expect(wallCollider?.min[1]).toBeCloseTo(10, 5);
   expect(wallCollider?.max[1]).toBeCloseTo(13.36, 5);
 });
+
+test("blueprint footprint scaling keeps world offset and colliders aligned", () => {
+  const blueprint = {
+    blueprint_id: "district_footprint_collider_fixture",
+    lot: { width: 1, depth: 1, cell_size: 1, floor_height: 3 },
+    floors: [{
+      level: 0,
+      tiles: [{ x: 0, z: 0, part_id: "floor" }],
+    }],
+  };
+  const style = {
+    floorColor: "#9b7847",
+    wallColor: "#d7c7a3",
+    roofColor: "#43516d",
+    heightScale: 1,
+  };
+  const scaledBuild = buildFromBlueprint as unknown as (
+    bp: typeof blueprint,
+    loader: GLTFLoader,
+    resolver: () => null,
+    offset: THREE.Vector3,
+    buildingStyle: typeof style,
+    footprintScale: number,
+  ) => ReturnType<typeof buildFromBlueprint>;
+
+  const result = scaledBuild(
+    blueprint,
+    new GLTFLoader(),
+    () => null,
+    new THREE.Vector3(8, 0, 4),
+    style,
+    0.5,
+  );
+  const floorCollider = result.colliders.find((collider) => collider.kind === "floor");
+
+  expect(result.group.scale.x).toBe(0.5);
+  expect(result.group.scale.z).toBe(0.5);
+  expect(result.group.position.x).toBe(4);
+  expect(result.group.position.z).toBe(2);
+  expect(floorCollider?.min).toEqual([7.75, 0, 3.75]);
+  expect(floorCollider?.max).toEqual([8.25, 0.05, 4.25]);
+});

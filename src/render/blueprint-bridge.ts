@@ -61,12 +61,23 @@ export function buildFromBlueprint(
   modelResolver: (partId: string) => string | null,
   worldOffset = new THREE.Vector3(),
   buildingStyle: BuildingVisualStyle = DEFAULT_BUILDING_STYLE,
+  footprintScale = 1,
 ): BridgeResult {
   const group = new THREE.Group();
+  group.scale.x = footprintScale;
   group.scale.y = buildingStyle.heightScale;
+  group.scale.z = footprintScale;
+  group.position.x = worldOffset.x * (1 - footprintScale);
   group.position.y = worldOffset.y * (1 - buildingStyle.heightScale);
+  group.position.z = worldOffset.z * (1 - footprintScale);
+  const scaleWorldX = (value: number): number => (
+    worldOffset.x + (value - worldOffset.x) * footprintScale
+  );
   const scaleWorldY = (value: number): number => (
     worldOffset.y + (value - worldOffset.y) * buildingStyle.heightScale
+  );
+  const scaleWorldZ = (value: number): number => (
+    worldOffset.z + (value - worldOffset.z) * footprintScale
   );
   const colliders: ColliderBox[] = [];
   const loadedModels = new Set<string>();
@@ -96,8 +107,8 @@ export function buildFromBlueprint(
       const m = new THREE.Matrix4().makeTranslation(px, py, pz);
       pushBatch(tileBatches, tile.part_id, m);
       colliders.push({
-        min: [px - cellSize / 2, scaleWorldY(py), pz - cellSize / 2],
-        max: [px + cellSize / 2, scaleWorldY(py + 0.05), pz + cellSize / 2],
+        min: [scaleWorldX(px - cellSize / 2), scaleWorldY(py), scaleWorldZ(pz - cellSize / 2)],
+        max: [scaleWorldX(px + cellSize / 2), scaleWorldY(py + 0.05), scaleWorldZ(pz + cellSize / 2)],
         kind: "floor",
       });
     }
@@ -111,8 +122,8 @@ export function buildFromBlueprint(
       const halfW = cellSize / 2;
       const t = WALL_THICKNESS / 2;
       colliders.push(isN
-        ? { min: [wx - t, scaleWorldY(y), wz - halfW], max: [wx + t, scaleWorldY(y + floorHeight), wz + halfW], kind: "wall" }
-        : { min: [wx - halfW, scaleWorldY(y), wz - t], max: [wx + halfW, scaleWorldY(y + floorHeight), wz + t], kind: "wall" });
+        ? { min: [scaleWorldX(wx - t), scaleWorldY(y), scaleWorldZ(wz - halfW)], max: [scaleWorldX(wx + t), scaleWorldY(y + floorHeight), scaleWorldZ(wz + halfW)], kind: "wall" }
+        : { min: [scaleWorldX(wx - halfW), scaleWorldY(y), scaleWorldZ(wz - t)], max: [scaleWorldX(wx + halfW), scaleWorldY(y + floorHeight), scaleWorldZ(wz + t)], kind: "wall" });
     }
     for (const p of floor.props ?? []) {
       const partId = p.prop_id ?? p.part_id ?? "";
