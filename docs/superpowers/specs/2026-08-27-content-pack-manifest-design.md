@@ -163,6 +163,7 @@ All work on untrusted input is explicitly bounded:
 | `MAX_PACK_OWN_KEYS` | 64 | Maximum top-level own keys inspected before one limit diagnostic. |
 | `MAX_PACK_ARTIFACTS` | 16,384 | Maximum declared artifacts. |
 | `MAX_ARTIFACT_OWN_KEYS` | 16 | Maximum own keys inspected on one artifact. |
+| `MAX_PACK_NESTED_OWN_KEYS` | 16 | Maximum own keys on compatibility, license or provenance records. |
 | `MAX_ARTIFACT_PATH_LENGTH` | 1,024 | Maximum path length. |
 | `MAX_MEDIA_TYPE_LENGTH` | 128 | Maximum media type length. |
 | `MAX_LICENSE_ID_LENGTH` | 128 | Maximum SPDX-like license identifier length. |
@@ -170,7 +171,9 @@ All work on untrusted input is explicitly bounded:
 
 Compatibility strings and server protocol lists reuse the existing SDK bounds.
 Artifact arrays and own-key snapshots are read once. Validation does not invoke
-untrusted iterators or array methods.
+untrusted iterators or array methods. Compatibility permits exactly
+`content_graph`, `client_core` and `server_protocol`; license permits `id`; and
+provenance permits `kind` and `source`. Unknown nested own keys are rejected.
 
 ## 9. Structural validation
 
