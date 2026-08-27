@@ -10,10 +10,11 @@
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
-    "test:e2e": "playwright test",
-    "check:public-boundary": "node scripts/check-public-boundary.mjs",
-    "check:content-sdk": "npm --workspace @ultod/content-sdk run typecheck"
-  },
+   "test:e2e": "playwright test",
+   "check:public-boundary": "node scripts/check-public-boundary.mjs",
+    "check:content-sdk": "npm --workspace @ultod/content-sdk run typecheck",
+    "check:client-core": "npm --workspace @ultod/threejs-client-core run typecheck"
+ },
   "dependencies": {
     "three": "^0.180.0"
   },
