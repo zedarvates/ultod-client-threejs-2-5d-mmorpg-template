@@ -1,6 +1,7 @@
 import { readFile } from "node:fs/promises";
 import { execFile } from "node:child_process";
 import { extname, join } from "node:path";
+import { pathToFileURL } from "node:url";
 import { promisify } from "node:util";
 
 const execFileAsync = promisify(execFile);
@@ -11,10 +12,12 @@ const PRIVATE_LORE_NAMES = [
   ["Orin", "Veyr"].join(" "),
   ["The", "Last", "Open", "Threshold"].join(" "),
 ];
-const RELEASE_CONTAINMENT_RECORDS = new Set([
+const LORE_BOUNDARY_RECORDS = new Set([
+  "docs/superpowers/specs/2026-08-26-template-game-content-architecture-design.md",
+  "docs/superpowers/plans/2026-08-26-repository-split-and-public-containment.md",
   "docs/PUBLIC-EXTRACTION-DESIGN.md",
   "docs/ASSET-LICENSE-AUDIT.md",
-  "ROADMAP.md",
+  "CHANGELOG.md",
 ]);
 
 /**
@@ -26,9 +29,7 @@ const RELEASE_CONTAINMENT_RECORDS = new Set([
  */
 
 function isLoreBoundaryRecord(path) {
-  return path.startsWith("docs/superpowers/specs/")
-    || path.startsWith("docs/superpowers/plans/")
-    || RELEASE_CONTAINMENT_RECORDS.has(path);
+  return LORE_BOUNDARY_RECORDS.has(path);
 }
 
 /**
@@ -100,11 +101,11 @@ function compareText(left, right) {
   return left < right ? -1 : left > right ? 1 : 0;
 }
 
-if (import.meta.url === `file://${process.argv[1].replace(/\\/g, "/")}`) {
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   const findings = await scanPublicBoundary(process.cwd());
 
+  console.log(JSON.stringify(findings, null, 2));
   if (findings.length > 0) {
-    console.log(JSON.stringify(findings, null, 2));
     process.exitCode = 1;
   }
 }
