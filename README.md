@@ -61,10 +61,13 @@ See [SCOPE.md](SCOPE.md), [ROADMAP.md](ROADMAP.md), [server compatibility](docs/
 ## Content SDK
 
 [`@ultod/content-sdk`](packages/content-sdk/README.md) provides the public
-`uo.game-content-entity/v1` and `uo.game-content-graph/v1` TypeScript
-contracts, deterministic validators, canonical serialization, and SHA-256
-manifest hashes. It has zero runtime dependencies and does not claim server or
-client compatibility. See the [Game Content Graph V1 contract](docs/content/GAME-CONTENT-GRAPH-V1.md).
+`uo.game-content-entity/v1`, `uo.game-content-graph/v1`, and the separate
+`uo.game-content-pack/v1` TypeScript contracts. It provides deterministic
+validation, canonical serialization, SHA-256 integrity, and a pure publication
+assessment without fetching or publishing content. It has zero runtime
+dependencies and does not claim server or client compatibility. See the
+[Game Content Graph V1 contract](docs/content/GAME-CONTENT-GRAPH-V1.md) and
+[Game Content Pack V1 contract](docs/content/GAME-CONTENT-PACK-V1.md).
 
 StoryCore and legacy registry content are draft-only inputs handled through
 separate adapters; neither directly publishes authoritative runtime content.
