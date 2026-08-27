@@ -3,12 +3,16 @@
   "version": "0.1.3",
   "description": "Minimal isolated presentation shell for Three.js 2.5D isometric MMORPG client.",
   "type": "module",
+  "workspaces": [
+    "packages/*"
+  ],
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
     "test:e2e": "playwright test",
-    "check:public-boundary": "node scripts/check-public-boundary.mjs"
+    "check:public-boundary": "node scripts/check-public-boundary.mjs",
+    "check:content-sdk": "npm --workspace @ultod/content-sdk run typecheck"
   },
   "dependencies": {
     "three": "^0.180.0"
