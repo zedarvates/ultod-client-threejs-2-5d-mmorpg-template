@@ -71,6 +71,7 @@ assessment without fetching or publishing content. It has zero runtime
 dependencies and does not claim server or client compatibility. See the
 [Game Content Graph V1 contract](docs/content/GAME-CONTENT-GRAPH-V1.md) and
 [Game Content Pack V1 contract](docs/content/GAME-CONTENT-PACK-V1.md).
+- [`examples/tutorial-world/`](examples/tutorial-world/README.md): Canonical synthetic 25-entity public content pack fixture.
 
 StoryCore and legacy registry content are draft-only inputs handled through
 separate adapters; neither directly publishes authoritative runtime content.

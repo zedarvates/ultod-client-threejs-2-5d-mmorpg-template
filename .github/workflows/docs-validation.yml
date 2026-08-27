@@ -47,6 +47,9 @@ jobs:
           tests/client-core-input-camera.spec.ts
           tests/client-core-presentation.spec.ts
           tests/client-core-net-ui-content.spec.ts
+          tests/tutorial-world-entities.spec.ts
+          tests/tutorial-world-pack.spec.ts
+          tests/tutorial-world-mounting.spec.ts
       - name: Validate Markdown and internal links
         shell: bash
         run: |
