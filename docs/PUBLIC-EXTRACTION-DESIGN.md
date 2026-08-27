@@ -53,22 +53,21 @@ For each new file proposed for extraction:
 7. **Record** — add an entry to the allowlist table above with review date.
 8. **Review** — second-person approval required before push.
 
-## Asset provenance
-
-Generated GLB files produced by the local Asset Factory pipeline carry their own
-provenance chain (see [PROVENANCE](../public/assets/props/PROVENANCE.md)).
-They may only enter this repository after passing all quality gates and being
-marked `accepted` by the pipeline. The full manifest stays in the tooling repo;
-this repo mirrors only the name, run ID and SHA-256 hash.
-
 ## Current state
 
-Eight GLB files were copied from private tooling into this repository before
-the binary exception gate was documented: two Asset Factory outputs and six
-Creature Editor XenoParts. Seven match retained manifest hashes; the public
-rock GLB does not match the run previously claimed in its provenance table.
-Redistribution terms are unresolved for all eight files. See
-[ASSET-LICENSE-AUDIT.md](ASSET-LICENSE-AUDIT.md).
+Private game lore has moved to a distinct private repository. Commit `9b615ea`
+remains in this public repository's history, but current `main` contains no
+private game lore or private binary assets.
+
+The public demo now uses original procedural geometry for scenery and creature
+parts. The eight GLBs formerly copied from private tooling have been removed
+from current `main`; their audit remains only as a historical record in
+[ASSET-LICENSE-AUDIT.md](ASSET-LICENSE-AUDIT.md), with status
+`current-main-resolved / historical-releases-annotate`.
+
+The next release gate remains blocked until historical releases containing those
+binaries are annotated. No binary exception is currently approved for this
+repository.
 
 The bridges (`blueprint-bridge.ts`, `creature-bridge.ts`) remain original public
 code and contain no private implementation logic.

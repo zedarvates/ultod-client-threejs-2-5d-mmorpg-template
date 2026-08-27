@@ -25,7 +25,7 @@ Original Three.js 2.5D / isometric web MMORPG client starter shell.
 - Compatibility gates and roadmap
 - Original Three.js 2.5D presentation shell (offline sandbox, no server connection)
 - Unified keyboard / pointer / touch input with fail-closed network stub
-- MIT license for original code and documentation; binary assets have a separate pending license review
+- MIT license for original code and documentation
 
 ## Quick start (local development)
 
@@ -35,7 +35,7 @@ npm run dev      # start Vite dev server on localhost
 npm run build    # type-check + production build to dist/
 ```
 
-Run the end-to-end test suite (13 tests: shell boot, HUD, render liveness,
+Run the end-to-end test suite (18 tests: shell boot, HUD, render liveness,
 scenario economy and progression, blueprint placement, player visibility,
 camera follow, complete rescue UI journey, loopback handshake/auth/movement,
 fail-closed auth rejection, deferred scenery startup and eventual asset loading):
@@ -45,8 +45,8 @@ npm run test:e2e
 ```
 
 The starter runs fully offline. The network layer is a fail-closed stub with no endpoint configured.
-Editor bridges and multi-megabyte GLB scenery load after the critical UI and first render,
-keeping the tablet startup path responsive.
+Its demo scenery and creature parts use original procedural geometry after the critical UI and
+first render, keeping the tablet startup path responsive.
 
 ## Links
 
@@ -63,8 +63,8 @@ Repository creation does not prove server compatibility, production readiness, g
 
 ## License boundary
 
-Original code and documentation are MIT licensed. Tracked GLB files are not
-covered by MIT while their explicit redistribution terms remain unresolved;
-see [ASSET-LICENSE-AUDIT.md](docs/ASSET-LICENSE-AUDIT.md). The MIT license also
-does not grant rights to proprietary server code, hosted infrastructure,
+Original code and documentation are MIT licensed. The current main branch contains
+no private game lore or private binary assets; the binary audit is retained as a
+historical record in [ASSET-LICENSE-AUDIT.md](docs/ASSET-LICENSE-AUDIT.md). The MIT
+license does not grant rights to proprietary server code, hosted infrastructure,
 commercial services, or third-party assets.

@@ -1,10 +1,10 @@
 # Binary Asset License Audit
 
-Status: `redistribution-review-required` (2026-08-26).
+Status: `current-main-resolved / historical-releases-annotate` (2026-08-27).
 
-This document records facts; it does not grant a license. The repository MIT
-license covers original code and documentation, not the binary files below
-until the rights holder publishes explicit redistribution terms.
+This historical record documents eight binary assets that were removed from
+current `main` on 2026-08-27. Current `main` contains no private binary assets.
+It does not grant a license or resolve the status of historical release archives.
 
 ## Asset Factory outputs
 
@@ -32,11 +32,10 @@ public redistribution grant was found.
 | `public/creatures/parts/tail_whip_01.glb` | 45,268 | `13e1b0ee7fe7744b92ae5a70d4f60a48e14347e773628f95a2e4b710252f7d6a` | Pending explicit grant or replacement |
 | `public/creatures/parts/wing_bat_01.glb` | 67,224 | `8b18b1db0432748f3e439a90235c59ee7b5e9201b8fdbfeb647d7b1ecedb937b` | Pending explicit grant or replacement |
 
-## Release consequence
+## Historical release consequence
 
 - Existing `v0.1.x` archives already contain these files.
-- No further release should be tagged until the rights holder either publishes
-  explicit terms for these eight binaries or replaces/removes them.
-- The safest replacement path is original procedural geometry or assets
-  generated directly under a documented public asset license.
-
+- Current `main` is resolved: the eight binaries have been removed and the public
+  demo uses original procedural geometry.
+- Historical releases still require annotation. The next release gate remains
+  blocked until that annotation is complete.
