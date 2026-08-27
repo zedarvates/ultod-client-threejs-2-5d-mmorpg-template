@@ -4,6 +4,8 @@ import {
   MAX_ADAPTER_RECORDS,
   buildDraftEntity,
   createAdapterContext,
+  hasFatalAdapterDiagnostics,
+  inspectAdapterOwnKeys,
   sanitizeDraftValue,
   sanitizeReferences,
   sortDiagnostics,
@@ -112,6 +114,10 @@ export function adaptStoryCoreDraft(value: unknown): DraftAdapterResult {
       message: "adapter source could not be accessed",
     });
     return { entities: [], diagnostics: context.diagnostics, source: emptySource };
+  }
+
+  if (!inspectAdapterOwnKeys(root, "$", context, "adapter source could not be accessed")) {
+    return { entities: [], diagnostics: sortDiagnostics(context.diagnostics), source: emptySource };
   }
 
   const schemaAccess = safeGet(root, "schema");
@@ -292,7 +298,12 @@ export function adaptStoryCoreDraft(value: unknown): DraftAdapterResult {
       }
       ids.add(recordIdAccess.value);
 
+      const diagnosticStart = context.diagnostics.length;
       const sanitized = sanitizeDraftValue(record, recordPath, context);
+      if (sanitized === undefined || hasFatalAdapterDiagnostics(context.diagnostics, diagnosticStart)) {
+        if (context.halted) break;
+        continue;
+      }
       const sanitizedRecord = sanitized !== null && typeof sanitized === "object"
         ? sanitized as Record<string, unknown>
         : Object.create(null) as Record<string, unknown>;
@@ -320,7 +331,9 @@ export function adaptStoryCoreDraft(value: unknown): DraftAdapterResult {
       if (prefixedEntityDiagnostics(context.diagnostics, recordPath, entity)) {
         entities.push(entity);
       }
+      if (context.halted) break;
     }
+    if (context.halted) break;
   }
 
   entities.sort((left, right) => left.id < right.id ? -1 : left.id > right.id ? 1 : 0);

@@ -3,6 +3,8 @@ import { CONTENT_ID_PATTERN, SEMVER_PATTERN, validateEntity } from "../validate-
 import {
   buildDraftEntity,
   createAdapterContext,
+  hasFatalAdapterDiagnostics,
+  inspectAdapterOwnKeys,
   sanitizeDraftValue,
   sanitizeReferences,
   sortDiagnostics,
@@ -77,6 +79,10 @@ export function adaptLegacyRegistryTemplate(value: unknown): DraftAdapterResult 
       message: "adapter source could not be accessed",
     });
     return { entities: [], diagnostics: context.diagnostics, source: emptySource };
+  }
+
+  if (!inspectAdapterOwnKeys(root, "$", context, "adapter source could not be accessed")) {
+    return { entities: [], diagnostics: sortDiagnostics(context.diagnostics), source: emptySource };
   }
 
   const idAccess = safeGet(root, "id");
@@ -180,14 +186,18 @@ export function adaptLegacyRegistryTemplate(value: unknown): DraftAdapterResult 
     return { entities: [], diagnostics: sortDiagnostics(context.diagnostics), source };
   }
 
+  const diagnosticStart = context.diagnostics.length;
   const content = sanitizeDraftValue(dataAccess.value, "data", context);
+  if (content === undefined || hasFatalAdapterDiagnostics(context.diagnostics, diagnosticStart)) {
+    return { entities: [], diagnostics: sortDiagnostics(context.diagnostics), source };
+  }
   const refs = sanitizeReferences(refsAccess.value, "refs", context);
   const entity = buildDraftEntity({
     id: idAccess.value,
     kind,
     version: versionAccess.value,
     licenseId,
-    content: content ?? Object.create(null),
+    content,
     refs,
   });
   const validation = validateEntity(entity);

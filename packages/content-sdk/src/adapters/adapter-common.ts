@@ -31,8 +31,17 @@ const FORBIDDEN_AUTHORITATIVE_FIELDS = new Set([
   "spawn_rate",
 ]);
 
+const FATAL_ADAPTER_DIAGNOSTICS = new Set([
+  "adapter_access_error",
+  "adapter_array_limit_exceeded",
+  "adapter_depth_limit_exceeded",
+  "adapter_key_limit_exceeded",
+  "adapter_node_limit_exceeded",
+]);
+
 export interface AdapterContext {
   nodes: number;
+  halted: boolean;
   readonly diagnostics: ValidationDiagnostic[];
   readonly ancestors: Set<object>;
 }
@@ -40,7 +49,7 @@ export interface AdapterContext {
 type UntrustedAccess<T> = { accessible: true; value: T } | { accessible: false };
 
 export function createAdapterContext(): AdapterContext {
-  return { nodes: 0, diagnostics: [], ancestors: new Set<object>() };
+  return { nodes: 0, halted: false, diagnostics: [], ancestors: new Set<object>() };
 }
 
 function accessUntrusted<T>(reader: () => T): UntrustedAccess<T> {
@@ -64,6 +73,17 @@ export function sortDiagnostics(diagnostics: ValidationDiagnostic[]): Validation
   );
 }
 
+export function hasFatalAdapterDiagnostics(
+  diagnostics: readonly ValidationDiagnostic[],
+  startIndex: number,
+): boolean {
+  for (let index = startIndex; index < diagnostics.length; index += 1) {
+    const diagnostic = diagnostics[index];
+    if (diagnostic !== undefined && FATAL_ADAPTER_DIAGNOSTICS.has(diagnostic.code)) return true;
+  }
+  return false;
+}
+
 function addDiagnostic(
   context: AdapterContext,
   code: string,
@@ -85,6 +105,7 @@ export function isNonPortableString(value: string): boolean {
 }
 
 function enterNode(path: string, context: AdapterContext, depth: number): boolean {
+  if (context.halted) return false;
   if (depth > MAX_ADAPTER_DEPTH) {
     addDiagnostic(
       context,
@@ -102,6 +123,7 @@ function enterNode(path: string, context: AdapterContext, depth: number): boolea
       path,
       `adapter value exceeds ${MAX_ADAPTER_NODES} nodes`,
     );
+    context.halted = true;
     return false;
   }
   return true;
@@ -177,6 +199,7 @@ function sanitizeDraftValueInternal(
         }
         const sanitized = sanitizeDraftValueInternal(itemAccess.value, itemPath, context, depth + 1);
         if (sanitized !== undefined) output.push(sanitized);
+        if (context.halted) break;
       }
       return output;
     } finally {
@@ -249,11 +272,35 @@ function sanitizeDraftValueInternal(
           writable: true,
         });
       }
+      if (context.halted) break;
     }
     return output;
   } finally {
     context.ancestors.delete(value);
   }
+}
+
+export function inspectAdapterOwnKeys(
+  value: object,
+  path: string,
+  context: AdapterContext,
+  accessMessage = "adapter record could not be accessed",
+): boolean {
+  const keysAccess = accessUntrusted(() => Reflect.ownKeys(value));
+  if (!keysAccess.accessible) {
+    addDiagnostic(context, "adapter_access_error", path, accessMessage);
+    return false;
+  }
+  if (keysAccess.value.length > MAX_ADAPTER_OWN_KEYS) {
+    addDiagnostic(
+      context,
+      "adapter_key_limit_exceeded",
+      path,
+      `adapter record must contain at most ${MAX_ADAPTER_OWN_KEYS} own keys`,
+    );
+    return false;
+  }
+  return true;
 }
 
 export function sanitizeDraftValue(
