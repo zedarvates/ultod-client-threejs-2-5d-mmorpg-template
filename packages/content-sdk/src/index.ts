@@ -40,6 +40,13 @@ export {
   serializeCanonicalGraph,
 } from "./normalize.js";
 export { sha256CanonicalGraph } from "./hash.js";
+export {
+  ContentPackCanonicalizationError,
+  normalizeContentPackManifest,
+  serializeCanonicalContentPack,
+  summarizeContentPackEvidence,
+} from "./normalize-pack.js";
+export { sha256CanonicalContentPack } from "./pack-hash.js";
 
 export type {
   CanonicalizationErrorCode,
