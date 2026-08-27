@@ -49,10 +49,23 @@ export {
 export { sha256CanonicalContentPack } from "./pack-hash.js";
 export { verifyContentPackIntegrity } from "./verify-pack.js";
 export { assessContentPackPublication } from "./assess-pack-publication.js";
+export {
+  MAX_ADAPTER_ARRAY_ITEMS,
+  MAX_ADAPTER_DEPTH,
+  MAX_ADAPTER_NODES,
+  MAX_ADAPTER_OWN_KEYS,
+  MAX_ADAPTER_RECORDS,
+  MAX_ADAPTER_STRING_LENGTH,
+} from "./adapters/adapter-common.js";
 
 export type {
   CanonicalizationErrorCode,
 } from "./normalize.js";
+export type {
+  DraftAdapterResult,
+  DraftAdapterSource,
+  DraftAdapterSystem,
+} from "./adapters/adapter-types.js";
 export type {
   ArtifactReader,
   ContentArtifact,
