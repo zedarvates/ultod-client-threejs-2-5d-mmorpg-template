@@ -1,4 +1,5 @@
 import type { ContentEntity, ContentReference, GameContentGraph } from "./types.js";
+import { MAX_GRAPH_OWN_KEYS } from "./validate-graph.js";
 
 export const MAX_CANONICAL_DEPTH = 64;
 export const MAX_CANONICAL_NODES = 65_536;
@@ -7,6 +8,7 @@ export const MAX_CANONICAL_ARRAY_ITEMS = 16_384;
 export type CanonicalizationErrorCode =
   | "unsupported_canonical_value"
   | "unknown_graph_key"
+  | "graph_key_limit_exceeded"
   | "canonical_access_error"
   | "canonical_array_limit_exceeded"
   | "canonical_depth_limit_exceeded"
@@ -85,6 +87,7 @@ function normalizeUnknown(
   path: string,
   depth: number,
   collectionName?: string,
+  ownKeysSnapshot?: readonly PropertyKey[],
 ): unknown {
   enterNode(context, path, depth);
   if (value === null || typeof value === "string" || typeof value === "boolean") return value;
@@ -127,7 +130,7 @@ function normalizeUnknown(
 
   context.ancestors.add(value);
   try {
-    const ownKeys = readAccess(path, () => Reflect.ownKeys(value));
+    const ownKeys = ownKeysSnapshot ?? readAccess(path, () => Reflect.ownKeys(value));
     if (ownKeys.length > MAX_CANONICAL_NODES - context.nodes) {
       return fail(path, "canonical_node_limit_exceeded");
     }
@@ -204,11 +207,14 @@ function sortNormalizedGraph(graph: Record<string, unknown>): GameContentGraph {
   return graph as unknown as GameContentGraph;
 }
 
-function rejectUnknownGraphKeys(graph: GameContentGraph): void {
+function snapshotGraphOwnKeys(graph: GameContentGraph): readonly PropertyKey[] {
   if (graph === null || typeof graph !== "object" || Array.isArray(graph)) {
     fail("$", "unsupported_canonical_value");
   }
   const ownKeys = readAccess("$", () => Reflect.ownKeys(graph));
+  if (ownKeys.length > MAX_GRAPH_OWN_KEYS) {
+    fail("$", "graph_key_limit_exceeded");
+  }
   const unknownKeys: PropertyKey[] = [];
   for (let index = 0; index < ownKeys.length; index += 1) {
     const key = ownKeys[index];
@@ -220,11 +226,19 @@ function rejectUnknownGraphKeys(graph: GameContentGraph): void {
     const path = typeof first === "string" ? objectPath("$", first) : `$[${String(first)}]`;
     fail(path, "unknown_graph_key");
   }
+  return ownKeys;
 }
 
 export function normalizeContentGraph(graph: GameContentGraph): GameContentGraph {
-  rejectUnknownGraphKeys(graph);
-  const normalized = normalizeUnknown(graph, { ancestors: new Set(), nodes: 0 }, "$", 0);
+  const ownKeys = snapshotGraphOwnKeys(graph);
+  const normalized = normalizeUnknown(
+    graph,
+    { ancestors: new Set(), nodes: 0 },
+    "$",
+    0,
+    undefined,
+    ownKeys,
+  );
   if (normalized === null || typeof normalized !== "object" || Array.isArray(normalized)) {
     return fail("$", "unsupported_canonical_value");
   }

@@ -12,6 +12,8 @@ export const MAX_GRAPH_ROOTS = 16384;
 export const MAX_GRAPH_REFERENCES = 65536;
 export const MAX_CYCLE_SEARCH_STEPS = 100000;
 export const MAX_CYCLE_DIAGNOSTICS = 1024;
+/** Bounds top-level key filtering, sorting, and diagnostic expansion. */
+export const MAX_GRAPH_OWN_KEYS = 64;
 
 const GRAPH_KEYS = new Set(["schema", "id", "version", "visibility", "roots", "entities"]);
 
@@ -308,6 +310,18 @@ export function validateContentGraph(value: unknown): ValidationResult {
   const ownKeysAccess = accessUntrusted(() => Reflect.ownKeys(graph));
   if (!ownKeysAccess.accessible) {
     return invalidGraphAccess();
+  }
+  if (ownKeysAccess.value.length > MAX_GRAPH_OWN_KEYS) {
+    return {
+      valid: false,
+      diagnostics: [
+        {
+          code: "graph_key_limit_exceeded",
+          path: "$",
+          message: `graph must contain at most ${MAX_GRAPH_OWN_KEYS} own keys`,
+        },
+      ],
+    };
   }
   const unknownKeys = ownKeysAccess.value
     .filter((key) => typeof key !== "string" || !GRAPH_KEYS.has(key))

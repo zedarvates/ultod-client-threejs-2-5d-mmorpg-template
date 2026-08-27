@@ -50,6 +50,27 @@ test("rejects unknown own top-level keys deterministically", () => {
   });
 });
 
+test("caps diagnostics for a graph with 70,000 unknown own keys", { timeout: 1_000 }, () => {
+  const oversizedGraph = { ...validGraph } as GameContentGraph & Record<string, unknown>;
+  for (let index = 0; index < 70_000; index += 1) {
+    oversizedGraph[`unknown_${index.toString().padStart(5, "0")}`] = index;
+  }
+
+  const result = validateContentGraph(oversizedGraph);
+
+  expect(result.diagnostics).toHaveLength(1);
+  expect(result).toEqual({
+    valid: false,
+    diagnostics: [
+      {
+        code: "graph_key_limit_exceeded",
+        path: "$",
+        message: "graph must contain at most 64 own keys",
+      },
+    ],
+  });
+});
+
 test("rejects duplicate entity IDs", () => {
   const graph = {
     ...validGraph,
@@ -327,6 +348,26 @@ test("returns diagnostics instead of throwing for unknown and malicious graph da
   });
   expect(() => validateContentGraph(graphWithThrowingGetter)).not.toThrow();
   expect(validateContentGraph(graphWithThrowingGetter)).toEqual({
+    valid: false,
+    diagnostics: [
+      {
+        code: "invalid_graph_access",
+        path: "$",
+        message: "Graph properties could not be read",
+      },
+    ],
+  });
+});
+
+test("fails closed when a graph ownKeys trap throws", { timeout: 500 }, () => {
+  const graphWithThrowingOwnKeys = new Proxy(validGraph, {
+    ownKeys() {
+      throw new Error("untrusted graph ownKeys trap");
+    },
+  });
+
+  expect(() => validateContentGraph(graphWithThrowingOwnKeys)).not.toThrow();
+  expect(validateContentGraph(graphWithThrowingOwnKeys)).toEqual({
     valid: false,
     diagnostics: [
       {

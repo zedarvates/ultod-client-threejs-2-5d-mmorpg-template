@@ -54,8 +54,11 @@ object: `content_graph` and `client_core` are nonempty strings no longer than
 strings no longer than 128 characters each.
 
 The graph envelope permits exactly six own top-level keys: `schema`, `id`,
-`version`, `visibility`, `roots`, and `entities`. Strict validation emits one
-deterministically sorted `unknown_graph_key` diagnostic per extra key.
+`version`, `visibility`, `roots`, and `entities`. Strict validation snapshots
+the keys once. With at most `MAX_GRAPH_OWN_KEYS` (64), it emits one
+deterministically sorted `unknown_graph_key` diagnostic per extra key. Above
+that bound it stops before filtering or sorting and emits exactly one
+`graph_key_limit_exceeded` diagnostic at `$`.
 
 ## Example
 
@@ -165,6 +168,7 @@ inaccessible location:
 | --- | --- |
 | `unsupported_canonical_value` | The value has no supported unambiguous JSON-safe form. |
 | `unknown_graph_key` | The graph has an own key outside its six-key envelope. |
+| `graph_key_limit_exceeded` | The graph has more than 64 own keys; the path is `$`. |
 | `canonical_access_error` | A Proxy, getter, or property operation threw. |
 | `canonical_array_limit_exceeded` | An array length is non-finite, negative, unsafe, or above 16,384. |
 | `canonical_depth_limit_exceeded` | Canonical depth exceeds 64. |
@@ -192,7 +196,7 @@ nested arrays. The shared traversal caps are `MAX_CANONICAL_DEPTH` (64) and
 The package exports `CONTENT_KINDS`, `CONTENT_ID_PATTERN`, `SEMVER_PATTERN`,
 `MAX_COMPATIBILITY_STRING_LENGTH`, `MAX_SERVER_PROTOCOLS`,
 `MAX_SERVER_PROTOCOL_LENGTH`, `MAX_REFERENCES_PER_ENTITY`,
-`MAX_GRAPH_ENTITIES`, `MAX_GRAPH_ROOTS`,
+`MAX_GRAPH_ENTITIES`, `MAX_GRAPH_ROOTS`, `MAX_GRAPH_OWN_KEYS`,
 `MAX_GRAPH_REFERENCES`, `MAX_CYCLE_SEARCH_STEPS`, `MAX_CYCLE_DIAGNOSTICS`,
 `MAX_CANONICAL_DEPTH`, `MAX_CANONICAL_NODES`, `MAX_CANONICAL_ARRAY_ITEMS`,
 `validateEntity`, `validateContentGraph`, `normalizeContentGraph`,

@@ -79,10 +79,12 @@ Validation also checks duplicate references, graph closure, duplicate roots
 and entity IDs, and deterministic
 unique cyclic quest-ID set signatures from bounded `quest` `requires` cycle
 search. A graph has exactly the six allowed own top-level keys `schema`, `id`,
-`version`, `visibility`, `roots`, and `entities`; each extra own key produces a
-deterministic `unknown_graph_key` diagnostic. Validation bounds work on
-untrusted collections and returns an access diagnostic when properties cannot
-safely be read.
+`version`, `visibility`, `roots`, and `entities`. Validation snapshots those
+keys once. Up to `MAX_GRAPH_OWN_KEYS` (64), each extra own key produces a
+deterministic `unknown_graph_key` diagnostic; above that bound validation stops
+before filtering or sorting and returns one `graph_key_limit_exceeded`
+diagnostic. Validation also bounds work on untrusted collections and returns an
+access diagnostic when properties cannot safely be read.
 
 `normalizeContentGraph(graph)` returns a new canonical graph: it sorts roots,
 entities, references, diagnostics, and object keys while preserving authored
@@ -104,6 +106,7 @@ or other array methods on untrusted arrays. Failures are always
 
 - `unsupported_canonical_value` for values without a supported JSON-safe form.
 - `unknown_graph_key` for an own graph key outside the six-key envelope.
+- `graph_key_limit_exceeded` at `$` when the graph has more than 64 own keys.
 - `canonical_access_error` when a Proxy, getter, or property operation throws.
 - `canonical_array_limit_exceeded` for non-finite, negative, unsafe, or oversized lengths.
 - `canonical_depth_limit_exceeded` when depth exceeds 64.
@@ -146,7 +149,7 @@ TypeScript union:
 | --- | --- |
 | `CONTENT_KINDS` | Runtime readonly supported-kind list. |
 | `CONTENT_ID_PATTERN`, `SEMVER_PATTERN` | Entity and graph ID/version validation patterns. |
-| `MAX_COMPATIBILITY_STRING_LENGTH`, `MAX_SERVER_PROTOCOLS`, `MAX_SERVER_PROTOCOL_LENGTH`, `MAX_REFERENCES_PER_ENTITY`, `MAX_GRAPH_ENTITIES`, `MAX_GRAPH_ROOTS`, `MAX_GRAPH_REFERENCES`, `MAX_CYCLE_SEARCH_STEPS`, `MAX_CYCLE_DIAGNOSTICS` | Public validation shape and work bounds. |
+| `MAX_COMPATIBILITY_STRING_LENGTH`, `MAX_SERVER_PROTOCOLS`, `MAX_SERVER_PROTOCOL_LENGTH`, `MAX_REFERENCES_PER_ENTITY`, `MAX_GRAPH_ENTITIES`, `MAX_GRAPH_ROOTS`, `MAX_GRAPH_OWN_KEYS`, `MAX_GRAPH_REFERENCES`, `MAX_CYCLE_SEARCH_STEPS`, `MAX_CYCLE_DIAGNOSTICS` | Public validation shape and work bounds. |
 | `MAX_CANONICAL_DEPTH`, `MAX_CANONICAL_NODES`, `MAX_CANONICAL_ARRAY_ITEMS` | Public canonicalization work bounds. |
 | `validateEntity(value)` | Validates one unknown entity envelope. |
 | `validateContentGraph(value)` | Validates one unknown graph, its closure, and quest prerequisites. |

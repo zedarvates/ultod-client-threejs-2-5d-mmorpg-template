@@ -192,6 +192,49 @@ test("rejects unknown graph keys at their exact path before hashing", async () =
   });
 });
 
+test("rejects a graph with 70,000 unknown own keys before canonical expansion", { timeout: 1_000 }, () => {
+  const oversizedGraph = { ...emptyPublicGraph } as GameContentGraph & Record<string, unknown>;
+  for (let index = 0; index < 70_000; index += 1) {
+    oversizedGraph[`unknown_${index.toString().padStart(5, "0")}`] = index;
+  }
+
+  expect(captureGraphCanonicalizationError(oversizedGraph)).toMatchObject({
+    name: "CanonicalizationError",
+    code: "graph_key_limit_exceeded",
+    path: "$",
+  });
+});
+
+test("converts a throwing graph ownKeys trap to a canonical access error", { timeout: 500 }, () => {
+  const graphWithThrowingOwnKeys = new Proxy(emptyPublicGraph, {
+    ownKeys() {
+      throw new Error("untrusted graph ownKeys trap");
+    },
+  });
+
+  expect(captureGraphCanonicalizationError(graphWithThrowingOwnKeys)).toMatchObject({
+    name: "CanonicalizationError",
+    code: "canonical_access_error",
+    path: "$",
+  });
+});
+
+test("snapshots hostile top-level graph own keys exactly once", { timeout: 500 }, () => {
+  let ownKeysReads = 0;
+  const graphWithSingleUseOwnKeys = new Proxy(emptyPublicGraph, {
+    ownKeys(target) {
+      ownKeysReads += 1;
+      if (ownKeysReads > 1) throw new Error("graph ownKeys read twice");
+      return Reflect.ownKeys(target);
+    },
+  });
+
+  expect(sdk.serializeCanonicalGraph(graphWithSingleUseOwnKeys)).toBe(
+    '{"entities":[],"id":"graph.tutorial.empty","roots":[],"schema":"uo.game-content-graph/v1","version":"1.0.0","visibility":"public"}',
+  );
+  expect(ownKeysReads).toBe(1);
+});
+
 test("fails quickly on hostile top-level roots and entities arrays", { timeout: 500 }, () => {
   for (const field of ["roots", "entities"] as const) {
     const hostile = new Proxy([], {
