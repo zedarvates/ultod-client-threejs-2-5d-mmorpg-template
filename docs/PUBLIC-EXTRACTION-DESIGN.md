@@ -1,6 +1,6 @@
 # Public Extraction Design
 
-Status: `release-ready-resolved / historical-releases-annotated` - this document defines how original material may be extracted from the private monorepo into this public template. The whole-branch review passed and controller publication is the remaining action; each extraction must still pass the [publication checklist](PUBLICATION-CHECKLIST.md) individually.
+Status: `current-release-resolved / historical-releases-annotated` - this document defines how original material may be extracted from the private monorepo into this public template. The `v0.1.3` release is published as a non-draft, non-prerelease release, docs and Pages workflows succeeded, the live bundle `index-DIPWKEzz.js` returned HTTP 200, historical notices were confirmed true, and issue #2 is closed; each extraction must still pass the [publication checklist](PUBLICATION-CHECKLIST.md) individually.
 
 ## Principles
 
@@ -60,12 +60,11 @@ The public demo now uses original procedural geometry for scenery and creature
 parts. The eight GLBs formerly copied from private tooling have been removed
 from current `main`; their audit remains only as a historical record in
 [ASSET-LICENSE-AUDIT.md](ASSET-LICENSE-AUDIT.md), with status
-`release-ready-resolved / historical-releases-annotated`.
+`current-release-resolved / historical-releases-annotated`.
 
-Historical-release annotation is complete. Whole-branch review passed, and
-controller publication is the remaining action. Push, tag, release, Pages
-verification, and issue closure remain deferred until approval. No binary
-exception is currently approved for this repository.
+Historical-release annotation is complete. `v0.1.3` is published, Pages
+verification is complete, and the historical binaries remain unlicensed for
+redistribution. No binary exception is currently approved for this repository.
 
 The bridges (`blueprint-bridge.ts`, `creature-bridge.ts`) remain original public
 code and contain no private implementation logic.
