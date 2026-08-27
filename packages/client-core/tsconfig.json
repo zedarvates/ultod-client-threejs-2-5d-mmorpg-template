@@ -7,10 +7,13 @@
     "strict": true,
     "declaration": true,
     "outDir": "dist",
-    "rootDir": "src",
-    "skipLibCheck": true,
-    "esModuleInterop": true,
-    "forceConsistentCasingInFileNames": true
-  },
-  "include": ["src"]
+   "rootDir": "src",
+   "skipLibCheck": true,
+   "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+   "paths": {
+      "@ultod/content-sdk": ["../content-sdk/dist/index.d.ts"]
+   }
+ },
+ "include": ["src"]
 }

@@ -31,3 +31,13 @@ export type {
   CreatureGenome,
   GenomePart,
 } from "./presentation/creature-bridge.js";
+
+export { MSG, encodeMessage, decodeMessage, encodeMovement, decodePositionUpdate } from "./net/protocol.js";
+export type { PositionUpdate } from "./net/protocol.js";
+export { NetworkClient } from "./net/network-client.js";
+export type { NetworkState } from "./net/network-client.js";
+export { HudOverlay } from "./ui/hud-overlay.js";
+export { DialogBox } from "./ui/dialog-box.js";
+export type { DialogAction } from "./ui/dialog-box.js";
+export { ContentPackLoader } from "./content/content-pack-loader.js";
+export type { EntityVisualizer } from "./content/content-pack-loader.js";
