@@ -1,10 +1,11 @@
 # @ultod/content-sdk
 
 `@ultod/content-sdk` is a zero-runtime-dependency TypeScript package for the
-public `uo.game-content-entity/v1` and `uo.game-content-graph/v1` contracts.
-Version **0.1.0** provides typed content envelopes, deterministic validation,
-canonical graph serialization, and SHA-256 manifests. It is independent of the
-client renderer, game server, authoring tools, and administration tools.
+public `uo.game-content-entity/v1`, `uo.game-content-graph/v1`, and separate
+`uo.game-content-pack/v1` contracts. Version **0.1.0** provides typed content
+envelopes, deterministic validation, canonical serialization, SHA-256
+integrity, and pure publication assessment. It is independent of the client
+renderer, game server, authoring tools, and administration tools.
 
 ## Build and import
 
@@ -24,6 +25,26 @@ import {
 ```
 
 The package has no runtime dependencies.
+
+## Separate content-pack manifest
+
+The graph is a path-free resolved runtime model. A content-pack manifest is a
+separate immutable inventory of graph, entity and asset artifacts:
+
+```ts
+const validation = validateContentPackManifest(manifest);
+if (validation.valid) {
+  const canonical = serializeCanonicalContentPack(manifest);
+  const manifestHash = await sha256CanonicalContentPack(manifest);
+  const integrity = await verifyContentPackIntegrity(manifest, readArtifact);
+  const publication = assessContentPackPublication(manifest, graph);
+  console.log({ canonical, manifestHash, integrity, publication });
+}
+```
+
+`readArtifact(path)` is supplied by the consumer and returns `Uint8Array`. The
+SDK never reads disk, downloads content, chooses a registry source, retries a
+missing file, publishes a pack, or reloads a server.
 
 ## Minimal graph and validation
 
@@ -148,16 +169,26 @@ TypeScript union:
 | Export | Purpose |
 | --- | --- |
 | `CONTENT_KINDS` | Runtime readonly supported-kind list. |
+| `CONTENT_ARTIFACT_ROLES`, `CONTENT_PROVENANCE_KINDS` | Frozen manifest discriminants. |
 | `CONTENT_ID_PATTERN`, `SEMVER_PATTERN` | Entity and graph ID/version validation patterns. |
 | `MAX_COMPATIBILITY_STRING_LENGTH`, `MAX_SERVER_PROTOCOLS`, `MAX_SERVER_PROTOCOL_LENGTH`, `MAX_REFERENCES_PER_ENTITY`, `MAX_GRAPH_ENTITIES`, `MAX_GRAPH_ROOTS`, `MAX_GRAPH_OWN_KEYS`, `MAX_GRAPH_REFERENCES`, `MAX_CYCLE_SEARCH_STEPS`, `MAX_CYCLE_DIAGNOSTICS` | Public validation shape and work bounds. |
 | `MAX_CANONICAL_DEPTH`, `MAX_CANONICAL_NODES`, `MAX_CANONICAL_ARRAY_ITEMS` | Public canonicalization work bounds. |
+| `MAX_PACK_OWN_KEYS`, `MAX_PACK_ARTIFACTS`, `MAX_ARTIFACT_OWN_KEYS`, `MAX_PACK_NESTED_OWN_KEYS`, `MAX_ARTIFACT_PATH_LENGTH`, `MAX_MEDIA_TYPE_LENGTH`, `MAX_LICENSE_ID_LENGTH`, `MAX_PROVENANCE_SOURCE_LENGTH` | Public content-pack work and field bounds. |
 | `validateEntity(value)` | Validates one unknown entity envelope. |
 | `validateContentGraph(value)` | Validates one unknown graph, its closure, and quest prerequisites. |
 | `normalizeContentGraph(graph)` | Produces a non-mutating canonical graph. |
 | `serializeCanonicalGraph(graph)` | Serializes canonical JSON. |
 | `sha256CanonicalGraph(graph)` | Produces the canonical JSON SHA-256 digest. |
 | `CanonicalizationError` | Typed error for unsupported, inaccessible, unknown-key, or over-bound canonical values. |
+| `validateContentPackManifest(value)`, `isPortableArtifactPath(path)` | Pure manifest validation and path predicate. |
+| `normalizeContentPackManifest`, `serializeCanonicalContentPack`, `sha256CanonicalContentPack` | Deterministic non-mutating manifest canonicalization and hash. |
+| `verifyContentPackIntegrity(manifest, reader)` | Verifies exact bytes through one caller-supplied read per artifact. |
+| `summarizeContentPackEvidence(manifest)` | Derives unique sorted license and provenance evidence. |
+| `assessContentPackPublication(manifest, graph)` | Returns draft-to-publication blockers without mutation. |
+| `ContentPackCanonicalizationError` | Typed manifest canonicalization error with stable code/path. |
 | `CanonicalizationErrorCode`, `ContentAuthority`, `ContentEntity<T>`, `ContentKind`, `ContentReference`, `ContentStatus`, `GameContentGraph`, `ValidationDiagnostic`, `ValidationResult` | Type-only contract exports. |
+| `ArtifactReader`, `ContentArtifact`, `ContentArtifactRole`, `ContentPackEvidenceSummary`, `ContentPackManifest`, `ContentPackStatus`, `ContentPackVisibility`, `ContentProvenanceKind` | Type-only content-pack contract exports. |
 
 See [the full graph contract](../../docs/content/GAME-CONTENT-GRAPH-V1.md) for
-the envelope shapes and boundary rules.
+the entity/graph boundary and [the full content-pack contract](../../docs/content/GAME-CONTENT-PACK-V1.md)
+for artifact integrity and publication assessment.

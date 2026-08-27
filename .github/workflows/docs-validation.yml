@@ -28,7 +28,17 @@ jobs:
       - name: Typecheck content SDK
         run: npm run check:content-sdk
       - name: Test content SDK
-        run: npx playwright test tests/content-sdk-types.spec.ts tests/content-sdk-entity-validation.spec.ts tests/content-sdk-graph-validation.spec.ts tests/content-sdk-normalization.spec.ts
+        run: >-
+          npx playwright test
+          tests/content-sdk-types.spec.ts
+          tests/content-sdk-entity-validation.spec.ts
+          tests/content-sdk-graph-validation.spec.ts
+          tests/content-sdk-normalization.spec.ts
+          tests/content-pack-types.spec.ts
+          tests/content-pack-validation.spec.ts
+          tests/content-pack-normalization.spec.ts
+          tests/content-pack-integrity.spec.ts
+          tests/content-pack-publication.spec.ts
       - name: Validate Markdown and internal links
         shell: bash
         run: |
