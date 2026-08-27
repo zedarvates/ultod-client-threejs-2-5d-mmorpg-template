@@ -1,28 +1,31 @@
-export type ContentKind =
-  | "realm"
-  | "region"
-  | "biome"
-  | "settlement"
-  | "location"
-  | "dungeon"
-  | "route"
-  | "threshold"
-  | "faction"
-  | "character"
-  | "npc"
-  | "quest"
-  | "dialogue"
-  | "artifact"
-  | "world_event"
-  | "creature_species"
-  | "monster_variant"
-  | "spawn_table"
-  | "encounter"
-  | "item"
-  | "equipment"
-  | "loot_table"
-  | "vendor"
-  | "recipe";
+export const CONTENT_KINDS = [
+  "realm",
+  "region",
+  "biome",
+  "settlement",
+  "location",
+  "dungeon",
+  "route",
+  "threshold",
+  "faction",
+  "character",
+  "npc",
+  "quest",
+  "dialogue",
+  "artifact",
+  "world_event",
+  "creature_species",
+  "monster_variant",
+  "spawn_table",
+  "encounter",
+  "item",
+  "equipment",
+  "loot_table",
+  "vendor",
+  "recipe",
+] as const;
+
+export type ContentKind = (typeof CONTENT_KINDS)[number];
 
 export type ContentStatus = "draft" | "published" | "deprecated";
 

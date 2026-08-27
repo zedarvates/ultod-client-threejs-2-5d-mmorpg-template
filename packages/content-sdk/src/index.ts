@@ -1,3 +1,5 @@
+export { CONTENT_KINDS } from "./types.js";
+
 export type {
   ContentAuthority,
   ContentEntity,

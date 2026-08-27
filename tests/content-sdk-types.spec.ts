@@ -1,5 +1,35 @@
 import { expect, test } from "@playwright/test";
+import * as sdk from "../packages/content-sdk/src";
 import type { ContentEntity, GameContentGraph } from "../packages/content-sdk/src";
+
+test("content sdk exports every supported content kind at runtime", () => {
+  expect(sdk.CONTENT_KINDS).toEqual([
+    "realm",
+    "region",
+    "biome",
+    "settlement",
+    "location",
+    "dungeon",
+    "route",
+    "threshold",
+    "faction",
+    "character",
+    "npc",
+    "quest",
+    "dialogue",
+    "artifact",
+    "world_event",
+    "creature_species",
+    "monster_variant",
+    "spawn_table",
+    "encounter",
+    "item",
+    "equipment",
+    "loot_table",
+    "vendor",
+    "recipe",
+  ]);
+});
 
 test("content sdk types represent a minimal realm graph", () => {
   const realm: ContentEntity<{ name: string }> = {
