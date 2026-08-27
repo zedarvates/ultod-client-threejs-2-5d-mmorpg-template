@@ -31,6 +31,8 @@ jobs:
         run: npm --workspace @ultod/content-sdk run build
       - name: Typecheck client core
         run: npm run check:client-core
+      - name: Build client core
+        run: npm --workspace @ultod/threejs-client-core run build
       - name: Test content SDK
         run: >-
           npx playwright test
