@@ -9,7 +9,6 @@ import type { DraftAdapterResult } from "../packages/content-sdk/src";
 test("exports bounded authoring adapter contracts", () => {
   expect(Reflect.get(sdk, "MAX_ADAPTER_RECORDS")).toBe(4_096);
   expect(Reflect.get(sdk, "MAX_ADAPTER_DEPTH")).toBe(32);
-  expect(Reflect.get(sdk, "adaptStoryCoreDraft")).toBeUndefined();
 
   const result: DraftAdapterResult = {
     entities: [],

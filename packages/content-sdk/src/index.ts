@@ -57,6 +57,11 @@ export {
   MAX_ADAPTER_RECORDS,
   MAX_ADAPTER_STRING_LENGTH,
 } from "./adapters/adapter-common.js";
+export { adaptStoryCoreDraft } from "./adapters/storycore-draft.js";
+export type {
+  StoryCoreAuthoringDraft,
+  StoryCoreDraftRecord,
+} from "./adapters/storycore-draft.js";
 
 export type {
   CanonicalizationErrorCode,
