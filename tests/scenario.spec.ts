@@ -180,3 +180,82 @@ test("player can complete the full rescue scenario through the UI", async ({ pag
   await expect(page.locator("#dialog-name")).toHaveText("Princess Elara");
   await expect(page.locator("#quest-objective")).toHaveText("Quest complete! The kingdom is saved.");
 });
+
+test("blueprint district style changes rendered materials and height", () => {
+  const blueprint = {
+    blueprint_id: "district_style_fixture",
+    lot: { width: 1, depth: 1, cell_size: 1, floor_height: 3 },
+    floors: [{
+      level: 0,
+      tiles: [{ x: 0, z: 0, part_id: "floor" }],
+      walls: [{ x: 0, z: 0, edge: "N", part_id: "wall" }],
+    }],
+    roof: [{ x: 0, z: 0, part_id: "roof" }],
+  };
+  const style = {
+    floorColor: "#9b7847",
+    wallColor: "#d7c7a3",
+    roofColor: "#43516d",
+    heightScale: 1.12,
+  };
+  const styledBuild = buildFromBlueprint as unknown as (
+    bp: typeof blueprint,
+    loader: GLTFLoader,
+    resolver: () => null,
+    offset: THREE.Vector3,
+    buildingStyle: typeof style,
+  ) => ReturnType<typeof buildFromBlueprint>;
+
+  const result = styledBuild(
+    blueprint,
+    new GLTFLoader(),
+    () => null,
+    new THREE.Vector3(),
+    style,
+  );
+  const colors = result.group.children.map((child) => {
+    const material = (child as THREE.Mesh).material as THREE.MeshLambertMaterial;
+    return `#${material.color.getHexString()}`;
+  });
+
+  expect(colors).toEqual(["#9b7847", "#d7c7a3", "#43516d"]);
+  expect(result.group.scale.y).toBe(1.12);
+});
+
+test("blueprint height styling keeps world offset and colliders aligned", () => {
+  const blueprint = {
+    blueprint_id: "district_height_collider_fixture",
+    lot: { width: 1, depth: 1, cell_size: 1, floor_height: 3 },
+    floors: [{
+      level: 0,
+      tiles: [{ x: 0, z: 0, part_id: "floor" }],
+      walls: [{ x: 0, z: 0, edge: "N", part_id: "wall" }],
+    }],
+  };
+  const style = {
+    floorColor: "#9b7847",
+    wallColor: "#d7c7a3",
+    roofColor: "#43516d",
+    heightScale: 1.12,
+  };
+  const styledBuild = buildFromBlueprint as unknown as (
+    bp: typeof blueprint,
+    loader: GLTFLoader,
+    resolver: () => null,
+    offset: THREE.Vector3,
+    buildingStyle: typeof style,
+  ) => ReturnType<typeof buildFromBlueprint>;
+
+  const result = styledBuild(
+    blueprint,
+    new GLTFLoader(),
+    () => null,
+    new THREE.Vector3(0, 10, 0),
+    style,
+  );
+  const wallCollider = result.colliders.find((collider) => collider.kind === "wall");
+
+  expect(result.group.position.y).toBeCloseTo(-1.2, 5);
+  expect(wallCollider?.min[1]).toBeCloseTo(10, 5);
+  expect(wallCollider?.max[1]).toBeCloseTo(13.36, 5);
+});
