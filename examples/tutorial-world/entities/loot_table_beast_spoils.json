@@ -1,0 +1,28 @@
+{
+  "schema": "uo.game-content-entity/v1",
+  "id": "loot_table.tutorial.beast_spoils",
+  "kind": "loot_table",
+  "version": "1.0.0",
+  "status": "published",
+  "authority": "server",
+  "compatibility": {
+    "content_graph": "1.x",
+    "client_core": ">=0.1.0",
+    "server_protocol": [
+      "1"
+    ]
+  },
+  "license": {
+    "id": "MIT"
+  },
+  "content": {
+    "table_name": "Beast Spoils",
+    "rolls": 1
+  },
+  "refs": [
+    {
+      "predicate": "contains",
+      "target": "item.tutorial.gold_coin"
+    }
+  ]
+}

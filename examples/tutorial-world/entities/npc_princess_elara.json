@@ -1,0 +1,33 @@
+{
+  "schema": "uo.game-content-entity/v1",
+  "id": "npc.tutorial.princess_elara",
+  "kind": "npc",
+  "version": "1.0.0",
+  "status": "published",
+  "authority": "server",
+  "compatibility": {
+    "content_graph": "1.x",
+    "client_core": ">=0.1.0",
+    "server_protocol": [
+      "1"
+    ]
+  },
+  "license": {
+    "id": "MIT"
+  },
+  "content": {
+    "name": "Princess Elara",
+    "role": "nobility",
+    "greeting": "Thank you for rescuing me from the beast!"
+  },
+  "refs": [
+    {
+      "predicate": "located_in",
+      "target": "location.tutorial.forest_clearing"
+    },
+    {
+      "predicate": "belongs_to",
+      "target": "faction.tutorial.haven_guardians"
+    }
+  ]
+}

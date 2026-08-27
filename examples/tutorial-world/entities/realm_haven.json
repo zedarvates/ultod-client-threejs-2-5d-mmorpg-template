@@ -1,0 +1,28 @@
+{
+  "schema": "uo.game-content-entity/v1",
+  "id": "realm.tutorial.haven",
+  "kind": "realm",
+  "version": "1.0.0",
+  "status": "published",
+  "authority": "server",
+  "compatibility": {
+    "content_graph": "1.x",
+    "client_core": ">=0.1.0",
+    "server_protocol": [
+      "1"
+    ]
+  },
+  "license": {
+    "id": "MIT"
+  },
+  "content": {
+    "name": "Haven Realm",
+    "description": "A peaceful starting realm surrounded by enchanted mists."
+  },
+  "refs": [
+    {
+      "predicate": "contains",
+      "target": "region.tutorial.sunlit_vale"
+    }
+  ]
+}
