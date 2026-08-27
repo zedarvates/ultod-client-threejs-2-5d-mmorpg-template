@@ -149,9 +149,11 @@ status is `draft`, `published`, or `deprecated`. Graph visibility is
 `public`, `private`, or `local`.
 
 StoryCore output and legacy registry content are **draft-only inputs**. They
-enter this contract only through separate adapters, with
-`authority: "authoring-draft"`; neither source is an authoritative runtime
-publisher and this package contains no adapter for either source.
+enter this contract through `adaptStoryCoreDraft` and
+`adaptLegacyRegistryTemplate`, always with `status: "draft"`,
+`authority: "authoring-draft"`, and no server protocol. Neither source is an
+authoritative runtime publisher. See the
+[authoring adapter contract](../../docs/content/AUTHORING-DRAFT-ADAPTERS.md).
 
 ### Supported kinds
 
@@ -174,6 +176,7 @@ TypeScript union:
 | `MAX_COMPATIBILITY_STRING_LENGTH`, `MAX_SERVER_PROTOCOLS`, `MAX_SERVER_PROTOCOL_LENGTH`, `MAX_REFERENCES_PER_ENTITY`, `MAX_GRAPH_ENTITIES`, `MAX_GRAPH_ROOTS`, `MAX_GRAPH_OWN_KEYS`, `MAX_GRAPH_REFERENCES`, `MAX_CYCLE_SEARCH_STEPS`, `MAX_CYCLE_DIAGNOSTICS` | Public validation shape and work bounds. |
 | `MAX_CANONICAL_DEPTH`, `MAX_CANONICAL_NODES`, `MAX_CANONICAL_ARRAY_ITEMS` | Public canonicalization work bounds. |
 | `MAX_PACK_OWN_KEYS`, `MAX_PACK_ARTIFACTS`, `MAX_ARTIFACT_OWN_KEYS`, `MAX_PACK_NESTED_OWN_KEYS`, `MAX_ARTIFACT_PATH_LENGTH`, `MAX_MEDIA_TYPE_LENGTH`, `MAX_LICENSE_ID_LENGTH`, `MAX_PROVENANCE_SOURCE_LENGTH` | Public content-pack work and field bounds. |
+| `MAX_ADAPTER_RECORDS`, `MAX_ADAPTER_OWN_KEYS`, `MAX_ADAPTER_DEPTH`, `MAX_ADAPTER_NODES`, `MAX_ADAPTER_ARRAY_ITEMS`, `MAX_ADAPTER_STRING_LENGTH` | Public authoring-adapter work bounds. |
 | `validateEntity(value)` | Validates one unknown entity envelope. |
 | `validateContentGraph(value)` | Validates one unknown graph, its closure, and quest prerequisites. |
 | `normalizeContentGraph(graph)` | Produces a non-mutating canonical graph. |
@@ -186,8 +189,12 @@ TypeScript union:
 | `summarizeContentPackEvidence(manifest)` | Derives unique sorted license and provenance evidence. |
 | `assessContentPackPublication(manifest, graph)` | Returns draft-to-publication blockers without mutation. |
 | `ContentPackCanonicalizationError` | Typed manifest canonicalization error with stable code/path. |
+| `adaptStoryCoreDraft(value)` | Maps recognized StoryCore narrative collections to validated authoring drafts. |
+| `adaptLegacyRegistryTemplate(value)` | Maps one whitelisted legacy template to a validated authoring draft. |
+| `LEGACY_TEMPLATE_KIND_MAP` | Frozen legacy-type whitelist. |
 | `CanonicalizationErrorCode`, `ContentAuthority`, `ContentEntity<T>`, `ContentKind`, `ContentReference`, `ContentStatus`, `GameContentGraph`, `ValidationDiagnostic`, `ValidationResult` | Type-only contract exports. |
 | `ArtifactReader`, `ContentArtifact`, `ContentArtifactRole`, `ContentPackEvidenceSummary`, `ContentPackManifest`, `ContentPackStatus`, `ContentPackVisibility`, `ContentProvenanceKind` | Type-only content-pack contract exports. |
+| `DraftAdapterResult`, `DraftAdapterSource`, `DraftAdapterSystem`, `StoryCoreAuthoringDraft`, `StoryCoreDraftRecord`, `LegacyRegistryTemplate` | Type-only authoring-adapter exports. |
 
 See [the full graph contract](../../docs/content/GAME-CONTENT-GRAPH-V1.md) for
 the entity/graph boundary and [the full content-pack contract](../../docs/content/GAME-CONTENT-PACK-V1.md)

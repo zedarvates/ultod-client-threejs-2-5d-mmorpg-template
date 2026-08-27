@@ -74,7 +74,8 @@ dependencies and does not claim server or client compatibility. See the
 - [`examples/tutorial-world/`](examples/tutorial-world/README.md): Canonical synthetic 25-entity public content pack fixture.
 
 StoryCore and legacy registry content are draft-only inputs handled through
-separate adapters; neither directly publishes authoritative runtime content.
+the [authoring draft adapters](docs/content/AUTHORING-DRAFT-ADAPTERS.md);
+neither directly publishes authoritative runtime content.
 
 ## Non-claims
 

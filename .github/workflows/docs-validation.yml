@@ -45,6 +45,10 @@ jobs:
           tests/content-pack-normalization.spec.ts
           tests/content-pack-integrity.spec.ts
           tests/content-pack-publication.spec.ts
+          tests/content-sdk-adapter-common.spec.ts
+          tests/content-sdk-storycore-adapter.spec.ts
+          tests/content-sdk-legacy-adapter.spec.ts
+          tests/content-sdk-adapter-hardening.spec.ts
           tests/client-core-exports.spec.ts
           tests/client-core-input-camera.spec.ts
           tests/client-core-presentation.spec.ts
