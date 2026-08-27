@@ -149,15 +149,13 @@ class IsometricApp {
       })
       .catch((e) => console.warn("[blueprint] failed to load", e));
 
-    // Creature Editor demo (see public/creatures/)
-    // Parts GLB must be served under /creatures/parts/<part_id>.glb.
+    // Creature Editor demo (see public/creatures/).
     fetch(import.meta.env.BASE_URL + "creatures/exemple_rodeur_aile.json")
       .then((r) => r.json() as Promise<CreatureGenome>)
       .then((genome) => {
         const creatureGroup = creature.buildCreature(
           genome,
           gltfLoader,
-          (partId) => import.meta.env.BASE_URL + `creatures/parts/${partId}.glb`,
         );
         creatureGroup.position.set(-4, 0, 3);
         this.scene.add(creatureGroup);
