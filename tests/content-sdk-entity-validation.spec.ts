@@ -1,5 +1,8 @@
 import { expect, test } from "@playwright/test";
-import { CONTENT_KINDS, validateEntity } from "../packages/content-sdk/src";
+import {
+  CONTENT_KINDS,
+  validateEntity,
+} from "../packages/content-sdk/src";
 
 const validRealm = {
   schema: "uo.game-content-entity/v1",
@@ -20,6 +23,65 @@ const validRealm = {
 
 test("accepts a valid realm envelope", () => {
   expect(validateEntity(validRealm)).toEqual({ valid: true, diagnostics: [] });
+});
+
+test("reports literal diagnostics for every missing required envelope field", () => {
+  expect(validateEntity({})).toEqual({
+    valid: false,
+    diagnostics: [
+      { code: "invalid_authority", path: "authority", message: "authority must be server, client-presentation, or authoring-draft" },
+      { code: "invalid_compatibility", path: "compatibility", message: "compatibility must be an object" },
+      { code: "invalid_entity_schema", path: "schema", message: "schema must be uo.game-content-entity/v1" },
+      { code: "invalid_id", path: "id", message: "id must match /^[a-z0-9][a-z0-9._-]{2,127}$/" },
+      { code: "invalid_kind", path: "kind", message: "kind must be a supported content kind" },
+      { code: "invalid_references", path: "refs", message: "refs must be an array" },
+      { code: "invalid_status", path: "status", message: "status must be draft, published, or deprecated" },
+      { code: "invalid_version", path: "version", message: "version must be a semantic version" },
+      { code: "missing_content", path: "content", message: "content must be an own property" },
+      { code: "missing_license_id", path: "license.id", message: "license.id must be a non-empty string" },
+    ],
+  });
+});
+
+test("reports literal diagnostics for invalid schema, status, and compatibility fields", () => {
+  expect(validateEntity({
+    ...validRealm,
+    schema: "uo.game-content-entity/v2",
+    status: "retired",
+    compatibility: {
+      content_graph: "",
+      client_core: "x".repeat(257),
+      server_protocol: [
+        "",
+        "x".repeat(129),
+        ...Array.from({ length: 63 }, () => "1"),
+      ],
+    },
+  })).toEqual({
+    valid: false,
+    diagnostics: [
+      { code: "invalid_client_core_compatibility", path: "compatibility.client_core", message: "compatibility.client_core must be a non-empty string of at most 256 characters" },
+      { code: "invalid_content_graph_compatibility", path: "compatibility.content_graph", message: "compatibility.content_graph must be a non-empty string of at most 256 characters" },
+      { code: "invalid_entity_schema", path: "schema", message: "schema must be uo.game-content-entity/v1" },
+      { code: "invalid_server_protocol", path: "compatibility.server_protocol[0]", message: "server protocol must be a non-empty string of at most 128 characters" },
+      { code: "invalid_server_protocol", path: "compatibility.server_protocol[1]", message: "server protocol must be a non-empty string of at most 128 characters" },
+      { code: "invalid_server_protocols", path: "compatibility.server_protocol", message: "compatibility.server_protocol must contain at most 64 items" },
+      { code: "invalid_status", path: "status", message: "status must be draft, published, or deprecated" },
+    ],
+  });
+});
+
+test("requires content to be an own property", () => {
+  const inheritedContent = Object.create({ content: { inherited: true } }) as Record<string, unknown>;
+  Object.assign(inheritedContent, validRealm);
+  delete inheritedContent.content;
+
+  expect(validateEntity(inheritedContent)).toEqual({
+    valid: false,
+    diagnostics: [
+      { code: "missing_content", path: "content", message: "content must be an own property" },
+    ],
+  });
 });
 
 test("reports literal diagnostics for each invalid envelope field deterministically", () => {

@@ -1,15 +1,35 @@
 import type { ContentEntity, ContentReference, GameContentGraph } from "./types.js";
 
+export const MAX_CANONICAL_DEPTH = 64;
+export const MAX_CANONICAL_NODES = 65_536;
+export const MAX_CANONICAL_ARRAY_ITEMS = 16_384;
+
+export type CanonicalizationErrorCode =
+  | "unsupported_canonical_value"
+  | "unknown_graph_key"
+  | "canonical_access_error"
+  | "canonical_array_limit_exceeded"
+  | "canonical_depth_limit_exceeded"
+  | "canonical_node_limit_exceeded";
+
 export class CanonicalizationError extends TypeError {
-  readonly code = "unsupported_canonical_value" as const;
+  readonly code: CanonicalizationErrorCode;
   readonly path: string;
 
-  constructor(path: string) {
-    super(`Unsupported canonical value at ${path}`);
+  constructor(path: string, code: CanonicalizationErrorCode = "unsupported_canonical_value") {
+    super(`Canonicalization failed with ${code} at ${path}`);
     this.name = "CanonicalizationError";
+    this.code = code;
     this.path = path;
   }
 }
+
+interface CanonicalContext {
+  readonly ancestors: Set<object>;
+  nodes: number;
+}
+
+const GRAPH_KEYS = new Set(["schema", "id", "version", "visibility", "roots", "entities"]);
 
 function compareOrdinal(left: string, right: string): number {
   return left < right ? -1 : left > right ? 1 : 0;
@@ -25,21 +45,28 @@ function objectPath(path: string, key: string): string {
     : `${path}[${JSON.stringify(key)}]`;
 }
 
-function unsupported(path: string): never {
-  throw new CanonicalizationError(path);
+function fail(path: string, code: CanonicalizationErrorCode): never {
+  throw new CanonicalizationError(path, code);
+}
+
+function readAccess<T>(path: string, read: () => T): T {
+  try {
+    return read();
+  } catch {
+    return fail(path, "canonical_access_error");
+  }
+}
+
+function enterNode(context: CanonicalContext, path: string, depth: number): void {
+  if (depth > MAX_CANONICAL_DEPTH) fail(path, "canonical_depth_limit_exceeded");
+  context.nodes += 1;
+  if (context.nodes > MAX_CANONICAL_NODES) fail(path, "canonical_node_limit_exceeded");
 }
 
 function diagnosticField(value: unknown, field: string): string {
-  if (value === null || typeof value !== "object") {
-    return "";
-  }
-
-  try {
-    const fieldValue = Reflect.get(value, field);
-    return typeof fieldValue === "string" ? fieldValue : "";
-  } catch {
-    return "";
-  }
+  if (value === null || typeof value !== "object") return "";
+  const fieldValue = Reflect.get(value, field);
+  return typeof fieldValue === "string" ? fieldValue : "";
 }
 
 function compareDiagnostics(left: unknown, right: unknown): number {
@@ -51,104 +78,83 @@ function compareDiagnostics(left: unknown, right: unknown): number {
   );
 }
 
-/**
- * Produces JSON-safe canonical data without invoking user serialization hooks.
- * Unsupported leaves, object types, inaccessible properties, symbol-keyed
- * records, sparse arrays, and cycle back-edges fail with a stable path error.
- */
+/** Bounded JSON-safe canonicalization without untrusted iterator or array-method dispatch. */
 function normalizeUnknown(
   value: unknown,
-  ancestors: Set<object>,
+  context: CanonicalContext,
   path: string,
+  depth: number,
   collectionName?: string,
 ): unknown {
-  if (value === null || typeof value === "string" || typeof value === "boolean") {
-    return value;
-  }
+  enterNode(context, path, depth);
+  if (value === null || typeof value === "string" || typeof value === "boolean") return value;
   if (typeof value === "number") {
-    return Number.isFinite(value) ? value : unsupported(path);
+    return Number.isFinite(value) ? value : fail(path, "unsupported_canonical_value");
   }
-  if (typeof value !== "object") {
-    return unsupported(path);
-  }
+  if (typeof value !== "object") return fail(path, "unsupported_canonical_value");
 
-  let prototype: object | null;
-  try {
-    prototype = Object.getPrototypeOf(value);
-  } catch {
-    return unsupported(path);
-  }
-
-  if (Array.isArray(value)) {
-    if (ancestors.has(value)) {
-      return unsupported(path);
+  const prototype = readAccess(path, () => Object.getPrototypeOf(value));
+  const isArray = readAccess(path, () => Array.isArray(value));
+  if (isArray) {
+    if (context.ancestors.has(value)) return fail(path, "unsupported_canonical_value");
+    const length = readAccess(path, () => (value as unknown[]).length);
+    if (!Number.isSafeInteger(length) || length < 0 || length > MAX_CANONICAL_ARRAY_ITEMS) {
+      return fail(path, "canonical_array_limit_exceeded");
     }
-    ancestors.add(value);
+
+    context.ancestors.add(value);
     try {
       const normalized: unknown[] = [];
-      for (let index = 0; index < value.length; index += 1) {
+      for (let index = 0; index < length; index += 1) {
         const itemPath = `${path}[${index}]`;
-        if (!Object.prototype.hasOwnProperty.call(value, index)) {
-          unsupported(itemPath);
-        }
-        let item: unknown;
-        try {
-          item = Reflect.get(value, index);
-        } catch {
-          item = unsupported(itemPath);
-        }
-        normalized.push(normalizeUnknown(item, ancestors, itemPath));
+        const descriptor = readAccess(itemPath, () =>
+          Reflect.getOwnPropertyDescriptor(value, String(index)),
+        );
+        if (descriptor === undefined) fail(itemPath, "unsupported_canonical_value");
+        const item = readAccess(itemPath, () => Reflect.get(value, String(index)));
+        normalized.push(normalizeUnknown(item, context, itemPath, depth + 1));
       }
-      return collectionName === "diagnostics"
-        ? normalized.sort(compareDiagnostics)
-        : normalized;
-    } catch (error) {
-      if (error instanceof CanonicalizationError) {
-        throw error;
-      }
-      throw new CanonicalizationError(path);
+      return collectionName === "diagnostics" ? normalized.sort(compareDiagnostics) : normalized;
     } finally {
-      ancestors.delete(value);
+      context.ancestors.delete(value);
     }
   }
 
   if (prototype !== Object.prototype && prototype !== null) {
-    return unsupported(path);
+    return fail(path, "unsupported_canonical_value");
   }
-  if (ancestors.has(value)) {
-    return unsupported(path);
-  }
+  if (context.ancestors.has(value)) return fail(path, "unsupported_canonical_value");
 
-  ancestors.add(value);
+  context.ancestors.add(value);
   try {
-    if (Object.getOwnPropertySymbols(value).length > 0) {
-      return unsupported(path);
+    const ownKeys = readAccess(path, () => Reflect.ownKeys(value));
+    if (ownKeys.length > MAX_CANONICAL_NODES - context.nodes) {
+      return fail(path, "canonical_node_limit_exceeded");
     }
+    const stringKeys: string[] = [];
+    for (let index = 0; index < ownKeys.length; index += 1) {
+      const key = ownKeys[index];
+      if (typeof key !== "string") return fail(path, "unsupported_canonical_value");
+      stringKeys.push(key);
+    }
+    stringKeys.sort(compareOrdinal);
 
     const normalized = Object.create(null) as Record<string, unknown>;
-    for (const key of Object.keys(value).sort(compareOrdinal)) {
+    for (let index = 0; index < stringKeys.length; index += 1) {
+      const key = stringKeys[index];
+      if (key === undefined) continue;
       const nestedPath = objectPath(path, key);
-      let nestedValue: unknown;
-      try {
-        nestedValue = Reflect.get(value, key);
-      } catch {
-        nestedValue = unsupported(nestedPath);
-      }
+      const nestedValue = readAccess(nestedPath, () => Reflect.get(value, key));
       Object.defineProperty(normalized, key, {
         configurable: true,
         enumerable: true,
-        value: normalizeUnknown(nestedValue, ancestors, nestedPath, key),
+        value: normalizeUnknown(nestedValue, context, nestedPath, depth + 1, key),
         writable: true,
       });
     }
     return normalized;
-  } catch (error) {
-    if (error instanceof CanonicalizationError) {
-      throw error;
-    }
-    return unsupported(path);
   } finally {
-    ancestors.delete(value);
+    context.ancestors.delete(value);
   }
 }
 
@@ -165,44 +171,64 @@ function compareReferences(left: ContentReference, right: ContentReference): num
   );
 }
 
-function normalizeEntity(entity: ContentEntity<unknown>, path: string): ContentEntity<unknown> {
-  const normalized = normalizeUnknown(entity, new Set(), path) as ContentEntity<unknown>;
-  normalized.refs = [...normalized.refs].sort(compareReferences);
-  return normalized;
+function requireArray(value: unknown, path: string): unknown[] {
+  return Array.isArray(value) ? value : fail(path, "unsupported_canonical_value");
 }
 
-function readTopLevelGraphField<T>(read: () => T): T {
-  try {
-    return read();
-  } catch {
-    return unsupported("$");
+function sortNormalizedGraph(graph: Record<string, unknown>): GameContentGraph {
+  const roots = requireArray(graph.roots, "$.roots");
+  for (let index = 0; index < roots.length; index += 1) {
+    if (typeof roots[index] !== "string") fail(`$.roots[${index}]`, "unsupported_canonical_value");
+  }
+  (roots as string[]).sort(compareOrdinal);
+
+  const entities = requireArray(graph.entities, "$.entities");
+  for (let entityIndex = 0; entityIndex < entities.length; entityIndex += 1) {
+    const entity = entities[entityIndex];
+    const entityPath = `$.entities[${entityIndex}]`;
+    if (entity === null || typeof entity !== "object" || Array.isArray(entity)) {
+      fail(entityPath, "unsupported_canonical_value");
+    }
+    const entityRecord = entity as ContentEntity<unknown>;
+    if (typeof entityRecord.id !== "string") fail(`${entityPath}.id`, "unsupported_canonical_value");
+    const refs = requireArray(entityRecord.refs, `${entityPath}.refs`) as ContentReference[];
+    for (let referenceIndex = 0; referenceIndex < refs.length; referenceIndex += 1) {
+      const reference = refs[referenceIndex];
+      if (reference === null || typeof reference !== "object" || Array.isArray(reference)) {
+        fail(`${entityPath}.refs[${referenceIndex}]`, "unsupported_canonical_value");
+      }
+    }
+    refs.sort(compareReferences);
+  }
+  (entities as ContentEntity<unknown>[]).sort((left, right) => compareOrdinal(left.id, right.id));
+  return graph as unknown as GameContentGraph;
+}
+
+function rejectUnknownGraphKeys(graph: GameContentGraph): void {
+  if (graph === null || typeof graph !== "object" || Array.isArray(graph)) {
+    fail("$", "unsupported_canonical_value");
+  }
+  const ownKeys = readAccess("$", () => Reflect.ownKeys(graph));
+  const unknownKeys: PropertyKey[] = [];
+  for (let index = 0; index < ownKeys.length; index += 1) {
+    const key = ownKeys[index];
+    if (key !== undefined && (typeof key !== "string" || !GRAPH_KEYS.has(key))) unknownKeys.push(key);
+  }
+  unknownKeys.sort((left, right) => compareOrdinal(String(left), String(right)));
+  const first = unknownKeys[0];
+  if (first !== undefined) {
+    const path = typeof first === "string" ? objectPath("$", first) : `$[${String(first)}]`;
+    fail(path, "unknown_graph_key");
   }
 }
 
 export function normalizeContentGraph(graph: GameContentGraph): GameContentGraph {
-  const schema = readTopLevelGraphField(() => graph.schema);
-  const id = readTopLevelGraphField(() => graph.id);
-  const version = readTopLevelGraphField(() => graph.version);
-  const visibility = readTopLevelGraphField(() => graph.visibility);
-  const roots = readTopLevelGraphField(() => graph.roots);
-  const entities = readTopLevelGraphField(() => graph.entities);
-
-  const normalized = normalizeUnknown(
-    {
-      schema,
-      id,
-      version,
-      visibility,
-      roots: [...roots].sort(compareOrdinal),
-      entities: entities
-        .map((entity, index) => normalizeEntity(entity, `$.entities[${index}]`))
-        .sort((left, right) => compareOrdinal(left.id, right.id)),
-    },
-    new Set(),
-    "$",
-  );
-
-  return normalized as GameContentGraph;
+  rejectUnknownGraphKeys(graph);
+  const normalized = normalizeUnknown(graph, { ancestors: new Set(), nodes: 0 }, "$", 0);
+  if (normalized === null || typeof normalized !== "object" || Array.isArray(normalized)) {
+    return fail("$", "unsupported_canonical_value");
+  }
+  return sortNormalizedGraph(normalized as Record<string, unknown>);
 }
 
 export function serializeCanonicalGraph(graph: GameContentGraph): string {

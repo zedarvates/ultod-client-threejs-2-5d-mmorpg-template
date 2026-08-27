@@ -13,6 +13,8 @@ export const MAX_GRAPH_REFERENCES = 65536;
 export const MAX_CYCLE_SEARCH_STEPS = 100000;
 export const MAX_CYCLE_DIAGNOSTICS = 1024;
 
+const GRAPH_KEYS = new Set(["schema", "id", "version", "visibility", "roots", "entities"]);
+
 type UnknownRecord = Record<string, unknown>;
 type UntrustedAccess<T> = { accessible: true; value: T } | { accessible: false };
 
@@ -65,6 +67,16 @@ function addDiagnostic(
   message: string,
 ): void {
   diagnostics.push({ code, path, message });
+}
+
+function graphKeyPath(key: PropertyKey): string {
+  if (typeof key === "symbol") {
+    return `$[${String(key)}]`;
+  }
+  const text = String(key);
+  return /^[A-Za-z_$][A-Za-z0-9_$]*$/.test(text)
+    ? `$.${text}`
+    : `$[${JSON.stringify(text)}]`;
 }
 
 function invalidGraphAccess(): ValidationResult {
@@ -293,6 +305,22 @@ export function validateContentGraph(value: unknown): ValidationResult {
   }
 
   const graph = value as UnknownRecord;
+  const ownKeysAccess = accessUntrusted(() => Reflect.ownKeys(graph));
+  if (!ownKeysAccess.accessible) {
+    return invalidGraphAccess();
+  }
+  const unknownKeys = ownKeysAccess.value
+    .filter((key) => typeof key !== "string" || !GRAPH_KEYS.has(key))
+    .sort((left, right) => compareOrdinal(String(left), String(right)));
+  for (const key of unknownKeys) {
+    addDiagnostic(
+      diagnostics,
+      "unknown_graph_key",
+      graphKeyPath(key),
+      `unknown top-level graph key: ${String(key)}`,
+    );
+  }
+
   const schemaAccess = accessUntrusted(() => graph.schema);
   const idAccess = accessUntrusted(() => graph.id);
   const versionAccess = accessUntrusted(() => graph.version);

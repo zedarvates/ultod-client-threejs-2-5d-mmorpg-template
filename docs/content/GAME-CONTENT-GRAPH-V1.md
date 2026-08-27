@@ -45,6 +45,18 @@ IDs must match `^[a-z0-9][a-z0-9._-]{2,127}$`; portable IDs are stable
 strings, not runtime numeric database IDs. Entity and graph versions must be
 semantic versions accepted by `SEMVER_PATTERN`.
 
+Every entity field shown above is required at runtime. `schema` must be exactly
+`uo.game-content-entity/v1`; `status` must be `draft`, `published`, or
+`deprecated`; and `content` must exist as an own property (its value remains
+kind-specific and opaque to envelope validation). Compatibility is a required
+object: `content_graph` and `client_core` are nonempty strings no longer than
+256 characters, while `server_protocol` is an array of at most 64 nonempty
+strings no longer than 128 characters each.
+
+The graph envelope permits exactly six own top-level keys: `schema`, `id`,
+`version`, `visibility`, `roots`, and `entities`. Strict validation emits one
+deterministically sorted `unknown_graph_key` diagnostic per extra key.
+
 ## Example
 
 ```ts
@@ -146,24 +158,47 @@ Canonicalization is intentionally different: `normalizeContentGraph`,
 `serializeCanonicalGraph`, and `sha256CanonicalGraph` reject values that do
 not have an unambiguous JSON-safe canonical form. They throw
 `CanonicalizationError`, whose stable `code` is
-`unsupported_canonical_value` and whose `path` identifies the rejected value.
+one of the values below and whose `path` identifies the exact rejected or
+inaccessible location:
+
+| Code | Meaning |
+| --- | --- |
+| `unsupported_canonical_value` | The value has no supported unambiguous JSON-safe form. |
+| `unknown_graph_key` | The graph has an own key outside its six-key envelope. |
+| `canonical_access_error` | A Proxy, getter, or property operation threw. |
+| `canonical_array_limit_exceeded` | An array length is non-finite, negative, unsafe, or above 16,384. |
+| `canonical_depth_limit_exceeded` | Canonical depth exceeds 64. |
+| `canonical_node_limit_exceeded` | Canonical work would exceed 65,536 visited values. |
+
 Supported canonical data retains JSON `null`; it is never conflated with an
-unsupported value.
+unsupported value. Unknown graph keys are rejected during both strict
+validation and canonicalization, so two accepted graph documents cannot hash
+identically merely because canonical projection discarded one of their fields.
 
 Canonicalization produces a new graph, never mutates its input, sorts roots,
 entities, references, diagnostics, and object keys, and preserves the order of
 ordinary content arrays. `sha256CanonicalGraph` uses Web Crypto SHA-256 and
 returns lower-case hexadecimal.
 
+Canonicalization snapshots each untrusted array length once, requires a
+finite, nonnegative safe integer, and caps every array at
+`MAX_CANONICAL_ARRAY_ITEMS` (16,384). It never dispatches spread, iteration,
+`map`, or another array method on untrusted roots, entities, references, or
+nested arrays. The shared traversal caps are `MAX_CANONICAL_DEPTH` (64) and
+`MAX_CANONICAL_NODES` (65,536).
+
 ## Public API
 
 The package exports `CONTENT_KINDS`, `CONTENT_ID_PATTERN`, `SEMVER_PATTERN`,
-`MAX_REFERENCES_PER_ENTITY`, `MAX_GRAPH_ENTITIES`, `MAX_GRAPH_ROOTS`,
+`MAX_COMPATIBILITY_STRING_LENGTH`, `MAX_SERVER_PROTOCOLS`,
+`MAX_SERVER_PROTOCOL_LENGTH`, `MAX_REFERENCES_PER_ENTITY`,
+`MAX_GRAPH_ENTITIES`, `MAX_GRAPH_ROOTS`,
 `MAX_GRAPH_REFERENCES`, `MAX_CYCLE_SEARCH_STEPS`, `MAX_CYCLE_DIAGNOSTICS`,
+`MAX_CANONICAL_DEPTH`, `MAX_CANONICAL_NODES`, `MAX_CANONICAL_ARRAY_ITEMS`,
 `validateEntity`, `validateContentGraph`, `normalizeContentGraph`,
 `serializeCanonicalGraph`, `sha256CanonicalGraph`, and
 `CanonicalizationError`.
 
-Its type exports are `ContentAuthority`, `ContentEntity<T>`, `ContentKind`,
+Its type exports are `CanonicalizationErrorCode`, `ContentAuthority`, `ContentEntity<T>`, `ContentKind`,
 `ContentReference`, `ContentStatus`, `GameContentGraph`,
 `ValidationDiagnostic`, and `ValidationResult`.

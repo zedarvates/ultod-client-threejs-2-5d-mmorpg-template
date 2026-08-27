@@ -25,6 +25,12 @@ test("serializes and hashes the empty public graph canonically", async () => {
   );
 });
 
+test("exports conservative canonical work bounds", () => {
+  expect(sdk.MAX_CANONICAL_DEPTH).toBe(64);
+  expect(sdk.MAX_CANONICAL_NODES).toBe(65_536);
+  expect(sdk.MAX_CANONICAL_ARRAY_ITEMS).toBe(16_384);
+});
+
 const alpha: ContentEntity<unknown> = {
   schema: "uo.game-content-entity/v1",
   id: "location.tutorial.alpha",
@@ -155,9 +161,118 @@ test("converts a throwing top-level graph getter to a canonicalization error", (
   expect(error).toBeInstanceOf(CanonicalizationError);
   expect(error).toMatchObject({
     name: "CanonicalizationError",
-    code: "unsupported_canonical_value",
-    path: "$",
+    code: "canonical_access_error",
+    path: "$.entities",
   });
+});
+
+test("rejects unknown graph keys at their exact path before hashing", async () => {
+  const graphA = { ...emptyPublicGraph, ignored: "A" } as GameContentGraph;
+  const graphB = { ...emptyPublicGraph, ignored: "B" } as GameContentGraph;
+
+  expect(sdk.validateContentGraph(graphA).valid).toBe(false);
+  expect(sdk.validateContentGraph(graphB).valid).toBe(false);
+  expect(captureGraphCanonicalizationError(graphA)).toMatchObject({
+    name: "CanonicalizationError",
+    code: "unknown_graph_key",
+    path: "$.ignored",
+  });
+  expect(captureGraphCanonicalizationError(graphB)).toMatchObject({
+    name: "CanonicalizationError",
+    code: "unknown_graph_key",
+    path: "$.ignored",
+  });
+  await expect(sdk.sha256CanonicalGraph(graphA)).rejects.toMatchObject({
+    code: "unknown_graph_key",
+    path: "$.ignored",
+  });
+  await expect(sdk.sha256CanonicalGraph(graphB)).rejects.toMatchObject({
+    code: "unknown_graph_key",
+    path: "$.ignored",
+  });
+});
+
+test("fails quickly on hostile top-level roots and entities arrays", { timeout: 500 }, () => {
+  for (const field of ["roots", "entities"] as const) {
+    const hostile = new Proxy([], {
+      get(target, property, receiver) {
+        if (property === "length") return Infinity;
+        if (property === Symbol.iterator || property === "map") {
+          throw new Error("untrusted collection dispatch");
+        }
+        return Reflect.get(target, property, receiver);
+      },
+    });
+    const error = captureGraphCanonicalizationError({ ...emptyPublicGraph, [field]: hostile });
+
+    expect(error, field).toMatchObject({
+      name: "CanonicalizationError",
+      code: "canonical_array_limit_exceeded",
+      path: `$.${field}`,
+    });
+  }
+});
+
+test("snapshots each untrusted top-level array length once without iterator dispatch", () => {
+  function singleLengthRead<T>(items: T[]): T[] {
+    let lengthReads = 0;
+    return new Proxy(items, {
+      get(target, property, receiver) {
+        if (property === "length" && ++lengthReads > 1) throw new Error("length read twice");
+        if (property === Symbol.iterator || property === "map") {
+          throw new Error("untrusted collection dispatch");
+        }
+        return Reflect.get(target, property, receiver);
+      },
+    });
+  }
+
+  expect(sdk.serializeCanonicalGraph({
+    ...emptyPublicGraph,
+    roots: singleLengthRead([]),
+    entities: singleLengthRead([]),
+  })).toBe(
+    '{"entities":[],"id":"graph.tutorial.empty","roots":[],"schema":"uo.game-content-graph/v1","version":"1.0.0","visibility":"public"}',
+  );
+});
+
+test("rejects a nested array with an infinite length at its exact path", { timeout: 500 }, () => {
+  const infinite = new Proxy([], {
+    get(target, property, receiver) {
+      return property === "length" ? Infinity : Reflect.get(target, property, receiver);
+    },
+  });
+
+  expect(captureCanonicalizationError({ nested: infinite })).toMatchObject({
+    name: "CanonicalizationError",
+    code: "canonical_array_limit_exceeded",
+    path: "$.entities[0].content.nested",
+  });
+});
+
+test("rejects canonical values deeper than the exported depth bound", () => {
+  const content: Record<string, unknown> = {};
+  let cursor = content;
+  for (let depth = 0; depth < 64; depth += 1) {
+    const next: Record<string, unknown> = {};
+    cursor.next = next;
+    cursor = next;
+  }
+
+  const error = captureCanonicalizationError(content) as { code: string; path: string };
+  expect(error.code).toBe("canonical_depth_limit_exceeded");
+  expect(error.path).toContain("$.entities[0].content.next");
+});
+
+test("rejects canonical values that exceed the exported node bound", () => {
+  const content: Record<string, unknown> = {};
+  for (let index = 0; index < 65_536; index += 1) {
+    content[`node_${index.toString().padStart(5, "0")}`] = index;
+  }
+
+  const error = captureCanonicalizationError(content) as { code: string; path: string };
+  expect(error.code).toBe("canonical_node_limit_exceeded");
+  expect(error.path).toBe("$.entities[0].content");
 });
 
 test("rejects unsupported canonical values with a stable typed path error", () => {

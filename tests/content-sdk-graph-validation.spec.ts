@@ -40,6 +40,16 @@ test("accepts a closed realm and location graph", () => {
   expect(validateContentGraph(validGraph)).toEqual({ valid: true, diagnostics: [] });
 });
 
+test("rejects unknown own top-level keys deterministically", () => {
+  expect(validateContentGraph({ ...validGraph, zebra: true, alpha: true })).toEqual({
+    valid: false,
+    diagnostics: [
+      { code: "unknown_graph_key", path: "$.alpha", message: "unknown top-level graph key: alpha" },
+      { code: "unknown_graph_key", path: "$.zebra", message: "unknown top-level graph key: zebra" },
+    ],
+  });
+});
+
 test("rejects duplicate entity IDs", () => {
   const graph = {
     ...validGraph,

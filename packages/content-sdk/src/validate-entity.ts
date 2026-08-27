@@ -4,8 +4,12 @@ export const CONTENT_ID_PATTERN = /^[a-z0-9][a-z0-9._-]{2,127}$/;
 export const SEMVER_PATTERN = /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-[0-9A-Za-z.-]+)?$/;
 /** Bounds untrusted refs iteration to keep entity validation terminating. */
 export const MAX_REFERENCES_PER_ENTITY = 4096;
+export const MAX_COMPATIBILITY_STRING_LENGTH = 256;
+export const MAX_SERVER_PROTOCOLS = 64;
+export const MAX_SERVER_PROTOCOL_LENGTH = 128;
 
 const AUTHORITIES = ["server", "client-presentation", "authoring-draft"] as const;
+const STATUSES = ["draft", "published", "deprecated"] as const;
 
 type EntityRecord = Record<string, unknown>;
 type UntrustedAccess<T> = { accessible: true; value: T } | { accessible: false };
@@ -124,6 +128,103 @@ function validateReferences(value: unknown, diagnostics: ValidationDiagnostic[])
   return true;
 }
 
+function validateCompatibility(value: unknown, diagnostics: ValidationDiagnostic[]): boolean {
+  const recordAccess = accessUntrusted(() => isRecord(value));
+  if (!recordAccess.accessible) {
+    return false;
+  }
+  if (!recordAccess.value) {
+    addDiagnostic(
+      diagnostics,
+      "invalid_compatibility",
+      "compatibility",
+      "compatibility must be an object",
+    );
+    return true;
+  }
+
+  const compatibility = value as EntityRecord;
+  const contentGraphAccess = accessUntrusted(() => compatibility.content_graph);
+  const clientCoreAccess = accessUntrusted(() => compatibility.client_core);
+  const serverProtocolAccess = accessUntrusted(() => compatibility.server_protocol);
+  if (!contentGraphAccess.accessible || !clientCoreAccess.accessible || !serverProtocolAccess.accessible) {
+    return false;
+  }
+
+  if (
+    typeof contentGraphAccess.value !== "string" ||
+    contentGraphAccess.value.length === 0 ||
+    contentGraphAccess.value.length > MAX_COMPATIBILITY_STRING_LENGTH
+  ) {
+    addDiagnostic(
+      diagnostics,
+      "invalid_content_graph_compatibility",
+      "compatibility.content_graph",
+      `compatibility.content_graph must be a non-empty string of at most ${MAX_COMPATIBILITY_STRING_LENGTH} characters`,
+    );
+  }
+  if (
+    typeof clientCoreAccess.value !== "string" ||
+    clientCoreAccess.value.length === 0 ||
+    clientCoreAccess.value.length > MAX_COMPATIBILITY_STRING_LENGTH
+  ) {
+    addDiagnostic(
+      diagnostics,
+      "invalid_client_core_compatibility",
+      "compatibility.client_core",
+      `compatibility.client_core must be a non-empty string of at most ${MAX_COMPATIBILITY_STRING_LENGTH} characters`,
+    );
+  }
+
+  const arrayAccess = accessUntrusted(() => Array.isArray(serverProtocolAccess.value));
+  if (!arrayAccess.accessible) {
+    return false;
+  }
+  if (!arrayAccess.value) {
+    addDiagnostic(
+      diagnostics,
+      "invalid_server_protocols",
+      "compatibility.server_protocol",
+      "compatibility.server_protocol must be an array",
+    );
+    return true;
+  }
+
+  const protocols = serverProtocolAccess.value as unknown[];
+  const lengthAccess = accessUntrusted(() => protocols.length);
+  if (!lengthAccess.accessible || !Number.isSafeInteger(lengthAccess.value) || lengthAccess.value < 0) {
+    return false;
+  }
+  if (lengthAccess.value > MAX_SERVER_PROTOCOLS) {
+    addDiagnostic(
+      diagnostics,
+      "invalid_server_protocols",
+      "compatibility.server_protocol",
+      `compatibility.server_protocol must contain at most ${MAX_SERVER_PROTOCOLS} items`,
+    );
+  }
+  const inspectedLength = Math.min(lengthAccess.value, MAX_SERVER_PROTOCOLS);
+  for (let index = 0; index < inspectedLength; index += 1) {
+    const protocolAccess = accessUntrusted(() => protocols[index]);
+    if (!protocolAccess.accessible) {
+      return false;
+    }
+    if (
+      typeof protocolAccess.value !== "string" ||
+      protocolAccess.value.length === 0 ||
+      protocolAccess.value.length > MAX_SERVER_PROTOCOL_LENGTH
+    ) {
+      addDiagnostic(
+        diagnostics,
+        "invalid_server_protocol",
+        `compatibility.server_protocol[${index}]`,
+        `server protocol must be a non-empty string of at most ${MAX_SERVER_PROTOCOL_LENGTH} characters`,
+      );
+    }
+  }
+  return true;
+}
+
 function invalidRecordAccess(): ValidationResult {
   const diagnostics: ValidationDiagnostic[] = [];
   addDiagnostic(diagnostics, "invalid_record_access", "$", "Entity properties could not be read");
@@ -142,23 +243,39 @@ export function validateEntity(value: unknown): ValidationResult {
   }
 
   const entity = value as EntityRecord;
+  const schemaAccess = accessUntrusted(() => entity.schema);
   const idAccess = accessUntrusted(() => entity.id);
   const kindAccess = accessUntrusted(() => entity.kind);
   const versionAccess = accessUntrusted(() => entity.version);
+  const statusAccess = accessUntrusted(() => entity.status);
   const authorityAccess = accessUntrusted(() => entity.authority);
+  const compatibilityAccess = accessUntrusted(() => entity.compatibility);
   const licenseAccess = accessUntrusted(() => entity.license);
+  const contentOwnAccess = accessUntrusted(() => Object.prototype.hasOwnProperty.call(entity, "content"));
   const refsAccess = accessUntrusted(() => entity.refs);
   if (
+    !schemaAccess.accessible ||
     !idAccess.accessible ||
     !kindAccess.accessible ||
     !versionAccess.accessible ||
+    !statusAccess.accessible ||
     !authorityAccess.accessible ||
+    !compatibilityAccess.accessible ||
     !licenseAccess.accessible ||
+    !contentOwnAccess.accessible ||
     !refsAccess.accessible
   ) {
     return invalidRecordAccess();
   }
 
+  if (schemaAccess.value !== "uo.game-content-entity/v1") {
+    addDiagnostic(
+      diagnostics,
+      "invalid_entity_schema",
+      "schema",
+      "schema must be uo.game-content-entity/v1",
+    );
+  }
   if (typeof idAccess.value !== "string" || !CONTENT_ID_PATTERN.test(idAccess.value)) {
     addDiagnostic(diagnostics, "invalid_id", "id", "id must match /^[a-z0-9][a-z0-9._-]{2,127}$/");
   }
@@ -170,6 +287,17 @@ export function validateEntity(value: unknown): ValidationResult {
   }
   if (typeof versionAccess.value !== "string" || !SEMVER_PATTERN.test(versionAccess.value)) {
     addDiagnostic(diagnostics, "invalid_version", "version", "version must be a semantic version");
+  }
+  if (
+    typeof statusAccess.value !== "string" ||
+    !STATUSES.includes(statusAccess.value as (typeof STATUSES)[number])
+  ) {
+    addDiagnostic(
+      diagnostics,
+      "invalid_status",
+      "status",
+      "status must be draft, published, or deprecated",
+    );
   }
   if (
     typeof authorityAccess.value !== "string" ||
@@ -198,6 +326,12 @@ export function validateEntity(value: unknown): ValidationResult {
   }
   if (typeof licenseId !== "string" || licenseId.length === 0) {
     addDiagnostic(diagnostics, "missing_license_id", "license.id", "license.id must be a non-empty string");
+  }
+  if (!validateCompatibility(compatibilityAccess.value, diagnostics)) {
+    return invalidRecordAccess();
+  }
+  if (!contentOwnAccess.value) {
+    addDiagnostic(diagnostics, "missing_content", "content", "content must be an own property");
   }
   if (!validateReferences(refsAccess.value, diagnostics)) {
     return invalidRecordAccess();
