@@ -35,10 +35,10 @@ npm run dev      # start Vite dev server on localhost
 npm run build    # type-check + production build to dist/
 ```
 
-Run the end-to-end test suite (18 tests: shell boot, HUD, render liveness,
+Run the end-to-end test suite (22 tests: shell boot, HUD, render liveness,
 scenario economy and progression, blueprint placement, player visibility,
 camera follow, complete rescue UI journey, loopback handshake/auth/movement,
-fail-closed auth rejection, deferred scenery startup and eventual asset loading):
+fail-closed auth rejection, procedural asset regressions, and the no-public-GLB-request contract):
 
 ```bash
 npm run test:e2e

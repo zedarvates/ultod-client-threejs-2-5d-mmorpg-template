@@ -31,7 +31,7 @@ test("canvas renders non-empty frame", async ({ page }) => {
   expect(shot.length).toBeGreaterThan(2000);
 });
 
-test("non-critical prop GLBs wait until after critical startup", async ({ page }) => {
+test("critical startup makes no public prop GLB request", async ({ page }) => {
   const propGlbRequests: string[] = [];
   await page.route("**/assets/props/*.glb", async (route) => {
     propGlbRequests.push(route.request().url());

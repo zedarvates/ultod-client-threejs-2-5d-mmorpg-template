@@ -63,11 +63,11 @@ The public demo now uses original procedural geometry for scenery and creature
 parts. The eight GLBs formerly copied from private tooling have been removed
 from current `main`; their audit remains only as a historical record in
 [ASSET-LICENSE-AUDIT.md](ASSET-LICENSE-AUDIT.md), with status
-`current-main-resolved / historical-releases-annotate`.
+`release-candidate-resolved / historical-releases-annotated`.
 
-The next release gate remains blocked until historical releases containing those
-binaries are annotated. No binary exception is currently approved for this
-repository.
+Historical-release annotation is complete. Push, tag, release, Pages
+verification, and issue closure remain deferred until approval. No binary
+exception is currently approved for this repository.
 
 The bridges (`blueprint-bridge.ts`, `creature-bridge.ts`) remain original public
 code and contain no private implementation logic.

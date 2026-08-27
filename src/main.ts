@@ -128,7 +128,7 @@ class IsometricApp {
     ]);
     const gltfLoader = new loader.GLTFLoader();
 
-    // Generated Asset Factory props (see public/assets/props/PROVENANCE.md)
+    // Original procedural tutorial props.
     props.loadTemplateProps(this.scene);
 
     // Architecture Editor blueprint demo (see public/blueprints/)
