@@ -27,6 +27,8 @@ jobs:
         run: node scripts/check-public-boundary.mjs
       - name: Typecheck content SDK
         run: npm run check:content-sdk
+      - name: Build content SDK
+        run: npm --workspace @ultod/content-sdk run build
       - name: Typecheck client core
         run: npm run check:client-core
       - name: Test content SDK
