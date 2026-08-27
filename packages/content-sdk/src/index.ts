@@ -62,6 +62,11 @@ export type {
   StoryCoreAuthoringDraft,
   StoryCoreDraftRecord,
 } from "./adapters/storycore-draft.js";
+export {
+  LEGACY_TEMPLATE_KIND_MAP,
+  adaptLegacyRegistryTemplate,
+} from "./adapters/legacy-registry-draft.js";
+export type { LegacyRegistryTemplate } from "./adapters/legacy-registry-draft.js";
 
 export type {
   CanonicalizationErrorCode,
