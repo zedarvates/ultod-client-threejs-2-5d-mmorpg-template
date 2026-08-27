@@ -1,0 +1,379 @@
+{
+  "schema": "uo.game-content-pack/v1",
+  "id": "pack.tutorial.haven",
+  "version": "1.0.0",
+  "status": "published",
+  "visibility": "public",
+  "compatibility": {
+    "content_graph": "1.x",
+    "client_core": ">=0.1.0",
+    "server_protocol": [
+      "1"
+    ]
+  },
+  "artifacts": [
+    {
+      "role": "graph",
+      "path": "graph.json",
+      "sha256": "967e3ff2f4d78b67f1b0aacadbd3bb5f93b00398f3837d2019cdf00476852843",
+      "media_type": "application/json",
+      "license": {
+        "id": "MIT"
+      },
+      "provenance": {
+        "kind": "generated",
+        "source": "tutorial-pack-build"
+      }
+    },
+    {
+      "role": "entity",
+      "content_id": "biome.tutorial.temperate_grassland",
+      "path": "entities/biome_temperate_grassland.json",
+      "sha256": "5e4580865e7fd845b98de20edc1e0974baf1393ec55d604cae4003d9e7ddf1c5",
+      "media_type": "application/json",
+      "license": {
+        "id": "MIT"
+      },
+      "provenance": {
+        "kind": "original",
+        "source": "tutorial-authoring"
+      }
+    },
+    {
+      "role": "entity",
+      "content_id": "creature_species.tutorial.forest_beast",
+      "path": "entities/creature_species_forest_beast.json",
+      "sha256": "8c695bc377c85c37befb3843e883cca5c26b8201010829913c4c56ad77bb03b8",
+      "media_type": "application/json",
+      "license": {
+        "id": "MIT"
+      },
+      "provenance": {
+        "kind": "original",
+        "source": "tutorial-authoring"
+      }
+    },
+    {
+      "role": "entity",
+      "content_id": "dialogue.tutorial.king_intro",
+      "path": "entities/dialogue_king_intro.json",
+      "sha256": "053a1d6d1e82541122585442ddd23e228fcac855e58e8144f3666667415f3937",
+      "media_type": "application/json",
+      "license": {
+        "id": "MIT"
+      },
+      "provenance": {
+        "kind": "original",
+        "source": "tutorial-authoring"
+      }
+    },
+    {
+      "role": "entity",
+      "content_id": "dialogue.tutorial.princess_thanks",
+      "path": "entities/dialogue_princess_thanks.json",
+      "sha256": "6e6c10c5a84b0e90373f799a62c5159c17f8d46171e7b9dcef1a10606bf3ef72",
+      "media_type": "application/json",
+      "license": {
+        "id": "MIT"
+      },
+      "provenance": {
+        "kind": "original",
+        "source": "tutorial-authoring"
+      }
+    },
+    {
+      "role": "entity",
+      "content_id": "dungeon.tutorial.beast_lair",
+      "path": "entities/dungeon_beast_lair.json",
+      "sha256": "d58da8a3e8b390edc693a96e565111579edc1aab3200581d9dd274918a59fe45",
+      "media_type": "application/json",
+      "license": {
+        "id": "MIT"
+      },
+      "provenance": {
+        "kind": "original",
+        "source": "tutorial-authoring"
+      }
+    },
+    {
+      "role": "entity",
+      "content_id": "encounter.tutorial.beast_ambush",
+      "path": "entities/encounter_beast_ambush.json",
+      "sha256": "2cdd652af8677056a9a2e8a339ee106de2ce5dac358bc321c05e00e6c50e3163",
+      "media_type": "application/json",
+      "license": {
+        "id": "MIT"
+      },
+      "provenance": {
+        "kind": "original",
+        "source": "tutorial-authoring"
+      }
+    },
+    {
+      "role": "entity",
+      "content_id": "faction.tutorial.haven_guardians",
+      "path": "entities/faction_haven_guardians.json",
+      "sha256": "7a32e92dc2e68c2776fe7e0950569ed0b88a6c01b3bbabec42620e7688ac19dc",
+      "media_type": "application/json",
+      "license": {
+        "id": "MIT"
+      },
+      "provenance": {
+        "kind": "original",
+        "source": "tutorial-authoring"
+      }
+    },
+    {
+      "role": "entity",
+      "content_id": "item.tutorial.gold_coin",
+      "path": "entities/item_gold_coin.json",
+      "sha256": "b8f5734d54da28e2c406a282f22710ee3ad3eac307c2bd4ac15d1ca2703945bf",
+      "media_type": "application/json",
+      "license": {
+        "id": "MIT"
+      },
+      "provenance": {
+        "kind": "original",
+        "source": "tutorial-authoring"
+      }
+    },
+    {
+      "role": "entity",
+      "content_id": "item.tutorial.iron_sword",
+      "path": "entities/item_iron_sword.json",
+      "sha256": "4cee8a51d5e021e3c5c8a20c158ce9447448113e0fe77b3012e877d8db654d94",
+      "media_type": "application/json",
+      "license": {
+        "id": "MIT"
+      },
+      "provenance": {
+        "kind": "original",
+        "source": "tutorial-authoring"
+      }
+    },
+    {
+      "role": "entity",
+      "content_id": "item.tutorial.wooden_sword",
+      "path": "entities/item_wooden_sword.json",
+      "sha256": "3ca75fc37f0282c9163e9e7d1c52e73b3be179e1e0bf9e786ff4dee1530cef0f",
+      "media_type": "application/json",
+      "license": {
+        "id": "MIT"
+      },
+      "provenance": {
+        "kind": "original",
+        "source": "tutorial-authoring"
+      }
+    },
+    {
+      "role": "entity",
+      "content_id": "location.tutorial.forest_clearing",
+      "path": "entities/location_forest_clearing.json",
+      "sha256": "12c010463539ea767ca579992ddba864fca299aec299173b2d9f1c8aca634672",
+      "media_type": "application/json",
+      "license": {
+        "id": "MIT"
+      },
+      "provenance": {
+        "kind": "original",
+        "source": "tutorial-authoring"
+      }
+    },
+    {
+      "role": "entity",
+      "content_id": "location.tutorial.village_square",
+      "path": "entities/location_village_square.json",
+      "sha256": "3d56cee13c15d9e9e7e06336562a42bf56b9623cdc367a00d5f342b59487754b",
+      "media_type": "application/json",
+      "license": {
+        "id": "MIT"
+      },
+      "provenance": {
+        "kind": "original",
+        "source": "tutorial-authoring"
+      }
+    },
+    {
+      "role": "entity",
+      "content_id": "loot_table.tutorial.beast_spoils",
+      "path": "entities/loot_table_beast_spoils.json",
+      "sha256": "462ee13d6b48e6c77fad21be723620c5d50c0318eca3b74214bc91866dc566ae",
+      "media_type": "application/json",
+      "license": {
+        "id": "MIT"
+      },
+      "provenance": {
+        "kind": "original",
+        "source": "tutorial-authoring"
+      }
+    },
+    {
+      "role": "entity",
+      "content_id": "monster_variant.tutorial.fierce_beast",
+      "path": "entities/monster_variant_fierce_beast.json",
+      "sha256": "06de3b2bd15189a51e35c402268f7a3b59943ad4e2be22bb4c5b3c87b3a9243a",
+      "media_type": "application/json",
+      "license": {
+        "id": "MIT"
+      },
+      "provenance": {
+        "kind": "original",
+        "source": "tutorial-authoring"
+      }
+    },
+    {
+      "role": "entity",
+      "content_id": "npc.tutorial.king_aldous",
+      "path": "entities/npc_king_aldous.json",
+      "sha256": "3d5da55de19fd73e352d6c6b0fc752c8097a7a5bf23e1fb12b395621a295fed9",
+      "media_type": "application/json",
+      "license": {
+        "id": "MIT"
+      },
+      "provenance": {
+        "kind": "original",
+        "source": "tutorial-authoring"
+      }
+    },
+    {
+      "role": "entity",
+      "content_id": "npc.tutorial.merchant_bram",
+      "path": "entities/npc_merchant_bram.json",
+      "sha256": "2d4e4c3688756babc0b0c4c1a19510272e33c9b9915c3247efffbf1e6cc3bba0",
+      "media_type": "application/json",
+      "license": {
+        "id": "MIT"
+      },
+      "provenance": {
+        "kind": "original",
+        "source": "tutorial-authoring"
+      }
+    },
+    {
+      "role": "entity",
+      "content_id": "npc.tutorial.princess_elara",
+      "path": "entities/npc_princess_elara.json",
+      "sha256": "27d5bdd193ccb8dc31e3307cf4d0072521e42a64008ab49da3dc53132e0a5ccf",
+      "media_type": "application/json",
+      "license": {
+        "id": "MIT"
+      },
+      "provenance": {
+        "kind": "original",
+        "source": "tutorial-authoring"
+      }
+    },
+    {
+      "role": "entity",
+      "content_id": "quest.tutorial.rescue_princess",
+      "path": "entities/quest_rescue_princess.json",
+      "sha256": "e1d3b0d00777ee6ef27e888bb7762c1d0d475be67f7e2d6841dcbe4fdd79b8e9",
+      "media_type": "application/json",
+      "license": {
+        "id": "MIT"
+      },
+      "provenance": {
+        "kind": "original",
+        "source": "tutorial-authoring"
+      }
+    },
+    {
+      "role": "entity",
+      "content_id": "realm.tutorial.haven",
+      "path": "entities/realm_haven.json",
+      "sha256": "d0741ede05950eae1bc77a22bd145ef1d9a60ace3141c1b0efa6a20ccd4e6808",
+      "media_type": "application/json",
+      "license": {
+        "id": "MIT"
+      },
+      "provenance": {
+        "kind": "original",
+        "source": "tutorial-authoring"
+      }
+    },
+    {
+      "role": "entity",
+      "content_id": "recipe.tutorial.sword_sharpening",
+      "path": "entities/recipe_sword_sharpening.json",
+      "sha256": "734b4c961503cb4837a0c1bd79adb425b81c16b0d84f51a091f861f0ccbe5d10",
+      "media_type": "application/json",
+      "license": {
+        "id": "MIT"
+      },
+      "provenance": {
+        "kind": "original",
+        "source": "tutorial-authoring"
+      }
+    },
+    {
+      "role": "entity",
+      "content_id": "region.tutorial.sunlit_vale",
+      "path": "entities/region_sunlit_vale.json",
+      "sha256": "8f5e3f67ff040076a98ff359994852eb5c5848b84bd85cfa0c810ed2d2be1008",
+      "media_type": "application/json",
+      "license": {
+        "id": "MIT"
+      },
+      "provenance": {
+        "kind": "original",
+        "source": "tutorial-authoring"
+      }
+    },
+    {
+      "role": "entity",
+      "content_id": "route.tutorial.square_to_clearing",
+      "path": "entities/route_square_to_clearing.json",
+      "sha256": "71ae4f2c35caafd68165b2ee06af0806771a7ffabd51d5262ee5b28cf1d39d33",
+      "media_type": "application/json",
+      "license": {
+        "id": "MIT"
+      },
+      "provenance": {
+        "kind": "original",
+        "source": "tutorial-authoring"
+      }
+    },
+    {
+      "role": "entity",
+      "content_id": "settlement.tutorial.haven_village",
+      "path": "entities/settlement_haven_village.json",
+      "sha256": "277d961af2a15ed4e9dffc6b684ed71bd6317cbd5b2da25e9bd9f1e4af18fd41",
+      "media_type": "application/json",
+      "license": {
+        "id": "MIT"
+      },
+      "provenance": {
+        "kind": "original",
+        "source": "tutorial-authoring"
+      }
+    },
+    {
+      "role": "entity",
+      "content_id": "spawn_table.tutorial.clearing_beasts",
+      "path": "entities/spawn_table_clearing_beasts.json",
+      "sha256": "0215019f860e8ec869d858f14b87d235135ecdb06d5a437d3bb89ec2b941e745",
+      "media_type": "application/json",
+      "license": {
+        "id": "MIT"
+      },
+      "provenance": {
+        "kind": "original",
+        "source": "tutorial-authoring"
+      }
+    },
+    {
+      "role": "entity",
+      "content_id": "vendor.tutorial.village_merchant",
+      "path": "entities/vendor_village_merchant.json",
+      "sha256": "d0b192c54d8beb87ecfc8e44b170bcad82f005bf215e0e1c11a14ed614d85689",
+      "media_type": "application/json",
+      "license": {
+        "id": "MIT"
+      },
+      "provenance": {
+        "kind": "original",
+        "source": "tutorial-authoring"
+      }
+    }
+  ]
+}
