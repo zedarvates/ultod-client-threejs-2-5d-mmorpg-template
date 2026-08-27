@@ -27,6 +27,8 @@ jobs:
         run: node scripts/check-public-boundary.mjs
       - name: Typecheck content SDK
         run: npm run check:content-sdk
+      - name: Typecheck client core
+        run: npm run check:client-core
       - name: Test content SDK
         run: >-
           npx playwright test
@@ -39,6 +41,10 @@ jobs:
           tests/content-pack-normalization.spec.ts
           tests/content-pack-integrity.spec.ts
           tests/content-pack-publication.spec.ts
+          tests/client-core-exports.spec.ts
+          tests/client-core-input-camera.spec.ts
+          tests/client-core-presentation.spec.ts
+          tests/client-core-net-ui-content.spec.ts
       - name: Validate Markdown and internal links
         shell: bash
         run: |

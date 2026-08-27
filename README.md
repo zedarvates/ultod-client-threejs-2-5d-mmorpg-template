@@ -60,7 +60,10 @@ See [SCOPE.md](SCOPE.md), [ROADMAP.md](ROADMAP.md), [server compatibility](docs/
 
 ## Content SDK
 
-[`@ultod/content-sdk`](packages/content-sdk/README.md) provides the public
+The template packages include:
+
+- [`@ultod/threejs-client-core`](packages/client-core/README.md): Reusable Three.js 2.5D isometric presentation engine, camera, input, and content loader primitives.
+- [`@ultod/content-sdk`](packages/content-sdk/README.md): Public
 `uo.game-content-entity/v1`, `uo.game-content-graph/v1`, and the separate
 `uo.game-content-pack/v1` TypeScript contracts. It provides deterministic
 validation, canonical serialization, SHA-256 integrity, and a pure publication
