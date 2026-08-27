@@ -1,4 +1,5 @@
 export { CONTENT_KINDS } from "./types.js";
+export { CONTENT_ARTIFACT_ROLES, CONTENT_PROVENANCE_KINDS } from "./pack-types.js";
 export {
   CONTENT_ID_PATTERN,
   MAX_COMPATIBILITY_STRING_LENGTH,
@@ -30,6 +31,16 @@ export { sha256CanonicalGraph } from "./hash.js";
 export type {
   CanonicalizationErrorCode,
 } from "./normalize.js";
+export type {
+  ArtifactReader,
+  ContentArtifact,
+  ContentArtifactRole,
+  ContentPackEvidenceSummary,
+  ContentPackManifest,
+  ContentPackStatus,
+  ContentPackVisibility,
+  ContentProvenanceKind,
+} from "./pack-types.js";
 export type {
   ContentAuthority,
   ContentEntity,
