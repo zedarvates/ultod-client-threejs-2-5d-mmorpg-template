@@ -161,6 +161,15 @@ class IsometricApp {
         this.scene.add(creatureGroup);
       })
       .catch((e) => console.warn("[creature] failed to load", e));
+
+    // Optional sprite actor demonstration for player (if present and reviewed)
+    import("./render/sprite-actor")
+      .then(({ SpriteActor }) => {
+        this.player.tryAttachSprite(() =>
+          SpriteActor.load(import.meta.env.BASE_URL + "sprites/reference-player/sprite-pack.json"),
+        );
+      })
+      .catch(() => undefined);
   }
 
   private handleResize(): void {
@@ -209,6 +218,9 @@ class IsometricApp {
       }
     }
     const next = this.controls.computeStep(this.player.mesh.position, this.targetPosition, delta);
+    const moveDelta = next.clone().sub(this.player.mesh.position);
+    const isMoving = moveDelta.lengthSq() > 1e-6;
+    this.player.updateMovement(moveDelta, isMoving, delta);
     this.player.mesh.position.copy(next);
     this.camera.position.copy(this.player.mesh.position).add(this.cameraOffset);
     this.camera.lookAt(this.player.mesh.position);
