@@ -2,6 +2,21 @@
 
 All notable public changes are documented here.
 
+## [0.1.3] - Release candidate (2026-08-27)
+
+Private-content-free public template release candidate.
+
+- Split private project material into a separately controlled private repository;
+  this public release candidate contains only the isolated template boundary.
+- Replaced the eight binary demo assets with original procedural geometry for
+  the ground, rock and tutorial creature parts.
+- Added the deterministic `npm run check:public-boundary` CI gate to reject
+  tracked binary assets, private lore names and private path references.
+- Appended the historical binary-redistribution notice to the preserved release
+  notes for `v0.1.0`, `v0.1.1` and `v0.1.2`.
+- Expanded the complete Playwright suite to 22 tests, including public-boundary
+  and procedural-asset regressions.
+
 ## [0.1.2] - 2026-08-25
 
 Tablet startup performance patch.

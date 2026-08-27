@@ -1,10 +1,11 @@
 # Binary Asset License Audit
 
-Status: `current-main-resolved / historical-releases-annotate` (2026-08-27).
+Status: `release-candidate-resolved / historical-releases-annotated` (2026-08-27).
 
 This historical record documents eight binary assets that were removed from
-current `main` on 2026-08-27. Current `main` contains no private binary assets.
-It does not grant a license or resolve the status of historical release archives.
+the `0.1.3` release-candidate branch on 2026-08-27. The release candidate contains
+no private binary assets. This audit does not grant a license for the historical
+files or make their redistribution terms complete.
 
 ## Asset Factory outputs
 
@@ -34,8 +35,10 @@ public redistribution grant was found.
 
 ## Historical release consequence
 
-- Existing `v0.1.x` archives already contain these files.
-- Current `main` is resolved: the eight binaries have been removed and the public
-  demo uses original procedural geometry.
-- Historical releases still require annotation. The next release gate remains
-  blocked until that annotation is complete.
+- Existing `v0.1.0`-`v0.1.2` archives contain these files.
+- Their original release-note bodies were preserved and appended with a historical
+  binary-redistribution notice on 2026-08-27.
+- The `0.1.3` release candidate removes all eight binaries and the public demo
+  uses original procedural geometry.
+- Publishing `v0.1.3` remains a controller action after whole-branch review and
+  does not retroactively license the historical binaries.
