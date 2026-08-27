@@ -12,6 +12,15 @@ export type { PointerSample } from "./input/pointer-source.js";
 export { createProceduralCreaturePart } from "./presentation/procedural-creature-parts.js";
 export { createProceduralTemplateProps } from "./presentation/procedural-template-props.js";
 export { loadTemplateProps } from "./presentation/prop-loader.js";
+export { DIRECTIONS, directionForVector, parseSpritePack } from "./presentation/sprite-pack.js";
+export type {
+  SpriteAnimation,
+  SpriteDirection,
+  SpriteFrameRect,
+  SpritePack,
+  SpritePackFile,
+} from "./presentation/sprite-pack.js";
+export { SpriteActor } from "./presentation/sprite-actor.js";
 export { PlayerPresentation } from "./presentation/player-presentation.js";
 export { NPCPresentation } from "./presentation/npc-presentation.js";
 export { buildFromBlueprint } from "./presentation/blueprint-bridge.js";
