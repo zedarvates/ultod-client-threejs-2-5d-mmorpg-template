@@ -2,12 +2,12 @@
 
 All notable public changes are documented here.
 
-## [0.1.3] - Release candidate (2026-08-27)
+## [0.1.3] - 2026-08-27
 
-Private-content-free public template release candidate.
+Private-content-free public template release.
 
 - Split private project material into a separately controlled private repository;
-  this public release candidate contains only the isolated template boundary.
+  this public template contains only the isolated template boundary.
 - Replaced the eight binary demo assets with original procedural geometry for
   the ground, rock and tutorial creature parts.
 - Added the deterministic `npm run check:public-boundary` CI gate to reject
