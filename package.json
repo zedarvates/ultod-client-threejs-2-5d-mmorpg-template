@@ -8,7 +8,8 @@
   ],
   "scripts": {
     "dev": "vite",
-    "build": "tsc --noEmit && vite build",
+    "build": "tsc --noEmit && vite build && npm run check:bundle",
+    "check:bundle": "node scripts/check-build-chunks.mjs",
     "preview": "vite preview",
    "test:e2e": "playwright test",
     "check:public-boundary": "node scripts/check-public-boundary.mjs",
