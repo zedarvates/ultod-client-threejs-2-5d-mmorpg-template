@@ -70,6 +70,13 @@ editor bridges, loopback fixture, e2e tests, and live GitHub Pages deployment.
 
 ## Unreleased
 
+### Packages
+
+- Build `@ultod/content-sdk` and `@ultod/threejs-client-core` automatically
+  before `npm pack`, including the client core's SDK type dependency.
+- Verify both archives by installing them with a local Three.js archive in an
+  offline temporary consumer and importing their public entry points.
+
 ### Minimal Three.js 2.5D presentation shell
 
 - Added original `package.json`, `tsconfig.json`, `index.html`, and TypeScript presentation sources (`src/main.ts`, `src/player_presentation.ts`, `src/npc_presentation.ts`, `src/controls/isometric_controls.ts`).
