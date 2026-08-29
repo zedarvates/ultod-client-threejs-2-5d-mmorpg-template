@@ -41,7 +41,14 @@ export type {
   GenomePart,
 } from "./presentation/creature-bridge.js";
 
-export { MSG, encodeMessage, decodeMessage, encodeMovement, decodePositionUpdate } from "./net/protocol.js";
+export {
+  MAX_GAME_FRAME_BYTES,
+  MSG,
+  encodeMessage,
+  decodeMessage,
+  encodeMovement,
+  decodePositionUpdate,
+} from "./net/protocol.js";
 export type { PositionUpdate } from "./net/protocol.js";
 export { NetworkClient } from "./net/network-client.js";
 export type { NetworkState } from "./net/network-client.js";
