@@ -32,7 +32,6 @@ test('NetworkClient performs synthetic handshake auth and authoritative movement
 
   const result = await page.evaluate(async (port) => {
     const client = (window as any).__ultodNetworkTest.createClient();
-
     const positionPromise = new Promise<{ playerId: number; x: number; z: number }>((resolve, reject) => {
       const timeout = setTimeout(() => reject(new Error('position timeout')), 3000);
       client.onPosition((update: { playerId: number; x: number; z: number }) => {
@@ -54,12 +53,7 @@ test('NetworkClient performs synthetic handshake auth and authoritative movement
     const description = client.describeState();
     client.disconnect();
 
-    return {
-      onlineState,
-      position,
-      description,
-      finalState: client.getState(),
-    };
+    return { onlineState, position, description, finalState: client.getState() };
   }, PORT);
 
   expect(result.onlineState.mode).toBe('online');
@@ -80,7 +74,6 @@ test('NetworkClient rejects a bad synthetic credential fail-closed', async ({ pa
     const client = (window as any).__ultodNetworkTest.createClient();
     let rejected = false;
     let message = '';
-
     try {
       await client.connect({
         url: `ws://127.0.0.1:${port}`,
@@ -91,7 +84,6 @@ test('NetworkClient rejects a bad synthetic credential fail-closed', async ({ pa
       rejected = true;
       message = error instanceof Error ? error.message : String(error);
     }
-
     return { rejected, message, state: client.getState() };
   }, PORT);
 
@@ -119,6 +111,28 @@ test('NetworkClient refuses insecure non-loopback ws endpoints before transport'
 
   expect(result.rejected).toBe(true);
   expect(result.message).toContain('wss://');
+  expect(result.state.mode).toBe('offline');
+});
+
+test('NetworkClient rejects non-finite timeout before opening transport', async ({ page }) => {
+  await openHarness(page);
+
+  const result = await page.evaluate(async () => {
+    const client = (window as any).__ultodNetworkTest.createClient();
+    try {
+      await client.connect({ url: 'ws://127.0.0.1:9', token: 'fixture-token', timeoutMs: Number.NaN });
+      return { rejected: false, state: client.getState(), message: '' };
+    } catch (error) {
+      return {
+        rejected: true,
+        state: client.getState(),
+        message: error instanceof Error ? error.message : String(error),
+      };
+    }
+  });
+
+  expect(result.rejected).toBe(true);
+  expect(result.message).toContain('timeout must be a finite number');
   expect(result.state.mode).toBe('offline');
 });
 
