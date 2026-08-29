@@ -79,6 +79,24 @@ test("public boundary classifies binary assets and private lore", () => {
   )[0]?.code).toBe("private-path");
 });
 
+test("public boundary rejects asset manifests awaiting redistribution approval", () => {
+  const manifest = JSON.stringify({
+    schema: "uo.static-sprite-prop-pack/v1",
+    delivery_status: "review_only",
+    requires_artist_review: true,
+    license: {
+      id: "LicenseRef-Generated-Output",
+      status: "project_review_required",
+    },
+  });
+
+  expect(classifyBoundaryEntry("public/assets/review-pack/pack.json", manifest)).toEqual([{
+    code: "unapproved-public-asset-manifest",
+    path: "public/assets/review-pack/pack.json",
+    detail: "Public policy blocks asset manifests awaiting redistribution approval",
+  }]);
+});
+
 test("public boundary rejects GLBs and private lore names", async () => {
   const findings = await scanPublicBoundary(process.cwd());
   expect(findings).toEqual([]);

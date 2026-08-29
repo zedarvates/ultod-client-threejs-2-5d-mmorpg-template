@@ -22,7 +22,7 @@ const LORE_BOUNDARY_RECORDS = new Set([
 
 /**
  * @typedef {{
- *   code: "tracked-binary-asset" | "private-lore-name" | "private-path",
+ *   code: "tracked-binary-asset" | "private-lore-name" | "private-path" | "unapproved-public-asset-manifest",
  *   path: string,
  *   detail: string,
  * }} Finding
@@ -47,6 +47,29 @@ export function classifyBoundaryEntry(path, text) {
       path,
       detail: `Public policy blocks ${extension} files`,
     });
+  }
+
+  if (path.startsWith("public/") && extension === ".json") {
+    try {
+      const manifest = JSON.parse(text);
+      const license = manifest && typeof manifest === "object" && !Array.isArray(manifest)
+        ? manifest.license
+        : undefined;
+      const awaitsApproval = manifest && typeof manifest === "object" && !Array.isArray(manifest)
+        && (manifest.delivery_status === "review_only"
+          || manifest.requires_artist_review === true
+          || (license && typeof license === "object" && !Array.isArray(license)
+            && license.status === "project_review_required"));
+      if (awaitsApproval) {
+        findings.push({
+          code: "unapproved-public-asset-manifest",
+          path,
+          detail: "Public policy blocks asset manifests awaiting redistribution approval",
+        });
+      }
+    } catch {
+      // JSON validity belongs to the owning schema validator.
+    }
   }
 
   if (!isLoreBoundaryRecord(path)) {
