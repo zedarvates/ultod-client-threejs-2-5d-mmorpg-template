@@ -11,6 +11,32 @@ const BIOME_GROUND: Record<string, number> = {
   medieval: 0x3d4a3a,
 };
 
+interface BiomeSurfacePalette {
+  road: number;
+  wall: number;
+  gate: number;
+}
+
+const MEDIEVAL_SURFACES: BiomeSurfacePalette = {
+  road: 0x6b675f,
+  wall: 0x7a7468,
+  gate: 0xc4a574,
+};
+
+const BIOME_SURFACES: Record<string, BiomeSurfacePalette> = {
+  medieval: MEDIEVAL_SURFACES,
+  desert: {
+    road: 0xa9783f,
+    wall: 0x9b6a42,
+    gate: 0xd1aa68,
+  },
+  forest: {
+    road: 0x514737,
+    wall: 0x53624a,
+    gate: 0x806848,
+  },
+};
+
 const DISTRICT_COLOR: Record<string, number> = {
   noble: 0x8b6b3d,
   market: 0xb08948,
@@ -22,6 +48,7 @@ const DISTRICT_COLOR: Record<string, number> = {
 export function buildCityMapPreview(config: CityConfigLite): THREE.Group {
   const group = new THREE.Group();
   group.name = 'city-map-preview:' + config.city_id;
+  const surfaces = BIOME_SURFACES[config.biome] ?? MEDIEVAL_SURFACES;
 
   const worldWidth = config.width * config.cell_size;
   const worldDepth = config.depth * config.cell_size;
@@ -41,7 +68,7 @@ export function buildCityMapPreview(config: CityConfigLite): THREE.Group {
     const pos = cellToWorld(config, road.x, road.z);
     const mesh = new THREE.Mesh(
       new THREE.BoxGeometry(cell * 0.98, 0.04, cell * 0.98),
-      new THREE.MeshStandardMaterial({ color: 0x6b675f, roughness: 0.85 }),
+      new THREE.MeshStandardMaterial({ color: surfaces.road, roughness: 0.85 }),
     );
     mesh.position.set(pos.x, 0.02, pos.z);
     mesh.receiveShadow = true;
@@ -52,7 +79,10 @@ export function buildCityMapPreview(config: CityConfigLite): THREE.Group {
     const pos = cellToWorld(config, wall.x, wall.z);
     const mesh = new THREE.Mesh(
       new THREE.BoxGeometry(cell * 0.9, wall.is_gate ? 0.55 : 1.35, cell * 0.9),
-      new THREE.MeshStandardMaterial({ color: wall.is_gate ? 0xc4a574 : 0x7a7468, roughness: 0.7 }),
+      new THREE.MeshStandardMaterial({
+        color: wall.is_gate ? surfaces.gate : surfaces.wall,
+        roughness: 0.7,
+      }),
     );
     mesh.position.set(pos.x, wall.is_gate ? 0.28 : 0.68, pos.z);
     mesh.castShadow = true;

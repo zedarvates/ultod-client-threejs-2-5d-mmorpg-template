@@ -17,11 +17,18 @@ export interface FlatMapPoint {
 
 export const HOUSE_COLLISION_INSET_CELLS = 0.35;
 
+export interface FlatMapColliderOptions {
+  includeParcels?: boolean;
+}
+
 /**
  * Builds presentation-only X/Z collision boxes from authored CityConfig data.
- * Gates remain open. Parcel boxes approximate houses until runtime colliders are authoritative.
+ * Gates remain open. Parcel boxes are opt-in proxies for visible houses.
  */
-export function buildFlatMapColliders(config: CityConfigLite): FlatMapCollider[] {
+export function buildFlatMapColliders(
+  config: CityConfigLite,
+  options: FlatMapColliderOptions = {},
+): FlatMapCollider[] {
   const layout = config.authored_layout;
   if (!layout) return [];
 
@@ -39,6 +46,8 @@ export function buildFlatMapColliders(config: CityConfigLite): FlatMapCollider[]
       kind: "wall",
     });
   }
+
+  if (options.includeParcels === false) return colliders;
 
   const houseInset = config.cell_size * HOUSE_COLLISION_INSET_CELLS;
   for (const parcel of layout.parcels) {

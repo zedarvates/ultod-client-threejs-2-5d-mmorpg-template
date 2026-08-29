@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { validateCityConfigLite, cellToWorld } from '../src/game/city-config';
@@ -14,6 +14,46 @@ import {
 } from '../src/game/flat-map-collision';
 
 const here = dirname(fileURLToPath(import.meta.url));
+
+test('map catalog resolves its unique preview maps to valid CityConfigs', () => {
+  const catalogPath = join(here, '../public/maps/map-catalog.json');
+  expect(existsSync(catalogPath)).toBe(true);
+  if (!existsSync(catalogPath)) return;
+
+  const catalog = JSON.parse(readFileSync(catalogPath, 'utf8')) as {
+    schema: string;
+    default_map_id: string;
+    maps: Array<{
+      id: string;
+      label: string;
+      kind: string;
+      config_path: string;
+      status: string;
+    }>;
+  };
+  expect(catalog.schema).toBe('uo.map-catalog/v1');
+  expect(catalog.maps.map((map) => map.id)).toEqual([
+    'village_square',
+    'frontier_arena',
+    'forest_pass',
+  ]);
+  expect(new Set(catalog.maps.map((map) => map.id)).size).toBe(catalog.maps.length);
+  expect(catalog.maps.some((map) => map.id === catalog.default_map_id)).toBe(true);
+
+  for (const map of catalog.maps) {
+    expect(map.label.length).toBeGreaterThan(0);
+    expect(['village', 'arena', 'wilderness']).toContain(map.kind);
+    expect(map.status).toBe('preview');
+    expect(map.config_path).toMatch(/^[a-z][a-z0-9_-]*\.city\.json$/);
+
+    const configPath = join(here, '../public/maps', map.config_path);
+    expect(existsSync(configPath)).toBe(true);
+    if (!existsSync(configPath)) continue;
+    const config = JSON.parse(readFileSync(configPath, 'utf8'));
+    expect(validateCityConfigLite(config)).toEqual([]);
+    expect(config.city_id).toBe(map.id);
+  }
+});
 
 test('village square CityConfig is a valid flat map', () => {
   const raw = JSON.parse(
@@ -34,6 +74,48 @@ test('city map preview builds a named flat group', () => {
   const center = cellToWorld(raw, 15, 15);
   expect(Math.abs(center.x)).toBeLessThan(raw.cell_size);
   expect(Math.abs(center.z)).toBeLessThan(raw.cell_size);
+});
+
+test('city map preview gives each biome distinct road, wall, and gate surfaces', () => {
+  const expected = [
+    {
+      file: 'village_square.city.json',
+      road: 0x6b675f,
+      wall: 0x7a7468,
+      gate: 0xc4a574,
+    },
+    {
+      file: 'frontier_arena.city.json',
+      road: 0xa9783f,
+      wall: 0x9b6a42,
+      gate: 0xd1aa68,
+    },
+    {
+      file: 'forest_pass.city.json',
+      road: 0x514737,
+      wall: 0x53624a,
+      gate: 0x806848,
+    },
+  ];
+
+  for (const sample of expected) {
+    const config = JSON.parse(readFileSync(join(here, '../public/maps', sample.file), 'utf8'));
+    const preview = buildCityMapPreview(config);
+    const firstRoad = preview.children[1] as THREE.Mesh;
+    const firstWallIndex = 1 + config.authored_layout.roads.length;
+    const firstSolidWallOffset = config.authored_layout.walls.findIndex(
+      (wall: { is_gate: boolean }) => !wall.is_gate,
+    );
+    const firstGateOffset = config.authored_layout.walls.findIndex(
+      (wall: { is_gate: boolean }) => wall.is_gate,
+    );
+    const firstWall = preview.children[firstWallIndex + firstSolidWallOffset] as THREE.Mesh;
+    const firstGate = preview.children[firstWallIndex + firstGateOffset] as THREE.Mesh;
+
+    expect((firstRoad.material as THREE.MeshStandardMaterial).color.getHex()).toBe(sample.road);
+    expect((firstWall.material as THREE.MeshStandardMaterial).color.getHex()).toBe(sample.wall);
+    expect((firstGate.material as THREE.MeshStandardMaterial).color.getHex()).toBe(sample.gate);
+  }
 });
 
 test("village anchors place NPCs on the authored parcels", () => {
@@ -62,6 +144,75 @@ test('parcel centers sit inside authored lots', () => {
   }
 });
 
+test('frontier arena is a valid four-gate flat combat map', () => {
+  const arenaPath = join(here, '../public/maps/frontier_arena.city.json');
+  expect(existsSync(arenaPath)).toBe(true);
+  if (!existsSync(arenaPath)) return;
+
+  const arena = JSON.parse(readFileSync(arenaPath, 'utf8'));
+  expect(validateCityConfigLite(arena)).toEqual([]);
+  expect(arena.city_id).toBe('frontier_arena');
+  expect(arena.biome).toBe('desert');
+  expect(arena.authored_layout.roads).toHaveLength(64);
+  expect(arena.authored_layout.walls.filter(
+    (wall: { is_gate: boolean }) => wall.is_gate,
+  )).toHaveLength(8);
+  expect(arena.authored_layout.parcels).toHaveLength(4);
+
+  const occupiedCenter = [
+    ...arena.authored_layout.roads,
+    ...arena.authored_layout.walls,
+  ].filter((cell: { x: number; z: number }) => (
+    cell.x >= 10 && cell.x <= 21 && cell.z >= 10 && cell.z <= 21
+  ));
+  expect(occupiedCenter).toEqual([]);
+  expect(buildCityMapPreview(arena).children.length).toBe(129);
+
+  const buildColliders = buildFlatMapColliders as unknown as (
+    config: typeof arena,
+    options: { includeParcels: boolean },
+  ) => ReturnType<typeof buildFlatMapColliders>;
+  const arenaColliders = buildColliders(arena, { includeParcels: false });
+  expect(arenaColliders).toHaveLength(52);
+  expect(arenaColliders.filter((collider) => collider.kind === 'house')).toEqual([]);
+
+  const parcel = parcelCenter(arena, arena.authored_layout.parcels[0]);
+  const approach = { x: parcel.x - arena.cell_size * 4, z: parcel.z };
+  expect(resolveFlatMapMovement(approach, parcel, arenaColliders)).toEqual({
+    x: parcel.x,
+    z: parcel.z,
+  });
+});
+
+test('forest pass is a valid flat wilderness route with a clear center', () => {
+  const passPath = join(here, '../public/maps/forest_pass.city.json');
+  expect(existsSync(passPath)).toBe(true);
+  if (!existsSync(passPath)) return;
+
+  const pass = JSON.parse(readFileSync(passPath, 'utf8'));
+  expect(validateCityConfigLite(pass)).toEqual([]);
+  expect(pass.city_id).toBe('forest_pass');
+  expect(pass.biome).toBe('forest');
+  expect([pass.width, pass.depth]).toEqual([40, 24]);
+  expect(pass.authored_layout.roads).toHaveLength(80);
+  expect(pass.authored_layout.walls).toHaveLength(76);
+  expect(pass.authored_layout.walls.filter(
+    (wall: { is_gate: boolean }) => wall.is_gate,
+  )).toHaveLength(4);
+  expect(pass.authored_layout.parcels).toHaveLength(2);
+
+  const centerObstacles = [
+    ...pass.authored_layout.walls,
+    ...pass.authored_layout.parcels,
+  ].filter((item: { x?: number; z?: number; x0?: number; z0?: number }) => {
+    const x = item.x ?? item.x0 ?? -1;
+    const z = item.z ?? item.z0 ?? -1;
+    return x >= 16 && x <= 23 && z >= 8 && z <= 15;
+  });
+  expect(centerObstacles).toEqual([]);
+  expect(buildCityMapPreview(pass).children).toHaveLength(159);
+  expect(buildFlatMapColliders(pass, { includeParcels: false })).toHaveLength(72);
+});
 
 test('flat map collision blocks walls and houses but leaves gates open', () => {
   const raw = JSON.parse(
