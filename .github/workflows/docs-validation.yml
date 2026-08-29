@@ -20,6 +20,8 @@ jobs:
           cache: npm
       - name: Install Node dependencies
         run: npm ci
+      - name: Audit Node dependencies
+        run: npm run check:audit
       - name: Verify package archives in an isolated consumer
         run: npm run check:packages
       - uses: actions/setup-python@v5

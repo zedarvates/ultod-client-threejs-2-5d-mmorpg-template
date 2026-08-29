@@ -9,6 +9,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build && npm run check:bundle",
+    "check:audit": "npm audit --audit-level=moderate",
     "check:bundle": "node scripts/check-build-chunks.mjs",
     "check:packages": "node scripts/check-package-consumers.mjs",
     "preview": "vite preview",
@@ -25,7 +26,7 @@
     "@types/three": "^0.180.0",
     "@types/ws": "^8.18.1",
     "typescript": "^5.6.3",
-    "vite": "^5.4.0",
+    "vite": "^6.4.3",
     "ws": "^8.21.3"
   },
   "license": "MIT"

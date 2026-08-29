@@ -76,6 +76,9 @@ editor bridges, loopback fixture, e2e tests, and live GitHub Pages deployment.
   before `npm pack`, including the client core's SDK type dependency.
 - Verify both archives by installing them with a local Three.js archive in an
   offline temporary consumer and importing their public entry points.
+- Upgrade Vite from 5.4.21 to 6.4.3 and esbuild from 0.21.5 to 0.25.12 to clear
+  the known moderate and high development-server advisories.
+- Fail CI when `npm audit` reports a moderate, high or critical vulnerability.
 
 ### Minimal Three.js 2.5D presentation shell
 
