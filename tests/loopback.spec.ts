@@ -348,7 +348,7 @@ test('synthetic fixture closes oversized frames', async ({ page }) => {
     return await new Promise<number>((resolve, reject) => {
       const ws = new WebSocket(`ws://127.0.0.1:${port}`);
       const timeout = setTimeout(() => reject(new Error('close timeout')), 3000);
-      ws.onopen = () => ws.send(new Uint8Array(5000));
+      ws.onopen = () => ws.send(new Uint8Array(65_537));
       ws.onclose = (event) => {
         clearTimeout(timeout);
         resolve(event.code);
