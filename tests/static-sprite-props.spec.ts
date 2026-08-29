@@ -2,9 +2,6 @@
 
 import { test, expect } from "@playwright/test";
 import * as THREE from "three";
-import { readFileSync } from "node:fs";
-import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
 
 const IDS = [
   "safe_ground_tile",
@@ -15,18 +12,16 @@ const IDS = [
   "danger_corrupt_crystal",
 ] as const;
 
-const here = dirname(fileURLToPath(import.meta.url));
-
 function validPack() {
   return {
     schema: "uo.static-sprite-prop-pack/v1",
     id: "safe-danger-paired-kit",
     source_run_id: "b2530ee8e14b4d0ba1bb95c9a036010d",
-    delivery_status: "review_only",
-    requires_artist_review: true,
+    delivery_status: "approved",
+    requires_artist_review: false,
     license: {
-      id: "LicenseRef-UltimateOdycer-Generated-Output",
-      status: "project_review_required",
+      id: "MIT",
+      status: "approved",
     },
     assets: IDS.map((id, index) => ({
       id,
@@ -59,41 +54,29 @@ test("strict static prop pack mounts six anchored sprites in paired scene groups
   expect(group.children.slice(3).every((child) => child.userData.profile === "danger_chaotic")).toBe(true);
 });
 
-test("static prop pack rejects path traversal and a non-review license boundary", async () => {
+test("static prop pack rejects path traversal and review-only content", async () => {
   const module = await import("../src/render/static-sprite-prop");
   const escaped = validPack();
   escaped.assets[0]!.image = "../escaped.png";
   expect(() => module.parseStaticSpritePropPack(escaped)).toThrow(/image/);
 
-  const publishable = validPack();
-  publishable.license.status = "approved";
-  expect(() => module.parseStaticSpritePropPack(publishable)).toThrow(/license/);
+  const reviewOnly = validPack();
+  reviewOnly.delivery_status = "review_only";
+  reviewOnly.requires_artist_review = true;
+  reviewOnly.license.status = "project_review_required";
+  expect(() => module.parseStaticSpritePropPack(reviewOnly)).toThrow(/approved/);
 });
 
-test("the checked-in derived manifest satisfies the runtime contract", async () => {
-  const module = await import("../src/render/static-sprite-prop");
-  const manifest = JSON.parse(readFileSync(
-    join(here, "../public/assets/static-sprites/zone-kit/pack.json"),
-    "utf8",
+test("showcase does not request an unpublished static sprite pack", async ({ page }) => {
+  const requested: string[] = [];
+  page.on("request", (request) => requested.push(request.url()));
+  const showcaseStarted = page.waitForRequest((request) => (
+    request.url().endsWith("/blueprints/maisonnette_standard.json")
   ));
 
-  expect(module.parseStaticSpritePropPack(manifest).assets).toHaveLength(6);
-});
-
-test("deferred showcase requests the reviewed PNG pack without requesting its source GLBs", async ({ page }) => {
-  const requested: string[] = [];
-  const browserMessages: string[] = [];
-  page.on("request", (request) => requested.push(request.url()));
-  page.on("console", (message) => browserMessages.push(message.text()));
-  page.on("pageerror", (error) => browserMessages.push(error.message));
-
   await page.goto("/");
-  await expect.poll(
-    () => requested.filter((url) =>
-      url.includes("/assets/static-sprites/zone-kit/") && url.endsWith(".png")).length,
-    { message: browserMessages.join("\n"), timeout: 10_000 },
-  ).toBe(6);
+  await showcaseStarted;
 
-  expect(requested.some((url) => url.endsWith("/assets/static-sprites/zone-kit/pack.json"))).toBe(true);
+  expect(requested.some((url) => url.includes("/assets/static-sprites/zone-kit/"))).toBe(false);
   expect(requested.some((url) => url.includes("/Zone_Visual_Kit/") || url.endsWith(".glb"))).toBe(false);
 });
