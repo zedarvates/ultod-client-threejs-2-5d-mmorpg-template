@@ -51,7 +51,7 @@ export {
 } from "./net/protocol.js";
 export type { PositionUpdate } from "./net/protocol.js";
 export { NetworkClient } from "./net/network-client.js";
-export type { NetworkState } from "./net/network-client.js";
+export type { NetworkConnectOptions, NetworkState, PositionListener } from "./net/network-client.js";
 export { HudOverlay } from "./ui/hud-overlay.js";
 export { DialogBox } from "./ui/dialog-box.js";
 export type { DialogAction } from "./ui/dialog-box.js";
