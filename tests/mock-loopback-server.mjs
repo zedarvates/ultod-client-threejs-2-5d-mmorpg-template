@@ -44,6 +44,7 @@ function authResponse(ok, playerId = 0) {
 
 const wss = new WebSocketServer({ host: '127.0.0.1', port: PORT });
 const clients = new Map();
+let nextPlayerId = 42;
 
 wss.on('connection', (ws) => {
   const state = {
@@ -83,7 +84,7 @@ wss.on('connection', (ws) => {
       const token = payload.toString('utf8').trim();
       if (token === FIXTURE_TOKEN) {
         state.authenticated = true;
-        state.playerId = 42;
+        if (state.playerId === 0) state.playerId = nextPlayerId++;
         state.lastMoveAt = Date.now();
         ws.send(authResponse(true, state.playerId));
       } else {
