@@ -69,11 +69,15 @@ export class NetworkClient {
       throw new Error(`network token must contain 1..${MAX_TOKEN_BYTES} UTF-8 bytes`);
     }
 
+    const requestedTimeoutMs = options.timeoutMs ?? 5000;
+    if (!Number.isFinite(requestedTimeoutMs)) {
+      throw new Error('network timeout must be a finite number');
+    }
+    const timeoutMs = Math.max(250, Math.min(requestedTimeoutMs, 30_000));
+
     this.disconnect();
     this.manualClose = false;
     this.state = { mode: 'connecting' };
-
-    const timeoutMs = Math.max(250, Math.min(options.timeoutMs ?? 5000, 30_000));
 
     await new Promise<void>((resolve, reject) => {
       let settled = false;
