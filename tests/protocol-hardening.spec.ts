@@ -40,7 +40,12 @@ test('position decoder rejects non-finite authoritative coordinates', () => {
   expect(decodePositionUpdate(view)).toBeNull();
 });
 
-test('position decoder accepts a finite bounded frame', () => {
+test('position decoder rejects ambiguous truncated or trailing payloads', () => {
+  expect(decodePositionUpdate(new DataView(new ArrayBuffer(13)))).toBeNull();
+  expect(decodePositionUpdate(new DataView(new ArrayBuffer(15)))).toBeNull();
+});
+
+test('position decoder accepts a finite fixed-width frame', () => {
   const frame = new ArrayBuffer(14);
   const view = new DataView(frame);
   view.setUint16(0, MSG.POSITION_UPDATE, false);
