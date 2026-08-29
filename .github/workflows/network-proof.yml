@@ -30,6 +30,7 @@ jobs:
       - name: Run synthetic network proof fixtures
         run: >-
           npx playwright test
+          tests/network-proof-manifest.spec.ts
           tests/protocol-hardening.spec.ts
           tests/loopback.spec.ts
           tests/network-client-loopback.spec.ts
