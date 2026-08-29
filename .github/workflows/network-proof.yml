@@ -1,0 +1,41 @@
+name: Network Proof Gate
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  synthetic-network-proof:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Typecheck client core
+        run: npm run check:client-core
+      - name: Build client core
+        run: npm --workspace @ultod/threejs-client-core run build
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Run synthetic network proof fixtures
+        run: >-
+          npx playwright test
+          tests/protocol-hardening.spec.ts
+          tests/loopback.spec.ts
+          tests/network-client-loopback.spec.ts
+      - name: Evidence classification
+        if: always()
+        run: |
+          echo "proof_level=SYNTHETIC_FIXTURE_ONLY"
+          echo "zig_compatibility=NOT_PROVEN"
+          echo "canonical_server_sha=BLOCKED"
