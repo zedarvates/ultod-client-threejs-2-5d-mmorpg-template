@@ -60,7 +60,10 @@ export interface PositionUpdate {
 }
 
 export function decodePositionUpdate(view: DataView): PositionUpdate | null {
-  if (view.byteLength < 14 || view.byteLength > MAX_GAME_FRAME_BYTES) return null;
+  // Current public fixture schema is fixed-width: u16 type + u32 playerId + f32 x + f32 z.
+  // Future extensions require an explicit schema/protocol revision instead of silently
+  // accepting trailing bytes under the current proof level.
+  if (view.byteLength !== 14) return null;
 
   const x = view.getFloat32(6, false);
   const z = view.getFloat32(10, false);
