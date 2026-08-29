@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ultimate Odycer NetworkClient Test Harness</title>
+</head>
+<body>
+  <p>Development-only NetworkClient test harness.</p>
+  <script type="module">
+    import { NetworkClient } from '/src/net/network-client.ts';
+
+    Object.defineProperty(window, '__ultodNetworkTest', {
+      value: Object.freeze({
+        createClient: () => new NetworkClient(),
+      }),
+      configurable: false,
+      enumerable: false,
+      writable: false,
+    });
+  </script>
+</body>
+</html>
