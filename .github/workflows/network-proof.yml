@@ -27,6 +27,8 @@ jobs:
         run: npm --workspace @ultod/threejs-client-core run build
       - name: Build public Three.js shell
         run: npm run build
+      - name: Ensure test harness is excluded from production output
+        run: test ! -e dist/network-client-test-harness.html
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
       - name: Run synthetic network proof fixtures
