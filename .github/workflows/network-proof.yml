@@ -25,6 +25,8 @@ jobs:
         run: npm run check:client-core
       - name: Build client core
         run: npm --workspace @ultod/threejs-client-core run build
+      - name: Build public Three.js shell
+        run: npm run build
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
       - name: Run synthetic network proof fixtures
