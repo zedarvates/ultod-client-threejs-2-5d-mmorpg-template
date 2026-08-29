@@ -3,7 +3,6 @@ import { spawn, type ChildProcess } from 'node:child_process';
 
 let server: ChildProcess;
 const PORT = Number(process.env.PLAYWRIGHT_NETWORK_CLIENT_PORT ?? 49124);
-const HARNESS_URL = '/tests/network-client-browser-harness.html';
 
 test.beforeAll(async () => {
   server = spawn('node', ['tests/mock-loopback-server.mjs'], {
@@ -21,8 +20,14 @@ test.afterAll(() => {
 });
 
 async function openHarness(page: import('@playwright/test').Page): Promise<void> {
-  await page.goto(HARNESS_URL);
-  await page.waitForFunction(() => Boolean((window as any).__ultodNetworkTest?.createClient));
+  await page.goto('/');
+  await page.addScriptTag({
+    type: 'module',
+    url: '/tests/network-client-browser-harness.ts',
+  });
+  await page.waitForFunction(() => Boolean((window as any).__ultodNetworkTest?.createClient), null, {
+    timeout: 5000,
+  });
 }
 
 test('NetworkClient performs synthetic handshake auth and authoritative movement', async ({ page }) => {
