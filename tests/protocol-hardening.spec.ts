@@ -20,10 +20,12 @@ test('protocol encoder and decoder enforce the public game-frame bound', () => {
   expect(decodeMessage(new ArrayBuffer(1))).toBeNull();
 });
 
-test('movement encoder rejects NaN and Infinity before transport', () => {
+test('movement encoder rejects non-finite and Float32-overflow coordinates', () => {
   expect(() => encodeMovement(Number.NaN, 0)).toThrow(RangeError);
   expect(() => encodeMovement(0, Number.POSITIVE_INFINITY)).toThrow(RangeError);
   expect(() => encodeMovement(Number.NEGATIVE_INFINITY, 0)).toThrow(RangeError);
+  expect(() => encodeMovement(Number.MAX_VALUE, 0)).toThrow(RangeError);
+  expect(() => encodeMovement(0, -Number.MAX_VALUE)).toThrow(RangeError);
 });
 
 test('position decoder rejects non-finite authoritative coordinates', () => {
