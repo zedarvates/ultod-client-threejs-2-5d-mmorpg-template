@@ -11,8 +11,9 @@ import type { CreatureGenome } from "./render/creature-bridge";
 import { HudOverlay } from "./ui/hud-overlay";
 import { NetworkClient } from "./net/network-client";
 import { ScenarioWorld } from "./game/scenario-world";
-import villageMap from "./content/maps/village_square.city.json" with { type: "json" };
-import { validateCityConfigLite, type CityConfigLite } from "./game/city-config";
+import { cellToWorld, type CityConfigLite } from "./game/city-config";
+import { loadStartupMap, type StartupMap } from "./game/map-catalog";
+import { installMapSelector } from "./ui/map-selector";
 import { buildCityMapPreview } from "./render/city-map-bridge";
 import {
   districtBuildingStyle,
@@ -45,7 +46,7 @@ class IsometricApp {
   );
   private readonly net = new NetworkClient();
   private keys = new Set<string>();
-  private world!: ScenarioWorld;
+  private world?: ScenarioWorld;
   private quest: QuestState = initialQuestState();
   private dialog = new DialogBox();
   private readonly audio = new AudioManager(import.meta.env.BASE_URL);
@@ -54,8 +55,15 @@ class IsometricApp {
   private mapLimits?: { minX: number; maxX: number; minZ: number; maxZ: number };
   private mapColliders: FlatMapCollider[] = [];
   private readonly cameraOffset = new THREE.Vector3(20, 20, 20);
+  private readonly city: CityConfigLite;
+  private readonly mapKind: StartupMap["entry"]["kind"];
+  private readonly mapLabel: string;
 
-  constructor() {
+  constructor(startup: StartupMap) {
+    const { city, entry } = startup;
+    this.city = city;
+    this.mapKind = entry.kind;
+    this.mapLabel = entry.label;
     const canvas = document.getElementById("app-canvas") as HTMLCanvasElement;
     this.scene = new THREE.Scene();
     this.scene.background = new THREE.Color(0x181824);
@@ -91,26 +99,29 @@ class IsometricApp {
     this.scene.add(gridHelper);
 
     this.controls = new IsometricControls();
-    const cityErrors = validateCityConfigLite(villageMap as CityConfigLite);
-    const city = cityErrors.length ? undefined : (villageMap as CityConfigLite);
-    if (city) this.scene.add(buildCityMapPreview(city));
-    else console.warn("[city-map] invalid CityConfig", cityErrors);
+    this.scene.add(buildCityMapPreview(city));
 
     this.player = new PlayerPresentation(this.scene);
-    if (city) {
-      const spawn = worldFromAnchor(city, "player");
-      this.player.mesh.position.set(spawn.x, spawn.y, spawn.z);
+    const spawn = entry.kind === "village"
+      ? worldFromAnchor(city, "player")
+      : { ...cellToWorld(city, Math.floor(city.width / 2), Math.floor(city.depth / 2)), y: 0 };
+    this.player.mesh.position.set(spawn.x, spawn.y, spawn.z);
+    this.world = entry.kind === "village" ? new ScenarioWorld(this.scene, city) : undefined;
+    this.mapLimits = mapBounds(city);
+    this.mapColliders = buildFlatMapColliders(city, {
+      includeParcels: entry.kind === "village",
+    });
+
+    if (entry.kind !== "village") {
+      hideElements(["quest-panel", "inventory", "interact-btn", "joystick-zone"]);
     }
-    this.world = new ScenarioWorld(this.scene, city);
-    this.mapLimits = city ? mapBounds(city) : undefined;
-    this.mapColliders = city ? buildFlatMapColliders(city) : [];
 
     // Touch joystick for mobile/tablet play
     this.joystick = new TouchJoystick(
       document.getElementById("joystick-zone") as HTMLElement,
       document.getElementById("joystick-knob") as HTMLElement,
     );
-    if ("ontouchstart" in window) {
+    if (entry.kind === "village" && "ontouchstart" in window) {
       const btn = document.getElementById("interact-btn");
       if (btn) {
         btn.style.display = "block";
@@ -118,14 +129,16 @@ class IsometricApp {
       }
     }
 
-    window.setTimeout(() => {
-      const startLoading = () => void this.loadShowcaseContent();
-      if ("requestIdleCallback" in window) {
-        window.requestIdleCallback(startLoading, { timeout: 500 });
-      } else {
-        startLoading();
-      }
-    }, 500);
+    if (entry.kind === "village") {
+      window.setTimeout(() => {
+        const startLoading = () => void this.loadShowcaseContent();
+        if ("requestIdleCallback" in window) {
+          window.requestIdleCallback(startLoading, { timeout: 500 });
+        } else {
+          startLoading();
+        }
+      }, 500);
+    }
 
     window.addEventListener("keydown", (e) => this.keys.add(e.code));
     window.addEventListener("keyup", (e) => this.keys.delete(e.code));
@@ -160,7 +173,7 @@ class IsometricApp {
     fetch(import.meta.env.BASE_URL + "blueprints/maisonnette_standard.json")
       .then((r) => r.json() as Promise<HouseBlueprint>)
       .then((bp) => {
-        const city = validateCityConfigLite(villageMap as CityConfigLite).length ? undefined : (villageMap as CityConfigLite);
+        const city = this.city;
         const parcels = city?.authored_layout?.parcels ?? [];
         if (!city || parcels.length === 0) {
           const result = blueprint.buildFromBlueprint(bp, gltfLoader, () => null, new THREE.Vector3(18, 0, 18));
@@ -273,25 +286,31 @@ class IsometricApp {
 
     if (this.interactCooldown > 0) this.interactCooldown -= delta;
 
+    const positionStatus = `pos (${this.player.mesh.position.x.toFixed(2)}, ${this.player.mesh.position.z.toFixed(2)})`;
     this.hud.update(
-      `pos (${this.player.mesh.position.x.toFixed(2)}, ${this.player.mesh.position.z.toFixed(2)})`,
+      this.mapKind !== "village"
+        ? `Aperçu : ${this.mapLabel}\n${positionStatus}`
+        : positionStatus,
       this.net.describeState(),
     );
 
-    const qObj = document.getElementById("quest-objective");
-    if (qObj) qObj.textContent = questObjective(this.quest);
-    const goldEl = document.getElementById("quest-gold");
-    if (goldEl) goldEl.textContent = "Gold: " + this.quest.gold;
-    const swordSlot = document.getElementById("inv-sword");
-    if (swordSlot) {
-      swordSlot.textContent = this.quest.hasSword ? "\u2694" : "";
-      swordSlot.classList.toggle("filled", this.quest.hasSword);
+    if (this.mapKind === "village") {
+      const qObj = document.getElementById("quest-objective");
+      if (qObj) qObj.textContent = questObjective(this.quest);
+      const goldEl = document.getElementById("quest-gold");
+      if (goldEl) goldEl.textContent = "Gold: " + this.quest.gold;
+      const swordSlot = document.getElementById("inv-sword");
+      if (swordSlot) {
+        swordSlot.textContent = this.quest.hasSword ? "\u2694" : "";
+        swordSlot.classList.toggle("filled", this.quest.hasSword);
+      }
     }
 
     this.renderer.render(this.scene, this.camera);
   }
 
   private tryInteract(): void {
+    if (!this.world) return;
     const box = document.getElementById("dialog-box");
     if (this.interactCooldown > 0 || (box && box.style.display === "block")) return;
     this.interactCooldown = 0.3;
@@ -346,6 +365,7 @@ class IsometricApp {
   }
 
   private fightBeast(): void {
+    if (!this.world) return;
     if (!this.quest.hasSword) {
       this.audio.play("beast_roar");
       this.dialog.show("Cave Beast", "The beast roars! Your bare hands are useless. You need a weapon.");
@@ -359,6 +379,7 @@ class IsometricApp {
   }
 
   private talkToPrincess(): void {
+    if (!this.world) return;
     this.audio.play("ui_dialog_open");
     if (!this.world.beastAlive) {
       this.world.freePrincess();
@@ -371,4 +392,30 @@ class IsometricApp {
   }
 }
 
-new IsometricApp();
+function hideElements(ids: string[]): void {
+  for (const id of ids) {
+    const element = document.getElementById(id);
+    if (element) element.style.display = "none";
+  }
+}
+
+function stopForUnavailableStartupMap(): void {
+  document.body.dataset.bootState = "map-error";
+  const hud = document.getElementById("hud");
+  if (hud) hud.textContent = "Carte locale indisponible";
+  hideElements(["quest-panel", "inventory", "interact-btn", "joystick-zone"]);
+}
+
+const requestedMapId = new URLSearchParams(window.location.search).get("map") ?? undefined;
+void loadStartupMap(import.meta.env.BASE_URL, requestedMapId).then((startup) => {
+  if (!startup) {
+    console.warn("[city-map] startup map unavailable");
+    stopForUnavailableStartupMap();
+    return;
+  }
+  document.body.dataset.bootState = "ready";
+  document.body.dataset.mapId = startup.entry.id;
+  document.body.dataset.mapKind = startup.entry.kind;
+  installMapSelector(startup.catalog, startup.entry);
+  new IsometricApp(startup);
+});

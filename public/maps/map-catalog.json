@@ -1,0 +1,27 @@
+{
+  "schema": "uo.map-catalog/v1",
+  "default_map_id": "village_square",
+  "maps": [
+    {
+      "id": "village_square",
+      "label": "Place du village",
+      "kind": "village",
+      "config_path": "village_square.city.json",
+      "status": "preview"
+    },
+    {
+      "id": "frontier_arena",
+      "label": "Arène de la frontière",
+      "kind": "arena",
+      "config_path": "frontier_arena.city.json",
+      "status": "preview"
+    },
+    {
+      "id": "forest_pass",
+      "label": "Passage forestier",
+      "kind": "wilderness",
+      "config_path": "forest_pass.city.json",
+      "status": "preview"
+    }
+  ]
+}
