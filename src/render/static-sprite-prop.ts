@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-// Strict review-only static isometric sprite props.
+// Strict approved static isometric sprite props.
 
 import * as THREE from "three";
 
@@ -20,11 +20,11 @@ export interface StaticSpritePropPack {
   schema: "uo.static-sprite-prop-pack/v1";
   id: string;
   source_run_id: string;
-  delivery_status: "review_only";
-  requires_artist_review: true;
+  delivery_status: "approved";
+  requires_artist_review: false;
   license: {
     id: string;
-    status: "project_review_required";
+    status: "approved";
   };
   assets: StaticSpritePropAsset[];
 }
@@ -64,13 +64,13 @@ export function parseStaticSpritePropPack(value: unknown): StaticSpritePropPack 
   if (typeof pack.source_run_id !== "string" || !/^[0-9a-f]{32}$/.test(pack.source_run_id)) {
     throw new Error("pack.source_run_id is invalid");
   }
-  if (pack.delivery_status !== "review_only" || pack.requires_artist_review !== true) {
-    throw new Error("static sprite prop pack must remain review_only");
+  if (pack.delivery_status !== "approved" || pack.requires_artist_review !== false) {
+    throw new Error("static sprite prop pack must be approved before runtime use");
   }
   const license = object(pack.license, "pack.license");
   if (typeof license.id !== "string"
-      || license.status !== "project_review_required") {
-    throw new Error("pack.license must require project review");
+      || license.status !== "approved") {
+    throw new Error("pack.license must be approved");
   }
   if (!Array.isArray(pack.assets) || pack.assets.length !== EXPECTED_IDS.length) {
     throw new Error("pack.assets must contain exactly six assets");
@@ -120,11 +120,11 @@ export function parseStaticSpritePropPack(value: unknown): StaticSpritePropPack 
     schema: "uo.static-sprite-prop-pack/v1",
     id: pack.id,
     source_run_id: pack.source_run_id,
-    delivery_status: "review_only",
-    requires_artist_review: true,
+    delivery_status: "approved",
+    requires_artist_review: false,
     license: {
       id: license.id as string,
-      status: "project_review_required",
+      status: "approved",
     },
     assets,
   };
@@ -177,4 +177,3 @@ export async function loadStaticSpritePropPack(
   const byId = new Map(pack.assets.map((asset, index) => [asset.id, textures[index]!]));
   return buildStaticSpritePropGroup(pack, (asset) => byId.get(asset.id)!);
 }
-

@@ -1,6 +1,6 @@
 # Binary Asset License Audit
 
-Status: `current-release-resolved / historical-releases-annotated` (2026-08-27).
+Status: `current-release-resolved / historical-releases-annotated` (2026-08-29).
 
 This historical record documents eight binary assets that were removed from the
 `v0.1.3` release line before publication. The release is live as a non-draft,
@@ -20,6 +20,20 @@ historical binaries remain unlicensed for redistribution.
 The Asset Factory currently emits the SPDX-style identifier
 `LicenseRef-UltimateOdycer-Generated-Output`, but no public license text defining
 reuse, modification or redistribution was found during this audit.
+
+## Review-only static sprite outputs
+
+Six generated PNG review renders were temporarily tracked with a manifest that
+explicitly declared `delivery_status: review_only`, required artist review, and
+used `license.status: project_review_required`. They are excluded from the
+current public tree. Their source commit and review branch preserve them for a
+future explicit artistic and redistribution decision; removal from the current
+tree does not grant or infer approval.
+
+The public-boundary check now rejects tracked public JSON manifests carrying any
+of those review markers. The reusable static-sprite loader accepts only packs
+whose delivery and license statuses are both explicitly `approved`, and the
+default showcase does not request a static-sprite pack.
 
 ## XenoParts copied from Creature Editor
 
