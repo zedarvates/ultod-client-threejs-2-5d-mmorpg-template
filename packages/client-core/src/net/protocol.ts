@@ -50,6 +50,13 @@ export function encodeMovement(x: number, z: number): Uint8Array {
   const body = new DataView(new ArrayBuffer(8));
   body.setFloat32(0, x, false);
   body.setFloat32(4, z, false);
+
+  // JavaScript numbers are Float64. Very large but finite values can overflow
+  // to +/-Infinity when encoded as Float32, so validate the actual wire values.
+  if (!Number.isFinite(body.getFloat32(0, false)) || !Number.isFinite(body.getFloat32(4, false))) {
+    throw new RangeError('movement coordinates must fit finite Float32 wire values');
+  }
+
   return encodeMessage(MSG.MOVEMENT_REQUEST, new Uint8Array(body.buffer));
 }
 
