@@ -13,7 +13,7 @@ import { WebSocketServer, WebSocket } from 'ws';
 const configuredPort = Number(process.env.PLAYWRIGHT_LOOPBACK_PORT ?? 49123);
 const PORT = Number.isFinite(configuredPort) ? configuredPort : 49123;
 const FIXTURE_TOKEN = 'fixture-token';
-const MAX_FRAME_BYTES = 4096;
+const MAX_FRAME_BYTES = 65_536;
 
 // Synthetic subset of the documented public MessageType map.
 const MSG = {
