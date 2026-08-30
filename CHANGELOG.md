@@ -70,6 +70,15 @@ editor bridges, loopback fixture, e2e tests, and live GitHub Pages deployment.
 
 ## Unreleased
 
+### Accessibility
+
+- Restore browser zoom and expose the rendered world through an accessible
+  canvas name and description.
+- Announce network, quest and inventory changes without remounting unchanged
+  status text on every animation frame.
+- Give gameplay dialogs semantic labeling, initial focus, Escape dismissal and
+  trigger-focus restoration.
+
 ### Packages
 
 - Build `@ultod/content-sdk` and `@ultod/threejs-client-core` automatically
