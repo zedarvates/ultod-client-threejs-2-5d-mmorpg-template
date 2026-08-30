@@ -128,4 +128,6 @@ wss.on('connection', (ws) => {
   ws.on('close', () => clients.delete(ws));
 });
 
-console.log(`synthetic mock-loopback listening on 127.0.0.1:${PORT}`);
+wss.on('listening', () => {
+  console.log(`synthetic mock-loopback listening on 127.0.0.1:${PORT}`);
+});
