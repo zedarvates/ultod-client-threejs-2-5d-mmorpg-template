@@ -53,13 +53,6 @@ after(() => {
 
 test('NetworkClient performs synthetic handshake auth and authoritative movement', async () => {
   const client = createClient();
-  const positionPromise = new Promise((resolve, reject) => {
-    const timeout = setTimeout(() => reject(new Error('position timeout')), 3000);
-    client.onPosition((update) => {
-      clearTimeout(timeout);
-      resolve(update);
-    });
-  });
 
   await client.connect({
     url: `ws://127.0.0.1:${PORT}`,
@@ -70,6 +63,15 @@ test('NetworkClient performs synthetic handshake auth and authoritative movement
   const onlineState = client.getState();
   assert.equal(onlineState.mode, 'online');
   assert.ok(onlineState.playerId > 0);
+
+  const positionPromise = new Promise((resolve, reject) => {
+    const timeout = setTimeout(() => reject(new Error('position timeout')), 3000);
+    const unsubscribe = client.onPosition((update) => {
+      clearTimeout(timeout);
+      unsubscribe();
+      resolve(update);
+    });
+  });
 
   await new Promise((resolve) => setTimeout(resolve, 180));
   client.sendMovement(1.0, 0.5);
