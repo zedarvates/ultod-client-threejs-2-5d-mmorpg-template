@@ -21,9 +21,32 @@ export interface NetworkConnectOptions {
   timeoutMs?: number;
 }
 
+export interface NetworkSocketMessageEvent {
+  data: unknown;
+}
+
+export interface NetworkSocketCloseEvent {
+  code: number;
+}
+
+/** Minimal transport surface required by NetworkClient. */
+export interface NetworkSocket {
+  readonly readyState: number;
+  binaryType: string;
+  onopen: ((event?: unknown) => void) | null;
+  onmessage: ((event: NetworkSocketMessageEvent) => void) | null;
+  onerror: ((event?: unknown) => void) | null;
+  onclose: ((event: NetworkSocketCloseEvent) => void) | null;
+  send(data: ArrayBuffer | ArrayBufferView): void;
+  close(code?: number, reason?: string): void;
+}
+
+export type NetworkSocketFactory = (url: string) => NetworkSocket;
 export type PositionListener = (update: PositionUpdate) => void;
 
 const MAX_TOKEN_BYTES = 4096;
+const SOCKET_CONNECTING = 0;
+const SOCKET_OPEN = 1;
 
 function isLoopbackHost(hostname: string): boolean {
   return hostname === '127.0.0.1' || hostname === 'localhost' || hostname === '[::1]' || hostname === '::1';
@@ -36,11 +59,20 @@ function validateEndpoint(rawUrl: string): URL {
   throw new Error('network endpoint must use wss://; ws:// is allowed only on loopback');
 }
 
+function browserSocketFactory(url: string): NetworkSocket {
+  if (typeof WebSocket === 'undefined') {
+    throw new Error('WebSocket transport unavailable; inject a NetworkSocketFactory');
+  }
+  return new WebSocket(url) as unknown as NetworkSocket;
+}
+
 export class NetworkClient {
   private state: NetworkState = { mode: 'offline' };
-  private socket: WebSocket | null = null;
+  private socket: NetworkSocket | null = null;
   private manualClose = false;
   private readonly positionListeners = new Set<PositionListener>();
+
+  constructor(private readonly socketFactory: NetworkSocketFactory = browserSocketFactory) {}
 
   getState(): NetworkState {
     return this.state;
@@ -82,13 +114,23 @@ export class NetworkClient {
     await new Promise<void>((resolve, reject) => {
       let settled = false;
       let timer: ReturnType<typeof setTimeout> | undefined;
-      const socket = new WebSocket(endpoint.toString());
+      let socket: NetworkSocket;
+
+      try {
+        socket = this.socketFactory(endpoint.toString());
+      } catch (error) {
+        const reason = error instanceof Error ? error.message : 'websocket transport creation failed';
+        this.state = { mode: 'error', reason };
+        reject(error instanceof Error ? error : new Error(reason));
+        return;
+      }
+
       socket.binaryType = 'arraybuffer';
       this.socket = socket;
 
       const finishError = (reason: string, closeCode = 1002) => {
         if (this.state.mode !== 'error') this.state = { mode: 'error', reason };
-        if (socket.readyState === WebSocket.OPEN || socket.readyState === WebSocket.CONNECTING) {
+        if (socket.readyState === SOCKET_OPEN || socket.readyState === SOCKET_CONNECTING) {
           try { socket.close(closeCode, reason.slice(0, 120)); } catch { /* ignore close race */ }
         }
         if (!settled) {
@@ -106,7 +148,7 @@ export class NetworkClient {
         socket.send(encodeMessage(MSG.HANDSHAKE_REQUEST));
       };
 
-      socket.onmessage = async (event) => {
+      socket.onmessage = (event) => {
         if (this.socket !== socket) return;
         if (!(event.data instanceof ArrayBuffer)) {
           finishError('non-binary network frame rejected');
@@ -184,7 +226,7 @@ export class NetworkClient {
   }
 
   sendMovement(x: number, z: number): void {
-    if (this.state.mode !== 'online' || !this.socket || this.socket.readyState !== WebSocket.OPEN) {
+    if (this.state.mode !== 'online' || !this.socket || this.socket.readyState !== SOCKET_OPEN) {
       throw new Error('network client is not online');
     }
     this.socket.send(encodeMovement(x, z));
@@ -194,7 +236,7 @@ export class NetworkClient {
     const socket = this.socket;
     this.manualClose = true;
     this.socket = null;
-    if (socket && (socket.readyState === WebSocket.OPEN || socket.readyState === WebSocket.CONNECTING)) {
+    if (socket && (socket.readyState === SOCKET_OPEN || socket.readyState === SOCKET_CONNECTING)) {
       try { socket.close(1000, 'client disconnect'); } catch { /* ignore close race */ }
     }
     this.state = { mode: 'offline' };
