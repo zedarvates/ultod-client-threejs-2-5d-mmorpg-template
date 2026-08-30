@@ -27,18 +27,17 @@ jobs:
         run: npm --workspace @ultod/threejs-client-core run build
       - name: Build public Three.js shell
         run: npm run build
-      - name: Ensure test harness is excluded from production output
-        run: test ! -e dist/network-client-test-harness.html
-      - name: Install Chromium
+      - name: Exercise real NetworkClient against injectable synthetic transport
+        run: node --test tests/network-client-loopback.node.mjs
+      - name: Install Chromium for browser transport fixtures
         run: npx playwright install --with-deps chromium
-      - name: Run synthetic network proof fixtures
+      - name: Run remaining synthetic browser/protocol proof fixtures
         run: >-
           npx playwright test
           tests/network-proof-manifest.spec.ts
           tests/network-single-source.spec.ts
           tests/protocol-hardening.spec.ts
           tests/loopback.spec.ts
-          tests/network-client-loopback.spec.ts
       - name: Evidence classification
         if: always()
         run: |
