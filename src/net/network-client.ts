@@ -8,6 +8,10 @@
 export { NetworkClient } from '../../packages/client-core/src/net/network-client';
 export type {
   NetworkConnectOptions,
+  NetworkSocket,
+  NetworkSocketCloseEvent,
+  NetworkSocketFactory,
+  NetworkSocketMessageEvent,
   NetworkState,
   PositionListener,
 } from '../../packages/client-core/src/net/network-client';
