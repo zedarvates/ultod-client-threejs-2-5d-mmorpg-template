@@ -1,4 +1,4 @@
-export const GAME_SITE_GENERATOR_VERSION = "0.1.0";
+export { GAME_SITE_GENERATOR_VERSION } from "./version.js";
 
 export { contrastRatio, relativeLuminance } from "./contrast.js";
 export { sha256CanonicalGameManifest } from "./hash.js";
@@ -7,6 +7,7 @@ export {
   normalizeGameManifest,
   serializeCanonicalGameManifest,
 } from "./normalize.js";
+export { GameSiteGenerationError, renderGameSite } from "./render.js";
 export { validateGameManifest } from "./validate.js";
 
 export {
