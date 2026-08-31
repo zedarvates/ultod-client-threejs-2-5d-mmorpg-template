@@ -13,7 +13,8 @@ export {
   UnsafeSiteOutputPathError,
   assertSafeSiteOutputPath,
 } from "./path-policy.js";
-export { writeGeneratedSite } from "./transaction.js";
+export { SiteTransactionError, writeGeneratedSite } from "./transaction.js";
+export type { SiteTransactionCategory } from "./transaction.js";
 export { validateGameManifest } from "./validate.js";
 export type { SiteFileSystem, SitePathState } from "./fs-adapter.js";
 export type { SafeSitePaths, SiteOutputPathOptions } from "./path-policy.js";

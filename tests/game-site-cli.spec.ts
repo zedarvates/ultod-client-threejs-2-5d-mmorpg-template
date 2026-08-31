@@ -4,6 +4,7 @@ import {
   mkdtemp,
   readFile,
   readdir,
+  rename,
   rm,
   symlink,
   writeFile,
@@ -17,7 +18,10 @@ import {
   assertSafeSiteOutputPath,
   createNodeSiteFileSystem,
   renderGameSite,
+  SiteTransactionError,
+  writeGeneratedSite,
 } from "../packages/game-site-generator/src";
+import type { SiteFileSystem } from "../packages/game-site-generator/src";
 import { validGameManifest } from "./fixtures/game-site-manifest";
 
 const execFileAsync = promisify(execFile);
@@ -141,5 +145,163 @@ test("CLI rejects unknown arguments without creating output", async () => {
     expect(failure?.code).toBe(3);
     expect(JSON.parse(failure?.stderr ?? "{}")).toMatchObject({ code: "invalid_arguments" });
     expect(await readdir(root)).toEqual([]);
+  });
+});
+
+class FailingSiteFileSystem implements SiteFileSystem {
+  private promoted = false;
+
+  constructor(
+    private readonly delegate: SiteFileSystem,
+    private readonly boundary: "write" | "read_back" | "rename_old" | "rename_new" | "verify_final" | "remove_backup",
+    private readonly finalPath: string,
+  ) {}
+
+  lstat(path: string) { return this.delegate.lstat(path); }
+  mkdir(path: string) { return this.delegate.mkdir(path); }
+  readDirectory(path: string) { return this.delegate.readDirectory(path); }
+  removeFile(path: string) { return this.delegate.removeFile(path); }
+  authorizeKnownTree(path: string) { this.delegate.authorizeKnownTree(path); }
+
+  async writeFile(path: string, bytes: Uint8Array): Promise<void> {
+    if (this.boundary === "write") throw new Error("injected write failure");
+    return this.delegate.writeFile(path, bytes);
+  }
+
+  async readFile(path: string): Promise<Uint8Array> {
+    const inStaging = path.includes(".ultod-stage-");
+    if (this.boundary === "read_back" && inStaging) throw new Error("injected read-back failure");
+    if (this.boundary === "verify_final" && this.promoted && path.startsWith(this.finalPath)) {
+      throw new Error("injected final verification failure");
+    }
+    return this.delegate.readFile(path);
+  }
+
+  async rename(from: string, to: string): Promise<void> {
+    if (this.boundary === "rename_old" && to.endsWith(".ultod-backup")) throw new Error("injected old rename failure");
+    if (this.boundary === "rename_new" && from.includes(".ultod-stage-")) throw new Error("injected new rename failure");
+    await this.delegate.rename(from, to);
+    if (from.includes(".ultod-stage-") && resolve(to) === resolve(this.finalPath)) this.promoted = true;
+  }
+
+  async removeKnownTree(path: string): Promise<void> {
+    if (this.boundary === "remove_backup" && path.endsWith(".ultod-backup")) {
+      throw new Error("injected backup cleanup failure");
+    }
+    return this.delegate.removeKnownTree(path);
+  }
+}
+
+test("replacement failures preserve the old site or verified backup evidence", async () => {
+  for (const boundary of ["write", "read_back", "rename_old", "rename_new", "verify_final", "remove_backup"] as const) {
+    await withTemp(async (root) => {
+      const outputPath = join(root, "site");
+      const baseFs = createNodeSiteFileSystem();
+      const oldManifest = validGameManifest();
+      oldManifest.name = "Old generated site";
+      const oldSite = await renderGameSite(oldManifest, "production");
+      await writeGeneratedSite(oldSite, outputPath, { replace: false, fs: baseFs });
+      const oldHtml = await readFile(join(outputPath, "index.html"));
+
+      const nextManifest = validGameManifest();
+      nextManifest.name = "New generated site";
+      const nextSite = await renderGameSite(nextManifest, "production");
+      const failingFs = new FailingSiteFileSystem(baseFs, boundary, outputPath);
+      let failure: unknown;
+      try {
+        await writeGeneratedSite(nextSite, outputPath, { replace: true, fs: failingFs });
+      } catch (error) {
+        failure = error;
+      }
+      expect(failure).toBeInstanceOf(SiteTransactionError);
+
+      const backupPath = join(root, ".site.ultod-backup");
+      if (boundary === "remove_backup") {
+        expect((await readFile(join(outputPath, "index.html"))).toString()).toContain("New generated site");
+        expect(await readdir(backupPath)).toContain("site-metadata.json");
+      } else {
+        expect(await readFile(join(outputPath, "index.html"))).toEqual(oldHtml);
+      }
+    });
+  }
+});
+
+test("an interrupted backup is restored without deleting staging evidence", async () => {
+  await withTemp(async (root) => {
+    const outputPath = join(root, "site");
+    const backupPath = join(root, ".site.ultod-backup");
+    const staleStage = join(root, ".site.ultod-stage-stale");
+    const fs = createNodeSiteFileSystem();
+    const oldManifest = validGameManifest();
+    oldManifest.name = "Recoverable old site";
+    await writeGeneratedSite(await renderGameSite(oldManifest, "production"), outputPath, { replace: false, fs });
+    await rename(outputPath, backupPath);
+    await mkdir(staleStage);
+    await writeFile(join(staleStage, ".ultod-transaction.json"), JSON.stringify({
+      outputPath: resolve(outputPath),
+      manifestSha256: "0".repeat(64),
+    }), "utf8");
+
+    let failure: unknown;
+    try {
+      await writeGeneratedSite(await renderGameSite(validGameManifest(), "production"), outputPath, {
+        replace: true,
+        fs: createNodeSiteFileSystem(),
+      });
+    } catch (error) {
+      failure = error;
+    }
+    expect(failure).toMatchObject({
+      name: "SiteTransactionError",
+      code: "recovered_previous_output",
+      category: "promotion",
+    });
+    expect((await readFile(join(outputPath, "index.html"))).toString()).toContain("Recoverable old site");
+    expect(await readdir(staleStage)).toContain(".ultod-transaction.json");
+  });
+});
+
+test("ambiguous recovery preserves final, backup and staging evidence", async () => {
+  await withTemp(async (root) => {
+    const outputPath = join(root, "site");
+    const backupPath = join(root, ".site.ultod-backup");
+    const staleStage = join(root, ".site.ultod-stage-ambiguous");
+    const fs = createNodeSiteFileSystem();
+    await writeGeneratedSite(await renderGameSite(validGameManifest(), "production"), outputPath, {
+      replace: false,
+      fs,
+    });
+    await mkdir(backupPath);
+    await writeFile(join(backupPath, "unknown.txt"), "evidence", "utf8");
+    await mkdir(staleStage);
+    await writeFile(join(staleStage, ".ultod-transaction.json"), JSON.stringify({
+      outputPath: resolve(outputPath),
+      manifestSha256: "0".repeat(64),
+    }), "utf8");
+
+    await expect(writeGeneratedSite(
+      await renderGameSite(validGameManifest(), "production"),
+      outputPath,
+      { replace: true, fs: createNodeSiteFileSystem() },
+    )).rejects.toMatchObject({ code: "ambiguous_recovery", category: "promotion" });
+    expect(await readdir(outputPath)).toContain("site-metadata.json");
+    expect(await readdir(backupPath)).toEqual(["unknown.txt"]);
+    expect(await readdir(staleStage)).toContain(".ultod-transaction.json");
+  });
+
+  await withTemp(async (root) => {
+    const outputPath = join(root, "site");
+    const staleStage = join(root, ".site.ultod-stage-only");
+    await mkdir(staleStage);
+    await writeFile(join(staleStage, ".ultod-transaction.json"), JSON.stringify({
+      outputPath: resolve(outputPath),
+      manifestSha256: "0".repeat(64),
+    }), "utf8");
+    await expect(writeGeneratedSite(
+      await renderGameSite(validGameManifest(), "production"),
+      outputPath,
+      { replace: true, fs: createNodeSiteFileSystem() },
+    )).rejects.toMatchObject({ code: "ambiguous_recovery", category: "promotion" });
+    expect(await readdir(staleStage)).toContain(".ultod-transaction.json");
   });
 });

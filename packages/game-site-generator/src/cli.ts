@@ -4,7 +4,7 @@ import { pathToFileURL } from "node:url";
 import { createNodeSiteFileSystem } from "./fs-adapter.js";
 import { UnsafeSiteOutputPathError, assertSafeSiteOutputPath } from "./path-policy.js";
 import { GameSiteGenerationError, renderGameSite } from "./render.js";
-import { writeGeneratedSite } from "./transaction.js";
+import { SiteTransactionError, writeGeneratedSite } from "./transaction.js";
 import type { SiteGenerationMode } from "./types.js";
 
 interface CliArguments {
@@ -80,6 +80,10 @@ async function run(arguments_: readonly string[]): Promise<number> {
     if (error instanceof GameSiteGenerationError) {
       process.stderr.write(`${JSON.stringify({ code: "manifest_validation", diagnostics: error.diagnostics })}\n`);
       return 2;
+    }
+    if (error instanceof SiteTransactionError) {
+      process.stderr.write(`${JSON.stringify({ code: error.code, category: error.category, detail: error.message })}\n`);
+      return error.category === "generation" ? 4 : 5;
     }
     process.stderr.write(`${JSON.stringify({ code: "generation_failed", detail: (error as Error).message })}\n`);
     return 4;
