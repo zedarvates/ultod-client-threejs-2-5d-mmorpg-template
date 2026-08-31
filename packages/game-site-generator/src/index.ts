@@ -13,6 +13,7 @@ export {
   MAX_MANIFEST_OWN_KEYS,
   MAX_MANIFEST_STRING_LENGTH,
   SAFE_RELATIVE_JSON_PATH_PATTERN,
+  SEMVER_PATTERN,
 } from "./limits.js";
 
 export type {
