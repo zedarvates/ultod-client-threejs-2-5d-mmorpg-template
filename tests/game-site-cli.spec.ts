@@ -80,6 +80,15 @@ test("path policy accepts a new child and rejects roots, traversal, overlap and 
       replace: false,
       fs,
     })).rejects.toMatchObject({ code: "output_not_empty" });
+
+    await expect(assertSafeSiteOutputPath({
+      manifestPath,
+      outputPath: join(root, "missing-parent", "site"),
+      repositoryRoot: root,
+      cwd: root,
+      replace: false,
+      fs,
+    })).rejects.toMatchObject({ code: "output_parent_missing" });
   });
 });
 

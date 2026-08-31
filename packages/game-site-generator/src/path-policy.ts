@@ -64,6 +64,12 @@ export async function assertSafeSiteOutputPath(
     cursor = parent;
   }
 
+  const outputParent = dirname(outputPath);
+  const parentState = await options.fs.lstat(outputParent);
+  if (!parentState.exists || !parentState.directory) {
+    throw new UnsafeSiteOutputPathError("output_parent_missing", outputParent);
+  }
+
   const outputState = await options.fs.lstat(outputPath);
   if (outputState.exists) {
     if (!outputState.directory) throw new UnsafeSiteOutputPathError("output_not_directory", outputPath);

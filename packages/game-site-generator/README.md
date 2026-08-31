@@ -49,7 +49,7 @@ accessible five-color theme.
 ```powershell
 npx ultod-game-site build `
   --manifest examples/game-site/tutorial/game.manifest.json `
-  --out site/generated `
+  --out generated-site `
   --mode production
 ```
 
