@@ -1,5 +1,8 @@
 export const GAME_SITE_GENERATOR_VERSION = "0.1.0";
 
+export { contrastRatio, relativeLuminance } from "./contrast.js";
+export { validateGameManifest } from "./validate.js";
+
 export {
   CONSERVATIVE_SEMVER_RANGE_PATTERN,
   FEATURE_ID_PATTERN,
