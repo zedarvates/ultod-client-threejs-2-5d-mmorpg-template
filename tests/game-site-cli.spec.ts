@@ -42,6 +42,8 @@ test("path policy accepts a new child and rejects roots, traversal, overlap and 
     const manifestPath = join(root, "game.manifest.json");
     await writeFile(manifestPath, JSON.stringify(validGameManifest()), "utf8");
     const fs = createNodeSiteFileSystem();
+    await expect(fs.removeKnownTree(root)).rejects.toThrow(/unknown tree/);
+    expect(await readdir(root)).toContain("game.manifest.json");
     const accepted = await assertSafeSiteOutputPath({
       manifestPath,
       outputPath: join(root, "generated-site"),

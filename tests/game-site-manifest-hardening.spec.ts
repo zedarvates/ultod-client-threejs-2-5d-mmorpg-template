@@ -13,6 +13,13 @@ test("hostile root access becomes one deterministic diagnostic", () => {
     path: "/",
     code: "invalid_manifest_access",
   }]);
+
+  const oversized = Object.fromEntries(Array.from({ length: 70_000 }, (_, index) => [`key${index}`, index]));
+  expect(validateGameManifest(oversized, "preview").diagnostics).toEqual([{
+    path: "/",
+    code: "manifest_limit_exceeded",
+    detail: "own_keys",
+  }]);
 });
 
 test("accessors, revoked proxies and cycles fail at the exact path", () => {
@@ -58,6 +65,21 @@ test("array, own-key, depth, node and scalar limits stop expansion", () => {
     code: "manifest_limit_exceeded",
     detail: "array_items",
   });
+
+  let indexReads = 0;
+  const oversizedArray = validGameManifest();
+  oversizedArray.site.features = new Proxy(Array.from({ length: 33 }, () => null), {
+    getOwnPropertyDescriptor(target, property) {
+      if (property === "32") indexReads += 1;
+      return Reflect.getOwnPropertyDescriptor(target, property);
+    },
+  });
+  expect(validateGameManifest(oversizedArray, "preview").diagnostics[0]).toEqual({
+    path: "/site/features",
+    code: "manifest_limit_exceeded",
+    detail: "array_items",
+  });
+  expect(indexReads).toBe(0);
 
   const manyKeys = Object.fromEntries(Array.from({ length: 33 }, (_, index) => [`key${index}`, index]));
   expect(validateGameManifest(manyKeys, "preview").diagnostics[0]).toEqual({
