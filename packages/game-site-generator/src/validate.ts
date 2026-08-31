@@ -1,3 +1,4 @@
+import { snapshotUnknown } from "./access.js";
 import { contrastRatio } from "./contrast.js";
 import {
   CONSERVATIVE_SEMVER_RANGE_PATTERN,
@@ -45,8 +46,15 @@ export function validateGameManifest(
   value: unknown,
   mode: SiteGenerationMode,
 ): GameManifestValidationResult {
+  const snapshot = snapshotUnknown(value);
+  if (!snapshot.ok) return { valid: false, diagnostics: [snapshot.diagnostic] };
+  value = snapshot.value;
   const diagnostics: GameManifestDiagnostic[] = [];
   const add = (path: string, code: string, detail?: string): void => {
+    if (diagnostics.length === MAX_MANIFEST_DIAGNOSTICS - 1) {
+      diagnostics.push({ path: "/", code: "manifest_limit_exceeded", detail: "diagnostics" });
+      return;
+    }
     if (diagnostics.length >= MAX_MANIFEST_DIAGNOSTICS) return;
     diagnostics.push(detail === undefined ? { path, code } : { path, code, detail });
   };
@@ -258,5 +266,5 @@ export function validateGameManifest(
     || left.code.localeCompare(right.code)
     || (left.detail ?? "").localeCompare(right.detail ?? ""));
   if (diagnostics.length > 0) return { valid: false, diagnostics };
-  return { valid: true, diagnostics, manifest: structuredClone(value as GameManifest) };
+  return { valid: true, diagnostics, manifest: value as GameManifest };
 }
