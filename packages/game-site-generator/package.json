@@ -12,6 +12,9 @@
     ".": "./dist/index.js"
   },
   "types": "./dist/index.d.ts",
+  "bin": {
+    "ultod-game-site": "./dist/cli.js"
+  },
   "files": [
     "dist",
     "README.md"

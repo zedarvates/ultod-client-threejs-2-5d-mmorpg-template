@@ -1,6 +1,7 @@
 export { GAME_SITE_GENERATOR_VERSION } from "./version.js";
 
 export { contrastRatio, relativeLuminance } from "./contrast.js";
+export { createNodeSiteFileSystem } from "./fs-adapter.js";
 export { sha256CanonicalGameManifest } from "./hash.js";
 export {
   GameManifestCanonicalizationError,
@@ -8,7 +9,14 @@ export {
   serializeCanonicalGameManifest,
 } from "./normalize.js";
 export { GameSiteGenerationError, renderGameSite } from "./render.js";
+export {
+  UnsafeSiteOutputPathError,
+  assertSafeSiteOutputPath,
+} from "./path-policy.js";
+export { writeGeneratedSite } from "./transaction.js";
 export { validateGameManifest } from "./validate.js";
+export type { SiteFileSystem, SitePathState } from "./fs-adapter.js";
+export type { SafeSitePaths, SiteOutputPathOptions } from "./path-policy.js";
 
 export {
   CONSERVATIVE_SEMVER_RANGE_PATTERN,
