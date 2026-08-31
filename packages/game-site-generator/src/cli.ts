@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import { readFile } from "node:fs/promises";
+import { dirname, join, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import { createNodeSiteFileSystem } from "./fs-adapter.js";
 import { UnsafeSiteOutputPathError, assertSafeSiteOutputPath } from "./path-policy.js";
@@ -45,14 +46,25 @@ function parseArguments(arguments_: readonly string[]): CliArguments {
   return { manifestPath, outputPath, mode, replace };
 }
 
+async function findRepositoryRoot(cwd: string, fs: ReturnType<typeof createNodeSiteFileSystem>): Promise<string> {
+  let cursor = resolve(cwd);
+  while (true) {
+    if ((await fs.lstat(join(cursor, ".git"))).exists) return cursor;
+    const parent = dirname(cursor);
+    if (parent === cursor) return resolve(cwd);
+    cursor = parent;
+  }
+}
+
 async function run(arguments_: readonly string[]): Promise<number> {
   try {
     const parsed = parseArguments(arguments_);
     const fs = createNodeSiteFileSystem();
+    const repositoryRoot = await findRepositoryRoot(process.cwd(), fs);
     const safe = await assertSafeSiteOutputPath({
       manifestPath: parsed.manifestPath,
       outputPath: parsed.outputPath,
-      repositoryRoot: process.cwd(),
+      repositoryRoot,
       cwd: process.cwd(),
       replace: parsed.replace,
       fs,

@@ -157,6 +157,32 @@ test("CLI rejects unknown arguments without creating output", async () => {
   });
 });
 
+test("CLI discovers and rejects the repository root from a nested working directory", async () => {
+  await withTemp(async (root) => {
+    const repository = join(root, "repository");
+    const nested = join(repository, "nested");
+    await mkdir(join(repository, ".git"), { recursive: true });
+    await mkdir(nested);
+    const manifestPath = join(root, "game.manifest.json");
+    await writeFile(manifestPath, JSON.stringify(validGameManifest()), "utf8");
+    let failure: { code?: number; stderr?: string } | undefined;
+    try {
+      await execFileAsync(process.execPath, [
+        cliPath,
+        "build",
+        "--manifest", manifestPath,
+        "--out", repository,
+        "--mode", "production",
+        "--replace",
+      ], { cwd: nested, encoding: "utf8" });
+    } catch (error) {
+      failure = error as { code?: number; stderr?: string };
+    }
+    expect(failure?.code).toBe(3);
+    expect(JSON.parse(failure?.stderr ?? "{}")).toMatchObject({ code: "repository_root" });
+  });
+});
+
 class FailingSiteFileSystem implements SiteFileSystem {
   private promoted = false;
 
