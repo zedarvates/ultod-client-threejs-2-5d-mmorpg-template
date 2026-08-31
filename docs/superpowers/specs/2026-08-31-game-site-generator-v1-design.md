@@ -1,6 +1,6 @@
 # Deterministic Game Site Generator V1 Design
 
-Date: 2026-08-31  
+Date: 2026-08-31
 Status: approved design, implementation not started
 
 ## 1. Purpose
