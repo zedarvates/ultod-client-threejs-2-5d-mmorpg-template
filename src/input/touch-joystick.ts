@@ -18,10 +18,7 @@ export class TouchJoystick {
     });
     const release = (e: PointerEvent) => {
       if (e.pointerId === this.activeId) {
-        this.activeId = null;
-        this.vecX = 0;
-        this.vecY = 0;
-        this.knob.style.transform = 'translate(0px, 0px)';
+        this.reset();
       }
     };
     zone.addEventListener('pointerup', release);
@@ -30,6 +27,16 @@ export class TouchJoystick {
 
   sample(): Pick<MoveIntent, 'x' | 'y'> {
     return { x: this.vecX, y: this.vecY };
+  }
+
+  reset(): void {
+    if (this.activeId !== null && this.zone.hasPointerCapture(this.activeId)) {
+      this.zone.releasePointerCapture(this.activeId);
+    }
+    this.activeId = null;
+    this.vecX = 0;
+    this.vecY = 0;
+    this.knob.style.transform = 'translate(0px, 0px)';
   }
 
   private update(clientX: number, clientY: number): void {

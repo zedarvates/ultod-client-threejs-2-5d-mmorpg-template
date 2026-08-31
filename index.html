@@ -2,11 +2,13 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>UltOd Client Three.js 2.5D Template</title>
     <style>
       html, body { margin: 0; padding: 0; overflow: hidden; background: #181824; touch-action: none;
         font-family: Georgia, "Times New Roman", serif; }
+      .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden;
+        clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
       #app-canvas { display: block; width: 100%; height: 100%; }
 
       /* HUD top-left: position + network */
@@ -75,24 +77,28 @@
     </style>
   </head>
   <body>
-    <canvas id="app-canvas"></canvas>
-    <div id="hud"></div>
+    <canvas id="app-canvas" role="img" aria-label="Playable isometric world" aria-describedby="canvas-description">
+      Interactive isometric world preview.
+    </canvas>
+    <p id="canvas-description" class="sr-only">Explore the world with keyboard, pointer, or touch controls.</p>
+    <div id="hud" aria-hidden="true"></div>
+    <div id="network-status" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></div>
 
-    <div id="quest-panel">
+    <div id="quest-panel" role="status" aria-label="Quest status" aria-live="polite" aria-atomic="true">
       <div id="quest-title">Rescue the Princess</div>
       <div id="quest-objective">Talk to the King to start.</div>
       <div id="quest-gold">Gold: 25</div>
     </div>
 
-    <div id="dialog-box">
+    <div id="dialog-box" role="dialog" aria-modal="true" aria-labelledby="dialog-name" aria-describedby="dialog-text">
       <div id="dialog-name"></div>
       <div id="dialog-text"></div>
       <div id="dialog-actions"></div>
     </div>
 
-    <div id="inventory">
-      <div class="inv-slot" id="inv-sword" title="Sword"></div>
-      <div class="inv-slot" id="inv-key" title="Cell Key"></div>
+    <div id="inventory" role="status" aria-label="Inventory status" aria-live="polite" aria-atomic="true">
+      <div class="inv-slot" id="inv-sword" role="img" aria-label="Sword: empty" title="Sword"></div>
+      <div class="inv-slot" id="inv-key" role="img" aria-label="Cell key: empty" title="Cell Key"></div>
     </div>
 
     <button id="interact-btn" style="position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%);
