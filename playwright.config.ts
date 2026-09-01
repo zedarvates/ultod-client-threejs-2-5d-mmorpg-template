@@ -8,7 +8,7 @@ export default defineConfig({
     baseURL: "http://localhost:5199",
   },
   webServer: {
-    command: "npm run dev -- --port 5199 --strictPort",
+    command: "npm run dev -- --base / --port 5199 --strictPort",
     url: "http://localhost:5199",
     reuseExistingServer: !process.env.CI,
     timeout: 30000,
