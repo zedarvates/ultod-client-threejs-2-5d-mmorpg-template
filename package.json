@@ -16,13 +16,16 @@
    "test:e2e": "playwright test",
     "check:public-boundary": "node scripts/check-public-boundary.mjs",
     "check:content-sdk": "npm --workspace @ultod/content-sdk run typecheck",
-    "check:client-core": "npm --workspace @ultod/content-sdk run build && npm --workspace @ultod/threejs-client-core run typecheck"
+    "check:client-core": "npm --workspace @ultod/content-sdk run build && npm --workspace @ultod/threejs-client-core run typecheck",
+    "check:site-generator": "npm --workspace @ultod/game-site-generator run typecheck",
+    "build:site-generator": "npm --workspace @ultod/game-site-generator run build"
   },
   "dependencies": {
     "three": "^0.180.0"
   },
   "devDependencies": {
     "@playwright/test": "^1.62.1",
+    "@types/node": "^22.0.0",
     "@types/three": "^0.180.0",
     "@types/ws": "^8.18.1",
     "typescript": "^5.6.3",

@@ -1,0 +1,45 @@
+import type { GameManifest } from "../../packages/game-site-generator/src";
+
+export function validGameManifest(): GameManifest {
+  return {
+    schema: "uo.game-manifest/v1",
+    id: "game.tutorial-frontier",
+    name: "Frontier Tutorial",
+    version: "0.1.0",
+    visibility: "public",
+    packages: {
+      client_core: "^0.1.0",
+      content_sdk: "^0.1.0",
+      site_generator: "^0.1.0",
+    },
+    content_graph: "content/graph.json",
+    publication: { web: true, steam: false },
+    site: {
+      locale: "en",
+      tagline: "Learn the public workflow.",
+      synopsis: "Explore a synthetic frontier built for documentation.",
+      world: {
+        heading: "A neutral frontier",
+        body: "Three local previews demonstrate portable presentation.",
+      },
+      features: [{
+        id: "isometric-exploration",
+        title: "Isometric exploration",
+        description: "Move with keyboard, pointer or touch.",
+      }],
+      credits: [{ role: "Template", name: "Ultimate Odycer contributors" }],
+      legal: {
+        copyright: "Copyright (c) 2026 Ultimate Odycer contributors.",
+        notice: "Synthetic tutorial content.",
+      },
+      links: [],
+      theme: {
+        background: "#101419",
+        surface: "#1c2530",
+        text: "#f4ecd8",
+        muted: "#c4bca8",
+        accent: "#e1ad55",
+      },
+    },
+  };
+}

@@ -1,0 +1,1 @@
+export const GAME_SITE_GENERATOR_VERSION = "0.1.0";

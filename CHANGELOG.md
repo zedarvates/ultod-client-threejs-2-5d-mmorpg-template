@@ -81,6 +81,14 @@ editor bridges, loopback fixture, e2e tests, and live GitHub Pages deployment.
 
 ### Packages
 
+- Add `@ultod/game-site-generator` v0.1.0 with bounded
+  `uo.game-manifest/v1` validation, canonical SHA-256, deterministic text-only
+  HTML/CSS/metadata output, and preview/production publication gates.
+- Add a local-only CLI with guarded paths, staged verification, rollback and
+  conservative interrupted-state recovery; this does not deploy or publish a site.
+- Verify the generator tarball and CLI in the offline package consumer, plus
+  focused browser evidence for semantics, keyboard, tablet layout, reduced
+  motion and absence of runtime network requests.
 - Build `@ultod/content-sdk` and `@ultod/threejs-client-core` automatically
   before `npm pack`, including the client core's SDK type dependency.
 - Verify both archives by installing them with a local Three.js archive in an
