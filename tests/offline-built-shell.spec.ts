@@ -12,9 +12,41 @@ async function expectBuiltDemoReady(page: import("@playwright/test").Page): Prom
   })).toBe("online");
 }
 
+async function expectSyntheticMovementAck(
+  page: import("@playwright/test").Page,
+  x: number,
+  z: number,
+): Promise<void> {
+  const update = await page.evaluate(({ x, z }) => new Promise<{ playerId: number; x: number; z: number }>((resolve, reject) => {
+    const client = window.__ultodLocalDemoClient;
+    if (!client || client.getState().mode !== "online") {
+      reject(new Error("local demo NetworkClient is not online"));
+      return;
+    }
+
+    const timer = window.setTimeout(() => {
+      unsubscribe();
+      reject(new Error("timed out waiting for synthetic position acknowledgement"));
+    }, 1500);
+
+    const unsubscribe = client.onPosition((position) => {
+      window.clearTimeout(timer);
+      unsubscribe();
+      resolve(position);
+    });
+
+    client.sendMovement(x, z);
+  }), { x, z });
+
+  expect(update.playerId).toBe(42);
+  expect(update.x).toBeCloseTo(x, 4);
+  expect(update.z).toBeCloseTo(z, 4);
+}
+
 test("built Three.js shell and local demo runtime reload while offline after first load", async ({ page, context }) => {
   await page.goto("./", { waitUntil: "networkidle" });
   await expectBuiltDemoReady(page);
+  await expectSyntheticMovementAck(page, 1.25, -2.5);
 
   const registration = await page.evaluate(async () => {
     if (!("serviceWorker" in navigator)) return null;
@@ -32,4 +64,5 @@ test("built Three.js shell and local demo runtime reload while offline after fir
   await context.setOffline(true);
   await page.reload({ waitUntil: "domcontentloaded" });
   await expectBuiltDemoReady(page);
+  await expectSyntheticMovementAck(page, -0.75, 0.5);
 });
