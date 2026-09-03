@@ -5,6 +5,7 @@ import { join, relative, sep } from "node:path";
 
 const distDir = new URL("../dist/", import.meta.url);
 const distPath = distDir.pathname;
+const indexPath = join(distPath, "index.html");
 
 async function walk(dir) {
   const entries = await readdir(dir, { withFileTypes: true });
@@ -15,6 +16,13 @@ async function walk(dir) {
     else if (entry.isFile() && entry.name !== "sw.js") files.push(full);
   }
   return files;
+}
+
+const registration = `<script type="module">\nif ("serviceWorker" in navigator && window.isSecureContext) {\n  window.addEventListener("load", () => {\n    const swUrl = new URL("./sw.js", document.baseURI);\n    void navigator.serviceWorker.register(swUrl, { scope: "./" });\n  }, { once: true });\n}\n</script>\n`;
+
+const originalIndex = await readFile(indexPath, "utf8");
+if (!originalIndex.includes("navigator.serviceWorker.register")) {
+  await writeFile(indexPath, originalIndex.replace("</body>", `${registration}</body>`), "utf8");
 }
 
 const files = (await walk(distPath)).sort();
