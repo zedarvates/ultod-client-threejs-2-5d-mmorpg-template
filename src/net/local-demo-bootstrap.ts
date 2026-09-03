@@ -15,13 +15,17 @@ declare global {
   }
 }
 
+// One shared application-facing client: the HUD/game shell and the automatic
+// local bootstrap both observe this exact NetworkClient instance. The socket
+// factory remains the browser-local synthetic Worker transport only.
+export const localDemoClient = new NetworkClient(createLocalDemoSocketFactory());
+
 if (typeof window !== "undefined" && typeof Worker !== "undefined") {
-  const client = new NetworkClient(createLocalDemoSocketFactory());
-  window.__ultodLocalDemoClient = client;
+  window.__ultodLocalDemoClient = localDemoClient;
   document.body.dataset.demoRuntime = "starting";
   document.body.dataset.demoProof = "SYNTHETIC_FIXTURE_ONLY";
 
-  void client.connect({
+  void localDemoClient.connect({
     url: LOCAL_DEMO_ENDPOINT,
     token: LOCAL_DEMO_TOKEN,
     timeoutMs: 2000,
