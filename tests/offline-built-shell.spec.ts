@@ -5,6 +5,11 @@ async function expectBuiltDemoReady(page: import("@playwright/test").Page): Prom
   await expect.poll(() => page.evaluate(() => document.body.dataset.demoRuntime)).toBe("ready");
   await expect.poll(() => page.evaluate(() => document.body.dataset.demoProof)).toBe("SYNTHETIC_FIXTURE_ONLY");
   await expect(page.locator("#app-canvas")).toBeVisible();
+  await expect(page.locator("#hud")).toContainText("net: online (player 42)");
+  await expect.poll(() => page.evaluate(() => {
+    const client = window.__ultodLocalDemoClient;
+    return client?.getState().mode ?? "missing";
+  })).toBe("online");
 }
 
 test("built Three.js shell and local demo runtime reload while offline after first load", async ({ page, context }) => {
