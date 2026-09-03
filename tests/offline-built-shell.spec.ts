@@ -1,8 +1,15 @@
 import { expect, test } from "@playwright/test";
 
-test("built Three.js shell reloads while offline after first load", async ({ page, context }) => {
-  await page.goto("./", { waitUntil: "networkidle" });
+async function expectBuiltDemoReady(page: import("@playwright/test").Page): Promise<void> {
   await expect.poll(() => page.evaluate(() => document.body.dataset.bootState)).toBe("ready");
+  await expect.poll(() => page.evaluate(() => document.body.dataset.demoRuntime)).toBe("ready");
+  await expect.poll(() => page.evaluate(() => document.body.dataset.demoProof)).toBe("SYNTHETIC_FIXTURE_ONLY");
+  await expect(page.locator("#app-canvas")).toBeVisible();
+}
+
+test("built Three.js shell and local demo runtime reload while offline after first load", async ({ page, context }) => {
+  await page.goto("./", { waitUntil: "networkidle" });
+  await expectBuiltDemoReady(page);
 
   const registration = await page.evaluate(async () => {
     if (!("serviceWorker" in navigator)) return null;
@@ -15,10 +22,9 @@ test("built Three.js shell reloads while offline after first load", async ({ pag
   // so the page is unquestionably controlled before simulating loss of network.
   await page.reload({ waitUntil: "networkidle" });
   await expect.poll(() => page.evaluate(() => Boolean(navigator.serviceWorker.controller))).toBe(true);
-  await expect.poll(() => page.evaluate(() => document.body.dataset.bootState)).toBe("ready");
+  await expectBuiltDemoReady(page);
 
   await context.setOffline(true);
   await page.reload({ waitUntil: "domcontentloaded" });
-  await expect.poll(() => page.evaluate(() => document.body.dataset.bootState)).toBe("ready");
-  await expect(page.locator("#app-canvas")).toBeVisible();
+  await expectBuiltDemoReady(page);
 });

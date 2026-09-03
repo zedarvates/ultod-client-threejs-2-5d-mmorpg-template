@@ -2,8 +2,10 @@
 // Application-facing compatibility adapter.
 //
 // Keep exactly one NetworkClient implementation in packages/client-core. The
-// application remains offline by default because it constructs the client but
-// does not call connect() without explicit runtime configuration.
+// browser demo also auto-starts a separate, explicitly synthetic local runtime
+// as a module side effect; the exported NetworkClient remains the core class.
+
+import "./local-demo-bootstrap";
 
 export { NetworkClient } from '../../packages/client-core/src/net/network-client';
 export type {
