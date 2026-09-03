@@ -9,7 +9,7 @@ import { PlayerPresentation } from "./player_presentation";
 import type { HouseBlueprint } from "./render/blueprint-bridge";
 import type { CreatureGenome } from "./render/creature-bridge";
 import { HudOverlay } from "./ui/hud-overlay";
-import { NetworkClient } from "./net/network-client";
+import { localDemoClient } from "./net/network-client";
 import { ScenarioWorld } from "./game/scenario-world";
 import { cellToWorld, type CityConfigLite } from "./game/city-config";
 import { loadStartupMap, type StartupMap } from "./game/map-catalog";
@@ -33,6 +33,9 @@ import { DialogBox } from "./ui/dialog-box";
 import { TouchJoystick } from "./input/touch-joystick";
 import { AudioManager } from "./audio/audio-manager";
 
+const LOCAL_DEMO_MOVEMENT_INTERVAL_MS = 100;
+const LOCAL_DEMO_MOVEMENT_EPSILON_SQ = 1e-6;
+
 class IsometricApp {
   private scene: THREE.Scene;
   private camera: THREE.OrthographicCamera;
@@ -41,10 +44,12 @@ class IsometricApp {
   private player: PlayerPresentation;
   private targetPosition: THREE.Vector3 | null = null;
   private lastTime = 0;
+  private lastNetworkMovementAt = -Infinity;
+  private readonly lastNetworkPosition = new THREE.Vector2(Number.NaN, Number.NaN);
   private readonly hud = new HudOverlay(
     document.getElementById("hud") as HTMLElement,
   );
-  private readonly net = new NetworkClient();
+  private readonly net = localDemoClient;
   private keys = new Set<string>();
   private world?: ScenarioWorld;
   private quest: QuestState = initialQuestState();
@@ -78,7 +83,6 @@ class IsometricApp {
       0.1,
       100,
     );
-    // Dimetric angle: 45 deg Y rotation, ~35.264 deg X tilt.
     this.camera.position.copy(this.cameraOffset);
     this.camera.lookAt(0, 0, 0);
 
@@ -116,7 +120,6 @@ class IsometricApp {
       hideElements(["quest-panel", "inventory", "interact-btn", "joystick-zone"]);
     }
 
-    // Touch joystick for mobile/tablet play
     this.joystick = new TouchJoystick(
       document.getElementById("joystick-zone") as HTMLElement,
       document.getElementById("joystick-knob") as HTMLElement,
@@ -166,10 +169,8 @@ class IsometricApp {
     ]);
     const gltfLoader = new loader.GLTFLoader();
 
-    // Original procedural tutorial props.
     props.loadTemplateProps(this.scene);
 
-    // Architecture Editor houses sit on CityConfig parcels, preview only.
     fetch(import.meta.env.BASE_URL + "blueprints/maisonnette_standard.json")
       .then((r) => r.json() as Promise<HouseBlueprint>)
       .then((bp) => {
@@ -198,7 +199,6 @@ class IsometricApp {
       })
       .catch((e) => console.warn("[blueprint] failed to load", e));
 
-    // Creature Editor demo (see public/creatures/).
     fetch(import.meta.env.BASE_URL + "creatures/exemple_rodeur_aile.json")
       .then((r) => r.json() as Promise<CreatureGenome>)
       .then((genome) => {
@@ -211,7 +211,6 @@ class IsometricApp {
       })
       .catch((e) => console.warn("[creature] failed to load", e));
 
-    // Optional sprite actor demonstration for player (if present and reviewed)
     import("./render/sprite-actor")
       .then(({ SpriteActor }) => {
         this.player.tryAttachSprite(() =>
@@ -247,6 +246,25 @@ class IsometricApp {
     };
   }
 
+  private publishLocalDemoMovement(now: number, isMoving: boolean): void {
+    if (!isMoving || now - this.lastNetworkMovementAt < LOCAL_DEMO_MOVEMENT_INTERVAL_MS) return;
+    if (this.net.getState().mode !== "online") return;
+
+    const { x, z } = this.player.mesh.position;
+    if (!Number.isFinite(x) || !Number.isFinite(z)) return;
+    const dx = x - this.lastNetworkPosition.x;
+    const dz = z - this.lastNetworkPosition.y;
+    if (Number.isFinite(dx) && Number.isFinite(dz) && dx * dx + dz * dz <= LOCAL_DEMO_MOVEMENT_EPSILON_SQ) return;
+
+    try {
+      this.net.sendMovement(x, z);
+      this.lastNetworkMovementAt = now;
+      this.lastNetworkPosition.set(x, z);
+    } catch {
+      // Fail closed: presentation movement must never depend on synthetic transport availability.
+    }
+  }
+
   private tick(now: number): void {
     requestAnimationFrame((t) => this.tick(t));
     const delta = Math.min((now - this.lastTime) / 1000, 0.1);
@@ -259,7 +277,6 @@ class IsometricApp {
       const dir = new THREE.Vector3(kb.x, 0, -kb.y).normalize().multiplyScalar(speed * delta);
       this.targetPosition = this.player.mesh.position.clone().add(dir);
     } else if (joy.x !== 0 || joy.y !== 0) {
-      // Joystick Y is screen-space (up = forward); map to world -Z.
       const speed = 5;
       const dir = new THREE.Vector3(joy.x, 0, -joy.y).normalize().multiplyScalar(speed * delta);
       if (!Number.isNaN(dir.x) && !Number.isNaN(dir.z)) {
@@ -281,6 +298,7 @@ class IsometricApp {
     );
     next.set(resolved.x, next.y, resolved.z);
     this.player.mesh.position.copy(next);
+    this.publishLocalDemoMovement(now, isMoving);
     this.camera.position.copy(this.player.mesh.position).add(this.cameraOffset);
     this.camera.lookAt(this.player.mesh.position);
 
