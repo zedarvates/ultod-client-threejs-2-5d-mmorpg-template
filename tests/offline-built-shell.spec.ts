@@ -43,10 +43,42 @@ async function expectSyntheticMovementAck(
   expect(update.z).toBeCloseTo(z, 4);
 }
 
+async function expectKeyboardMovementAck(page: import("@playwright/test").Page): Promise<void> {
+  const initialHud = await page.locator("#hud").textContent();
+  const ackPromise = page.evaluate(() => new Promise<{ playerId: number; x: number; z: number }>((resolve, reject) => {
+    const client = window.__ultodLocalDemoClient;
+    if (!client || client.getState().mode !== "online") {
+      reject(new Error("local demo NetworkClient is not online"));
+      return;
+    }
+
+    const timer = window.setTimeout(() => {
+      unsubscribe();
+      reject(new Error("timed out waiting for keyboard-driven synthetic position acknowledgement"));
+    }, 2000);
+
+    const unsubscribe = client.onPosition((position) => {
+      window.clearTimeout(timer);
+      unsubscribe();
+      resolve(position);
+    });
+  }));
+
+  await page.keyboard.down("KeyD");
+  const update = await ackPromise;
+  await page.keyboard.up("KeyD");
+
+  expect(update.playerId).toBe(42);
+  expect(Number.isFinite(update.x)).toBe(true);
+  expect(Number.isFinite(update.z)).toBe(true);
+  await expect.poll(async () => page.locator("#hud").textContent()).not.toBe(initialHud);
+}
+
 test("built Three.js shell and local demo runtime reload while offline after first load", async ({ page, context }) => {
   await page.goto("./", { waitUntil: "networkidle" });
   await expectBuiltDemoReady(page);
   await expectSyntheticMovementAck(page, 1.25, -2.5);
+  await expectKeyboardMovementAck(page);
 
   const registration = await page.evaluate(async () => {
     if (!("serviceWorker" in navigator)) return null;
@@ -55,8 +87,6 @@ test("built Three.js shell and local demo runtime reload while offline after fir
   });
   expect(registration).not.toBeNull();
 
-  // The first navigation may finish before clients.claim(); reload once while online
-  // so the page is unquestionably controlled before simulating loss of network.
   await page.reload({ waitUntil: "networkidle" });
   await expect.poll(() => page.evaluate(() => Boolean(navigator.serviceWorker.controller))).toBe(true);
   await expectBuiltDemoReady(page);
@@ -65,4 +95,5 @@ test("built Three.js shell and local demo runtime reload while offline after fir
   await page.reload({ waitUntil: "domcontentloaded" });
   await expectBuiltDemoReady(page);
   await expectSyntheticMovementAck(page, -0.75, 0.5);
+  await expectKeyboardMovementAck(page);
 });
