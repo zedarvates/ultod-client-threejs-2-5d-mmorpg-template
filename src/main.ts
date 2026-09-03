@@ -9,7 +9,7 @@ import { PlayerPresentation } from "./player_presentation";
 import type { HouseBlueprint } from "./render/blueprint-bridge";
 import type { CreatureGenome } from "./render/creature-bridge";
 import { HudOverlay } from "./ui/hud-overlay";
-import { NetworkClient } from "./net/network-client";
+import { localDemoClient } from "./net/network-client";
 import { ScenarioWorld } from "./game/scenario-world";
 import { cellToWorld, type CityConfigLite } from "./game/city-config";
 import { loadStartupMap, type StartupMap } from "./game/map-catalog";
@@ -44,7 +44,7 @@ class IsometricApp {
   private readonly hud = new HudOverlay(
     document.getElementById("hud") as HTMLElement,
   );
-  private readonly net = new NetworkClient();
+  private readonly net = localDemoClient;
   private keys = new Set<string>();
   private world?: ScenarioWorld;
   private quest: QuestState = initialQuestState();
