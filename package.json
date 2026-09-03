@@ -8,12 +8,12 @@
   ],
   "scripts": {
     "dev": "vite",
-    "build": "tsc --noEmit && vite build && npm run check:bundle",
+    "build": "tsc --noEmit && vite build && node scripts/generate-offline-sw.mjs && npm run check:bundle",
     "check:audit": "npm audit --audit-level=moderate",
     "check:bundle": "node scripts/check-build-chunks.mjs",
     "check:packages": "node scripts/check-package-consumers.mjs",
     "preview": "vite preview",
-   "test:e2e": "playwright test",
+    "test:e2e": "playwright test",
     "check:public-boundary": "node scripts/check-public-boundary.mjs",
     "check:content-sdk": "npm --workspace @ultod/content-sdk run typecheck",
     "check:client-core": "npm --workspace @ultod/content-sdk run build && npm --workspace @ultod/threejs-client-core run typecheck"
