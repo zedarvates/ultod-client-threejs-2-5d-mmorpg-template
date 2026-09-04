@@ -78,6 +78,10 @@ editor bridges, loopback fixture, e2e tests, and live GitHub Pages deployment.
   status text on every animation frame.
 - Give gameplay dialogs semantic labeling, initial focus, Escape dismissal and
   trigger-focus restoration.
+- Reflow the HUD, map selector and quest tracker below 620 CSS pixels while
+  keeping portrait and short-landscape gameplay controls in separate regions.
+- Raise map and dialog actions to 44-pixel minimum touch targets without
+  changing the desktop information hierarchy.
 
 ### Packages
 
