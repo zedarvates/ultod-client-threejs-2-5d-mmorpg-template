@@ -16,9 +16,12 @@ const SOCKET_CONNECTING = 0;
 const SOCKET_OPEN = 1;
 const SOCKET_CLOSING = 2;
 const SOCKET_CLOSED = 3;
+const LIVENESS_INTERVAL_MS = 1000;
+const LIVENESS_TIMEOUT_MS = 4000;
 
 type RuntimeMessage =
   | { kind: "ready"; proof: "SYNTHETIC_FIXTURE_ONLY" }
+  | { kind: "pong" }
   | { kind: "frame"; data: ArrayBuffer }
   | { kind: "close"; code: number };
 
@@ -40,6 +43,8 @@ class LocalDemoSocket implements NetworkSocket {
 
   private state = SOCKET_CONNECTING;
   private worker: Worker | null;
+  private livenessTimer: ReturnType<typeof setInterval> | null = null;
+  private lastPongAt = Date.now();
 
   constructor(url: string) {
     const endpoint = new URL(url);
@@ -72,6 +77,7 @@ class LocalDemoSocket implements NetworkSocket {
   close(code = 1000): void {
     if (this.state === SOCKET_CLOSED || this.state === SOCKET_CLOSING) return;
     this.state = SOCKET_CLOSING;
+    this.stopLivenessWatchdog();
     const worker = this.worker;
     this.worker = null;
     if (worker) {
@@ -91,7 +97,18 @@ class LocalDemoSocket implements NetworkSocket {
         return;
       }
       this.state = SOCKET_OPEN;
+      this.lastPongAt = Date.now();
+      this.startLivenessWatchdog();
       this.onopen?.();
+      return;
+    }
+
+    if (message.kind === "pong") {
+      if (this.state !== SOCKET_OPEN) {
+        this.fail(1002);
+        return;
+      }
+      this.lastPongAt = Date.now();
       return;
     }
 
@@ -107,8 +124,32 @@ class LocalDemoSocket implements NetworkSocket {
     this.fail(message.code);
   }
 
+  private startLivenessWatchdog(): void {
+    this.stopLivenessWatchdog();
+    this.livenessTimer = setInterval(() => {
+      if (this.state !== SOCKET_OPEN || !this.worker) return;
+      if (Date.now() - this.lastPongAt > LIVENESS_TIMEOUT_MS) {
+        this.fail(1011);
+        return;
+      }
+      try {
+        this.worker.postMessage({ kind: "ping" });
+      } catch {
+        this.fail(1011);
+      }
+    }, LIVENESS_INTERVAL_MS);
+  }
+
+  private stopLivenessWatchdog(): void {
+    if (this.livenessTimer !== null) {
+      clearInterval(this.livenessTimer);
+      this.livenessTimer = null;
+    }
+  }
+
   private fail(code: number): void {
     if (this.state === SOCKET_CLOSED) return;
+    this.stopLivenessWatchdog();
     const worker = this.worker;
     this.worker = null;
     worker?.terminate();
