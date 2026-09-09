@@ -31,6 +31,13 @@ if (typeof window !== "undefined" && typeof Worker !== "undefined") {
     timeoutMs: 2000,
   }).then(() => {
     document.body.dataset.demoRuntime = "ready";
+
+    const reflectRuntimeState = window.setInterval(() => {
+      const mode = localDemoClient.getState().mode;
+      if (mode === "online") return;
+      window.clearInterval(reflectRuntimeState);
+      document.body.dataset.demoRuntime = mode === "offline" ? "offline" : "error";
+    }, 500);
   }).catch((error: unknown) => {
     document.body.dataset.demoRuntime = "error";
     const reason = error instanceof Error ? error.message : "unknown local demo runtime error";
