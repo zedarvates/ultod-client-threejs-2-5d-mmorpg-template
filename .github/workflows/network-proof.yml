@@ -25,6 +25,8 @@ jobs:
         run: npm run check:client-core
       - name: Build client core
         run: npm --workspace @ultod/threejs-client-core run build
+      - name: Prove bounded synthetic reconciliation helper
+        run: node --test tests/position-reconciliation.node.mjs
       - name: Build public Three.js shell
         run: npm run build
       - name: Prove default deployment cache isolation
@@ -64,5 +66,6 @@ jobs:
           echo "portal_cache_isolation=PER_SCOPE_PROVEN_IF_STEPS_PASS"
           echo "local_demo_runtime=SYNTHETIC_WORKER_PROVEN_IF_STEP_PASSES"
           echo "worker_liveness=FAIL_CLOSED_PROVEN_IF_BROWSER_STEPS_PASS"
+          echo "position_reconciliation=BOUNDED_PRESENTATION_HELPER_PROVEN_IF_STEP_PASSES"
           echo "zig_compatibility=NOT_PROVEN"
           echo "canonical_server_sha=BLOCKED"
