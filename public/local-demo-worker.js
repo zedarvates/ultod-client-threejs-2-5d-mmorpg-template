@@ -61,6 +61,12 @@ function failClosed(code = 1002) {
 self.onmessage = (event) => {
   const message = event.data;
   if (!message || typeof message !== "object") return failClosed();
+
+  if (message.kind === "ping") {
+    self.postMessage({ kind: "pong" });
+    return;
+  }
+
   if (message.kind === "close") {
     self.close();
     return;
