@@ -33,6 +33,14 @@ jobs:
         run: npx playwright install --with-deps chromium
       - name: Prove built shell + local demo runtime survive network loss
         run: npx playwright test tests/offline-built-shell.spec.ts --config playwright.offline.config.ts
+      - name: Rebuild for Obolune-style portal subpath
+        env:
+          VITE_BASE_PATH: /games/threejs-2-5d/
+        run: npm run build
+      - name: Prove Obolune-style subpath survives network loss
+        env:
+          ULTOD_PREVIEW_BASE_URL: http://localhost:5200/games/threejs-2-5d/
+        run: npx playwright test tests/offline-built-shell.spec.ts --config playwright.offline.config.ts
       - name: Run remaining synthetic browser/protocol proof fixtures
         run: >-
           npx playwright test
@@ -45,6 +53,7 @@ jobs:
         run: |
           echo "proof_level=SYNTHETIC_FIXTURE_ONLY"
           echo "offline_shell=BUILT_BROWSER_PROVEN_IF_STEP_PASSES"
+          echo "portal_subpath=OBOLUNE_STYLE_PROVEN_IF_STEP_PASSES"
           echo "local_demo_runtime=SYNTHETIC_WORKER_PROVEN_IF_STEP_PASSES"
           echo "zig_compatibility=NOT_PROVEN"
           echo "canonical_server_sha=BLOCKED"
