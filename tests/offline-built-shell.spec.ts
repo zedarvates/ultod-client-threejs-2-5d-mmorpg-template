@@ -97,3 +97,54 @@ test("built Three.js shell and local demo runtime reload while offline after fir
   await expectSyntheticMovementAck(page, -0.75, 0.5);
   await expectKeyboardMovementAck(page);
 });
+
+test("silent local demo worker termination forces NetworkClient fail-closed", async ({ page }) => {
+  await page.addInitScript(() => {
+    const NativeWorker = window.Worker;
+    const workers: Worker[] = [];
+    Object.defineProperty(window, "__ultodTestWorkers", {
+      value: workers,
+      configurable: false,
+      enumerable: false,
+      writable: false,
+    });
+    window.Worker = class extends NativeWorker {
+      constructor(scriptURL: string | URL, options?: WorkerOptions) {
+        super(scriptURL, options);
+        workers.push(this);
+      }
+    } as typeof Worker;
+  });
+
+  await page.goto("./", { waitUntil: "networkidle" });
+  await expectBuiltDemoReady(page);
+
+  const captured = await page.evaluate(() => {
+    const workers = (window as unknown as { __ultodTestWorkers?: Worker[] }).__ultodTestWorkers ?? [];
+    return workers.length;
+  });
+  expect(captured).toBeGreaterThan(0);
+
+  await page.evaluate(() => {
+    const workers = (window as unknown as { __ultodTestWorkers?: Worker[] }).__ultodTestWorkers ?? [];
+    workers[0]?.terminate();
+  });
+
+  await expect.poll(() => page.evaluate(() => {
+    const client = window.__ultodLocalDemoClient;
+    return client?.getState().mode ?? "missing";
+  }), { timeout: 7000 }).toBe("error");
+
+  const blocked = await page.evaluate(() => {
+    const client = window.__ultodLocalDemoClient;
+    if (!client) return "missing";
+    try {
+      client.sendMovement(0.25, 0.25);
+      return "sent";
+    } catch (error) {
+      return error instanceof Error ? error.message : "blocked";
+    }
+  });
+  expect(blocked).toContain("not online");
+  await expect(page.locator("#hud")).toContainText("net: error");
+});
