@@ -26,6 +26,7 @@ Original Three.js 2.5D / isometric web MMORPG client starter shell.
 - Original Three.js 2.5D presentation shell (offline sandbox, no server connection)
 - Unified keyboard / pointer / touch input with fail-closed network stub
 - `@ultod/content-sdk` v0.1.0 for public, validated content graph contracts
+- `@ultod/game-site-generator` v0.1.0 for deterministic, text-only static game sites
 - MIT license for original code and documentation
 
 ## Quick start (local development)
@@ -36,10 +37,7 @@ npm run dev      # start Vite dev server on localhost
 npm run build    # type-check + production build to dist/
 ```
 
-Run the end-to-end test suite (22 tests: shell boot, HUD, render liveness,
-scenario economy and progression, blueprint placement, player visibility,
-camera follow, complete rescue UI journey, loopback handshake/auth/movement,
-fail-closed auth rejection, procedural asset regressions, and the no-public-GLB-request contract):
+Run the complete browser, package, content, accessibility and gameplay regression suite:
 
 ```bash
 npm run test:e2e
@@ -71,6 +69,12 @@ assessment without fetching or publishing content. It has zero runtime
 dependencies and does not claim server or client compatibility. See the
 [Game Content Graph V1 contract](docs/content/GAME-CONTENT-GRAPH-V1.md) and
 [Game Content Pack V1 contract](docs/content/GAME-CONTENT-PACK-V1.md).
+- [`@ultod/game-site-generator`](packages/game-site-generator/README.md): Strictly validates
+`uo.game-manifest/v1` metadata and produces deterministic `index.html`,
+`styles.css`, and `site-metadata.json` files. Preview output is visibly marked
+and non-indexable; production generation fails closed unless public web
+publication is explicit. V1 is text-only and performs no deployment, analytics,
+server-status request, WebAdmin mutation, or private-content discovery.
 - [`examples/tutorial-world/`](examples/tutorial-world/README.md): Canonical synthetic 25-entity public content pack fixture.
 
 StoryCore and legacy registry content are draft-only inputs handled through

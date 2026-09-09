@@ -6,6 +6,8 @@ async function expectBuiltDemoReady(page: import("@playwright/test").Page): Prom
   await expect.poll(() => page.evaluate(() => document.body.dataset.demoProof)).toBe("SYNTHETIC_FIXTURE_ONLY");
   await expect(page.locator("#app-canvas")).toBeVisible();
   await expect(page.locator("#hud")).toContainText("net: online (player 42)");
+  await expect(page.locator("#network-status")).toHaveAttribute("role", "status");
+  await expect(page.locator("#network-status")).toContainText("net: online (player 42)");
   await expect.poll(() => page.evaluate(() => {
     const client = window.__ultodLocalDemoClient;
     return client?.getState().mode ?? "missing";
@@ -147,4 +149,6 @@ test("silent local demo worker termination forces NetworkClient fail-closed", as
   });
   expect(blocked).toContain("not online");
   await expect(page.locator("#hud")).toContainText("net: error");
+  await expect(page.locator("#network-status")).toContainText("net: error");
+  await expect.poll(() => page.evaluate(() => document.body.dataset.demoRuntime)).toBe("error");
 });
