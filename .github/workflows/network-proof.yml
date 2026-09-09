@@ -27,6 +27,10 @@ jobs:
         run: npm --workspace @ultod/threejs-client-core run build
       - name: Build public Three.js shell
         run: npm run build
+      - name: Prove default deployment cache is scope-isolated
+        env:
+          EXPECTED_BASE_PATH: /ultod-client-threejs-2-5d-mmorpg-template/
+        run: node --test tests/offline-cache-isolation.node.mjs
       - name: Exercise real NetworkClient against injectable synthetic transport
         run: node --test tests/network-client-loopback.node.mjs
       - name: Install Chromium for browser transport fixtures
@@ -37,6 +41,10 @@ jobs:
         env:
           VITE_BASE_PATH: /games/threejs-2-5d/
         run: npm run build
+      - name: Prove Obolune deployment cache is scope-isolated
+        env:
+          EXPECTED_BASE_PATH: /games/threejs-2-5d/
+        run: node --test tests/offline-cache-isolation.node.mjs
       - name: Prove Obolune-style subpath survives network loss
         env:
           VITE_BASE_PATH: /games/threejs-2-5d/
@@ -55,6 +63,7 @@ jobs:
           echo "proof_level=SYNTHETIC_FIXTURE_ONLY"
           echo "offline_shell=BUILT_BROWSER_PROVEN_IF_STEP_PASSES"
           echo "portal_subpath=OBOLUNE_STYLE_PROVEN_IF_STEP_PASSES"
+          echo "portal_cache_isolation=PER_SCOPE_PROVEN_IF_STEPS_PASS"
           echo "local_demo_runtime=SYNTHETIC_WORKER_PROVEN_IF_STEP_PASSES"
           echo "zig_compatibility=NOT_PROVEN"
           echo "canonical_server_sha=BLOCKED"
