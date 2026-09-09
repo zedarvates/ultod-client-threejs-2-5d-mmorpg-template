@@ -37,6 +37,22 @@ jobs:
         run: npm run check:client-core
       - name: Build client core
         run: npm --workspace @ultod/threejs-client-core run build
+      - name: Typecheck game site generator
+        run: npm run check:site-generator
+      - name: Build game site generator
+        run: npm run build:site-generator
+      - name: Install Chromium for generated-site proof
+        run: npx playwright install --with-deps chromium
+      - name: Test game site generator
+        run: >-
+          npx playwright test
+          tests/game-site-manifest-types.spec.ts
+          tests/game-site-manifest-validation.spec.ts
+          tests/game-site-manifest-hardening.spec.ts
+          tests/game-site-normalization.spec.ts
+          tests/game-site-render.spec.ts
+          tests/game-site-cli.spec.ts
+          tests/game-site-browser.spec.ts
       - name: Test content SDK
         run: >-
           npx playwright test

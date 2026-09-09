@@ -43,6 +43,7 @@ class IsometricApp {
   private lastTime = 0;
   private readonly hud = new HudOverlay(
     document.getElementById("hud") as HTMLElement,
+    document.getElementById("network-status") as HTMLElement,
   );
   private readonly net = new NetworkClient();
   private keys = new Set<string>();
@@ -147,6 +148,7 @@ class IsometricApp {
     window.addEventListener("keydown", () => this.audio.unlock(), { once: true });
     window.addEventListener("touchstart", () => this.audio.unlock(), { once: true });
     canvas.addEventListener("click", (e) => {
+      if (this.dialog.isOpen()) return;
       this.targetPosition = this.controls.handlePointerClick(e, this.camera, canvas);
     });
     window.addEventListener("resize", () => this.handleResize());
@@ -233,6 +235,9 @@ class IsometricApp {
   }
 
   private keyboardIntent(): { x: number; y: number; run: boolean; interact: boolean } {
+    if (this.dialog.isOpen()) {
+      return { x: 0, y: 0, run: false, interact: false };
+    }
     let x = 0;
     let y = 0;
     if (this.keys.has("KeyW") || this.keys.has("ArrowUp")) y += 1;
@@ -252,8 +257,13 @@ class IsometricApp {
     const delta = Math.min((now - this.lastTime) / 1000, 0.1);
     this.lastTime = now;
 
+    const dialogOpen = this.dialog.isOpen();
+    if (dialogOpen) {
+      this.targetPosition = null;
+      this.joystick.reset();
+    }
     const kb = this.keyboardIntent();
-    const joy = this.joystick.sample();
+    const joy = dialogOpen ? { x: 0, y: 0 } : this.joystick.sample();
     if (kb.x !== 0 || kb.y !== 0) {
       const speed = kb.run ? 7 : 4;
       const dir = new THREE.Vector3(kb.x, 0, -kb.y).normalize().multiplyScalar(speed * delta);
@@ -296,13 +306,22 @@ class IsometricApp {
 
     if (this.mapKind === "village") {
       const qObj = document.getElementById("quest-objective");
-      if (qObj) qObj.textContent = questObjective(this.quest);
+      const objective = questObjective(this.quest);
+      if (qObj && qObj.textContent !== objective) qObj.textContent = objective;
       const goldEl = document.getElementById("quest-gold");
-      if (goldEl) goldEl.textContent = "Gold: " + this.quest.gold;
+      const gold = "Gold: " + this.quest.gold;
+      if (goldEl && goldEl.textContent !== gold) goldEl.textContent = gold;
       const swordSlot = document.getElementById("inv-sword");
       if (swordSlot) {
-        swordSlot.textContent = this.quest.hasSword ? "\u2694" : "";
-        swordSlot.classList.toggle("filled", this.quest.hasSword);
+        const sword = this.quest.hasSword ? "\u2694" : "";
+        if (swordSlot.textContent !== sword) swordSlot.textContent = sword;
+        const swordLabel = this.quest.hasSword ? "Sword: equipped" : "Sword: empty";
+        if (swordSlot.getAttribute("aria-label") !== swordLabel) {
+          swordSlot.setAttribute("aria-label", swordLabel);
+        }
+        if (swordSlot.classList.contains("filled") !== this.quest.hasSword) {
+          swordSlot.classList.toggle("filled", this.quest.hasSword);
+        }
       }
     }
 

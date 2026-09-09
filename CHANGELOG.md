@@ -70,8 +70,29 @@ editor bridges, loopback fixture, e2e tests, and live GitHub Pages deployment.
 
 ## Unreleased
 
+### Accessibility
+
+- Restore browser zoom and expose the rendered world through an accessible
+  canvas name and description.
+- Announce network, quest and inventory changes without remounting unchanged
+  status text on every animation frame.
+- Give gameplay dialogs semantic labeling, initial focus, Escape dismissal and
+  trigger-focus restoration.
+- Reflow the HUD, map selector and quest tracker below 620 CSS pixels while
+  keeping portrait and short-landscape gameplay controls in separate regions.
+- Raise map and dialog actions to 44-pixel minimum touch targets without
+  changing the desktop information hierarchy.
+
 ### Packages
 
+- Add `@ultod/game-site-generator` v0.1.0 with bounded
+  `uo.game-manifest/v1` validation, canonical SHA-256, deterministic text-only
+  HTML/CSS/metadata output, and preview/production publication gates.
+- Add a local-only CLI with guarded paths, staged verification, rollback and
+  conservative interrupted-state recovery; this does not deploy or publish a site.
+- Verify the generator tarball and CLI in the offline package consumer, plus
+  focused browser evidence for semantics, keyboard, tablet layout, reduced
+  motion and absence of runtime network requests.
 - Build `@ultod/content-sdk` and `@ultod/threejs-client-core` automatically
   before `npm pack`, including the client core's SDK type dependency.
 - Verify both archives by installing them with a local Three.js archive in an

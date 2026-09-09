@@ -15,7 +15,10 @@ export function createApp(container: HTMLElement): void {
   const camera = new IsometricCamera(renderer.domElement);
 
   const input = new InputManager();
-  const hud = new HudOverlay(document.getElementById('hud') as HTMLElement);
+  const hud = new HudOverlay(
+    document.getElementById('hud') as HTMLElement,
+    document.getElementById('network-status') as HTMLElement,
+  );
   const net = new NetworkClient();
   const world = new OfflineWorld(scene);
 
