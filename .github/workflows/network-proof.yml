@@ -29,6 +29,8 @@ jobs:
         run: node --test tests/position-reconciliation.node.mjs
       - name: Build public Three.js shell
         run: npm run build
+      - name: Prove presentation reconciliation controller
+        run: npx playwright test tests/presentation-reconciler.spec.ts
       - name: Prove default deployment cache isolation
         run: node --test tests/offline-cache-isolation.node.mjs
       - name: Exercise real NetworkClient against injectable synthetic transport
@@ -67,5 +69,6 @@ jobs:
           echo "local_demo_runtime=SYNTHETIC_WORKER_PROVEN_IF_STEP_PASSES"
           echo "worker_liveness=FAIL_CLOSED_PROVEN_IF_BROWSER_STEPS_PASS"
           echo "position_reconciliation=BOUNDED_PRESENTATION_HELPER_PROVEN_IF_STEP_PASSES"
+          echo "presentation_reconciler=STATEFUL_CLIENT_LAYER_PROVEN_IF_STEP_PASSES"
           echo "zig_compatibility=NOT_PROVEN"
           echo "canonical_server_sha=BLOCKED"
