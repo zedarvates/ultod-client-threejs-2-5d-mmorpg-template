@@ -53,7 +53,7 @@ test("gameplay status surfaces announce meaningful changes", async ({ page }) =>
 
   await expect(page.locator("#hud")).toHaveAttribute("aria-hidden", "true");
   await expect(page.locator("#network-status")).toHaveAttribute("role", "status");
-  await expect(page.locator("#network-status")).toContainText("net: offline");
+  await expect(page.locator("#network-status")).toContainText("net: online (player 42)");
   await expect(page.locator("#quest-panel")).toHaveAttribute("aria-live", "polite");
   await expect(page.locator("#inventory")).toHaveAttribute("aria-live", "polite");
 });
