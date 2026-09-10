@@ -3,10 +3,10 @@
 // This does not define canonical server authority or gameplay policy.
 
 import type { NetworkClient } from "../../packages/client-core/src/net/network-client";
-import { reconcilePositionStep, type Position2 } from "./position-reconciliation";
+import { reconcileFlatPosition, type FlatPosition } from "./position-reconciliation";
 
 export class PresentationReconciler {
-  private authority: Position2 | null = null;
+  private authority: FlatPosition | null = null;
   private readonly unsubscribe: () => void;
 
   constructor(private readonly client: NetworkClient) {
@@ -16,12 +16,12 @@ export class PresentationReconciler {
     });
   }
 
-  step(current: Position2, deltaSeconds: number): Position2 {
+  step(current: FlatPosition, deltaSeconds: number): FlatPosition {
     if (!this.authority || this.client.getState().mode !== "online") return current;
-    return reconcilePositionStep(current, this.authority, deltaSeconds);
+    return reconcileFlatPosition(current, this.authority, deltaSeconds);
   }
 
-  getAuthority(): Position2 | null {
+  getAuthority(): FlatPosition | null {
     return this.authority ? { ...this.authority } : null;
   }
 
