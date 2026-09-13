@@ -8,10 +8,12 @@ import {
   LOCAL_DEMO_ENDPOINT,
   LOCAL_DEMO_TOKEN,
 } from "./local-demo-socket";
+import { PresentationReconciler } from "./presentation-reconciler";
 
 declare global {
   interface Window {
     __ultodLocalDemoClient?: NetworkClient;
+    __ultodLocalDemoReconciler?: PresentationReconciler;
   }
 }
 
@@ -19,9 +21,11 @@ declare global {
 // local bootstrap both observe this exact NetworkClient instance. The socket
 // factory remains the browser-local synthetic Worker transport only.
 export const localDemoClient = new NetworkClient(createLocalDemoSocketFactory());
+export const localDemoReconciler = new PresentationReconciler(localDemoClient);
 
 if (typeof window !== "undefined" && typeof Worker !== "undefined") {
   window.__ultodLocalDemoClient = localDemoClient;
+  window.__ultodLocalDemoReconciler = localDemoReconciler;
   document.body.dataset.demoRuntime = "starting";
   document.body.dataset.demoProof = "SYNTHETIC_FIXTURE_ONLY";
 
