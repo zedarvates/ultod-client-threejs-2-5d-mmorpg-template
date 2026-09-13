@@ -12,6 +12,7 @@ async function expectBuiltDemoReady(page: import("@playwright/test").Page): Prom
     const client = window.__ultodLocalDemoClient;
     return client?.getState().mode ?? "missing";
   })).toBe("online");
+  await expect.poll(() => page.evaluate(() => Boolean(window.__ultodLocalDemoReconciler))).toBe(true);
 }
 
 async function expectSyntheticMovementAck(
@@ -43,6 +44,32 @@ async function expectSyntheticMovementAck(
   expect(update.playerId).toBe(42);
   expect(update.x).toBeCloseTo(x, 4);
   expect(update.z).toBeCloseTo(z, 4);
+}
+
+async function expectSharedReconcilerBoundedStep(
+  page: import("@playwright/test").Page,
+  authorityX: number,
+  authorityZ: number,
+): Promise<void> {
+  await expectSyntheticMovementAck(page, authorityX, authorityZ);
+  const result = await page.evaluate(({ authorityX, authorityZ }) => {
+    const reconciler = window.__ultodLocalDemoReconciler;
+    if (!reconciler) throw new Error("shared presentation reconciler missing");
+    const current = { x: authorityX + 1, z: authorityZ };
+    const next = reconciler.step(current, 0.1);
+    return {
+      current,
+      next,
+      authority: reconciler.getAuthority(),
+    };
+  }, { authorityX, authorityZ });
+
+  expect(result.authority?.x).toBeCloseTo(authorityX, 4);
+  expect(result.authority?.z).toBeCloseTo(authorityZ, 4);
+  expect(result.next.x).toBeLessThan(result.current.x);
+  expect(result.current.x - result.next.x).toBeLessThanOrEqual(0.200001);
+  expect(result.next.x).toBeGreaterThanOrEqual(authorityX);
+  expect(result.next.z).toBeCloseTo(authorityZ, 6);
 }
 
 async function expectKeyboardMovementAck(page: import("@playwright/test").Page): Promise<void> {
@@ -79,7 +106,7 @@ async function expectKeyboardMovementAck(page: import("@playwright/test").Page):
 test("built Three.js shell and local demo runtime reload while offline after first load", async ({ page, context }) => {
   await page.goto("./", { waitUntil: "networkidle" });
   await expectBuiltDemoReady(page);
-  await expectSyntheticMovementAck(page, 1.25, -2.5);
+  await expectSharedReconcilerBoundedStep(page, 1.25, -2.5);
   await expectKeyboardMovementAck(page);
 
   const registration = await page.evaluate(async () => {
@@ -96,7 +123,7 @@ test("built Three.js shell and local demo runtime reload while offline after fir
   await context.setOffline(true);
   await page.reload({ waitUntil: "domcontentloaded" });
   await expectBuiltDemoReady(page);
-  await expectSyntheticMovementAck(page, -0.75, 0.5);
+  await expectSharedReconcilerBoundedStep(page, -0.75, 0.5);
   await expectKeyboardMovementAck(page);
 });
 
@@ -148,6 +175,14 @@ test("silent local demo worker termination forces NetworkClient fail-closed", as
     }
   });
   expect(blocked).toContain("not online");
+
+  const frozen = await page.evaluate(() => {
+    const reconciler = window.__ultodLocalDemoReconciler;
+    if (!reconciler) return null;
+    return reconciler.step({ x: 1, z: 1 }, 0.1);
+  });
+  expect(frozen).toEqual({ x: 1, z: 1 });
+
   await expect(page.locator("#hud")).toContainText("net: error");
   await expect(page.locator("#network-status")).toContainText("net: error");
   await expect.poll(() => page.evaluate(() => document.body.dataset.demoRuntime)).toBe("error");
