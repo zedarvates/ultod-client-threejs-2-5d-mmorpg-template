@@ -14,6 +14,7 @@
     "check:packages": "node scripts/check-package-consumers.mjs",
     "preview": "vite preview",
    "test:e2e": "playwright test",
+    "test:multiplayer-pilot": "node --test tests/multiplayer-pilot.test.mjs",
     "check:public-boundary": "node scripts/check-public-boundary.mjs",
     "check:content-sdk": "npm --workspace @ultod/content-sdk run typecheck",
     "check:client-core": "npm --workspace @ultod/content-sdk run build && npm --workspace @ultod/threejs-client-core run typecheck",

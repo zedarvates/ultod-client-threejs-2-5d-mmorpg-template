@@ -29,6 +29,8 @@ jobs:
           python-version: "3.13"
       - name: Validate public/private content boundary
         run: node scripts/check-public-boundary.mjs
+      - name: Test multiplayer observation adapter
+        run: npm run test:multiplayer-pilot
       - name: Typecheck content SDK
         run: npm run check:content-sdk
       - name: Build content SDK

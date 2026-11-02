@@ -47,6 +47,10 @@ The starter runs fully offline. The network layer is a fail-closed stub with no 
 Its demo scenery and creature parts use original procedural geometry after the critical UI and
 first render, keeping the tablet startup path responsive.
 
+The [two-client pilot observation adapter](docs/MULTIPLAYER-PILOT.md) checks
+supplied domain observations before independent review. Its tests do not prove a
+canonical server connection; the real multiplayer pilot remains blocked.
+
 ## Links
 
 - [Ultimate Odycer website](https://ultimateodycer.com)
